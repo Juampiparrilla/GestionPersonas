@@ -1,7 +1,15 @@
-import type { LeaderListItem } from "./queries";
+"use client";
+
+import { useState } from "react";
+
 import { LeaderRowActions } from "./LeaderRowActions";
+import type { LeaderListItem } from "./queries";
 
 export function LeadersList({ leaders }: { leaders: LeaderListItem[] }) {
+  // Solo un dirigente puede estar en edicion a la vez: se guarda ACA (en el
+  // padre), no en cada fila, para que abrir uno cierre cualquier otro.
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   if (leaders.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
@@ -32,6 +40,11 @@ export function LeadersList({ leaders }: { leaders: LeaderListItem[] }) {
             phone={leader.phone}
             accessStatus={leader.accessStatus}
             pointerCount={leader.pointerCount}
+            hasAccess={leader.hasAccess}
+            accepted={leader.accepted}
+            isEditing={editingId === leader.id}
+            onStartEdit={() => setEditingId(leader.id)}
+            onStopEdit={() => setEditingId(null)}
           />
         </div>
       ))}

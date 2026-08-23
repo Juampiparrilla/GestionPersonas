@@ -222,6 +222,15 @@ export type Database = {
         Args: { p_enabled: boolean; p_ip?: string | null; p_user_agent?: string | null };
         Returns: undefined;
       };
+      fn_link_leader_profile: {
+        Args: {
+          p_leader_id: string;
+          p_profile_id: string;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;

@@ -1,3 +1,5 @@
+import { getSessionContext } from "@/lib/session";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { LeaderAccessStatus } from "@/types/domain";
 
@@ -8,6 +10,8 @@ export type LeaderListItem = {
   phone: string | null;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
+  hasAccess: boolean;
+  accepted: boolean;
 };
 
 // No se usa un embed de Supabase (leaders -> individuals) porque leaders.id
@@ -16,11 +20,14 @@ export type LeaderListItem = {
 // En cambio se traen ambas tablas por separado y se cruzan por id: es
 // exactamente equivalente y mas simple de tipar correctamente.
 export async function listActiveLeaders(): Promise<LeaderListItem[]> {
+  const session = await getSessionContext();
+  if (!session || session.role !== "superadmin") return [];
+
   const supabase = await createClient();
 
   const [{ data: leaders, error: leadersError }, { data: individuals, error: individualsError }] =
     await Promise.all([
-      supabase.from("leaders").select("id, access_status").eq("is_removed", false),
+      supabase.from("leaders").select("id, access_status, profile_id").eq("is_removed", false),
       supabase
         .from("individuals")
         .select("id, full_name, dni_display, phone")
@@ -43,6 +50,20 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
 
   const individualsById = new Map((individuals ?? []).map((row) => [row.id, row]));
 
+  // "Aceptada" = la cuenta ya inicio sesion alguna vez. Solo se puede saber
+  // via el Admin API (last_sign_in_at no esta expuesto por el cliente
+  // normal), por eso esta unica parte usa el cliente con service_role.
+  const admin = createAdminClient();
+  const acceptedByLeader = new Map<string, boolean>();
+  await Promise.all(
+    (leaders ?? [])
+      .filter((leader): leader is typeof leader & { profile_id: string } => Boolean(leader.profile_id))
+      .map(async (leader) => {
+        const { data } = await admin.auth.admin.getUserById(leader.profile_id);
+        acceptedByLeader.set(leader.id, Boolean(data.user?.last_sign_in_at));
+      })
+  );
+
   const items: LeaderListItem[] = [];
   for (const leader of leaders ?? []) {
     const individual = individualsById.get(leader.id);
@@ -54,6 +75,8 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       phone: individual.phone,
       accessStatus: leader.access_status,
       pointerCount: pointerCountByLeader.get(leader.id) ?? 0,
+      hasAccess: Boolean(leader.profile_id),
+      accepted: acceptedByLeader.get(leader.id) ?? false,
     });
   }
 

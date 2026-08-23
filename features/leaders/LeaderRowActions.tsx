@@ -6,6 +6,7 @@ import type { LeaderAccessStatus } from "@/types/domain";
 
 import { removeLeaderAction, setLeaderAccessStatusAction } from "./actions";
 import { EditLeaderForm } from "./EditLeaderForm";
+import { InviteButton } from "./InviteButton";
 
 const STATUS_LABEL: Record<LeaderAccessStatus, string> = {
   active: "🟢 Activo",
@@ -19,16 +20,25 @@ export function LeaderRowActions({
   phone,
   accessStatus,
   pointerCount,
+  hasAccess,
+  accepted,
+  isEditing,
+  onStartEdit,
+  onStopEdit,
 }: {
   leaderId: string;
   fullName: string;
   phone: string | null;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
+  hasAccess: boolean;
+  accepted: boolean;
+  isEditing: boolean;
+  onStartEdit: () => void;
+  onStopEdit: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function changeStatus(status: LeaderAccessStatus) {
@@ -48,20 +58,15 @@ export function LeaderRowActions({
     });
   }
 
-  if (editing) {
+  if (isEditing) {
     return (
-      <EditLeaderForm
-        leaderId={leaderId}
-        fullName={fullName}
-        phone={phone}
-        onDone={() => setEditing(false)}
-      />
+      <EditLeaderForm leaderId={leaderId} fullName={fullName} phone={phone} onDone={onStopEdit} />
     );
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
         <select
           value={accessStatus}
           disabled={isPending}
@@ -73,9 +78,11 @@ export function LeaderRowActions({
           <option value="inactive">{STATUS_LABEL.inactive}</option>
         </select>
 
+        <InviteButton leaderId={leaderId} hasAccess={hasAccess} accepted={accepted} />
+
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onClick={onStartEdit}
           disabled={isPending}
           className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
         >

@@ -139,6 +139,8 @@ RLS habilitado en **todas** las tablas. Reglas por tabla (resumen; se implementa
 - **system_settings**: select para cualquier usuario autenticado de la organización (necesitan saber si la carga está cerrada); update solo `superadmin`.
 - Todas las policies filtran primero por `organization_id = profile.organization_id` — esto es lo que garantiza multi-tenancy real (punto 28): ni siquiera un bug de UI puede filtrar datos entre organizaciones, porque la base los bloquea.
 
+**Gotcha operativo (encontrado al agregar `fn_link_leader_profile` en la migración 0003):** Supabase le otorga `EXECUTE` a `anon`/`authenticated`/`service_role` de forma automática y DIRECTA (no vía `PUBLIC`) a toda función nueva creada en `public`. Por eso `revoke execute on function ... from public` no alcanza para sacarle el permiso a `anon` — hay que revocarlo explícitamente `from anon` en la misma migración que crea la función. Toda migración futura que agregue una función nueva debe incluir esa revocación explícita (ver 0005_fix_anon_grant.sql).
+
 ## 5. Estados y su combinación
 
 - `individuals.status`: `active` (ocupando una posición) | `available` (liberado, listo para reasignar).

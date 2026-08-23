@@ -1,23 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
+import { grantLeaderAccess } from "@/lib/leader-access";
 import { getRequestMeta } from "@/lib/request-meta";
 import { getSessionContext } from "@/lib/session";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { buildSyntheticEmail } from "@/lib/synthetic-email";
 import type { LeaderAccessStatus } from "@/types/domain";
 import { isValidDniFormat, normalizeDni } from "@/utils/dni";
 import { friendlyRpcError } from "@/utils/rpc-errors";
-import { buildWhatsAppInviteLink } from "@/utils/whatsapp";
 
 export type CreateLeaderState = {
   error: string | null;
   success: boolean;
   whatsappLink?: string | null;
-  accessLink?: string | null;
 };
 
 export async function createLeaderAction(
@@ -27,8 +23,6 @@ export async function createLeaderAction(
   const fullName = String(formData.get("fullName") ?? "").trim();
   const dni = String(formData.get("dni") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const wantsAccess = formData.get("wantsAccess") === "on";
 
   if (!fullName || !dni) {
     return { error: "Completá el nombre y el DNI.", success: false };
@@ -36,17 +30,7 @@ export async function createLeaderAction(
   if (!isValidDniFormat(dni)) {
     return { error: "El DNI no es válido.", success: false };
   }
-  if (wantsAccess && !phone && !email) {
-    return {
-      error: "Para darle acceso, cargá el teléfono (para mandarlo por WhatsApp) o un correo.",
-      success: false,
-    };
-  }
 
-  // El cliente con service_role (mas abajo) bypassea RLS por completo, asi
-  // que ESTE chequeo de rol es la unica barrera para esa parte: un Server
-  // Action se puede invocar directo, no solo desde el formulario que lo
-  // renderiza (ver node_modules/next/dist/docs/.../guides/forms.md).
   const session = await getSessionContext();
   if (!session || session.role !== "superadmin") {
     return { error: "No tenés permiso para hacer esto.", success: false };
@@ -55,86 +39,88 @@ export async function createLeaderAction(
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
 
-  // Si se pidio darle acceso, se crea la cuenta y se genera el link para que
-  // la persona elija su propia contraseña -- pero NO se manda por el mail
-  // automatico de Supabase: se devuelve el link para que el Superadmin lo
-  // mande el mismo por WhatsApp (o lo copie a mano si solo hay correo real y
-  // no telefono). Recien despues se crea/reasigna el dirigente en si via la
-  // RPC, pasandole el id de esa cuenta para que quede linkeada.
-  //
-  // Si no se cargo un correo real, se usa uno interno generado a partir del
-  // DNI: la persona nunca lo ve ni lo necesita, porque va a iniciar sesion
-  // con su DNI (ver app/(auth)/login/actions.ts), no con este correo.
-  let profileId: string | null = null;
-  let createdAuthUserId: string | null = null;
-  let accessLink: string | null = null;
-
-  if (wantsAccess) {
-    const admin = createAdminClient();
-    const headersList = await headers();
-    const origin = headersList.get("origin") ?? "";
-    const loginEmail = email || buildSyntheticEmail(normalizeDni(dni), session.organizationId);
-
-    const { data: generated, error: generateError } = await admin.auth.admin.generateLink({
-      type: "invite",
-      email: loginEmail,
-      options: { redirectTo: `${origin}/auth/callback?next=/actualizar-contrasena` },
-    });
-
-    if (generateError || !generated.user) {
-      if (generateError?.code === "email_exists" || generateError?.message.includes("already")) {
-        return { error: "Ya existe una cuenta con ese correo.", success: false };
-      }
-      return { error: "No pudimos crear la cuenta de acceso. Probá de nuevo.", success: false };
-    }
-
-    createdAuthUserId = generated.user.id;
-    accessLink = generated.properties.action_link;
-
-    const { error: profileError } = await admin.from("profiles").insert({
-      id: generated.user.id,
-      organization_id: session.organizationId,
-      full_name: fullName,
-      role: "leader",
-    });
-
-    if (profileError) {
-      await admin.auth.admin.deleteUser(generated.user.id);
-      return { error: "No pudimos crear la cuenta de acceso. Probá de nuevo.", success: false };
-    }
-
-    profileId = generated.user.id;
-  }
-
-  const { error } = await supabase.rpc("fn_create_leader", {
+  const { data: leaderId, error } = await supabase.rpc("fn_create_leader", {
     p_dni: normalizeDni(dni),
     p_full_name: fullName,
     p_phone: phone || null,
-    p_profile_id: profileId,
+    p_profile_id: null,
     p_ip: ip,
     p_user_agent: userAgent,
   });
 
   if (error) {
-    // Si la RPC falla (ej. DNI_BLOCKED) no dejamos una cuenta de acceso
-    // huerfana sin dirigente asociado.
-    if (createdAuthUserId) {
-      await createAdminClient().auth.admin.deleteUser(createdAuthUserId);
-    }
     return { error: friendlyRpcError(error.message), success: false };
   }
 
   revalidatePath("/superadmin/dirigentes");
 
-  const whatsappLink =
-    accessLink && phone
-      ? buildWhatsAppInviteLink(
-          phone,
-          `Hola ${fullName}! Te sumamos a Gestión de Personas. Entrá a este link para crear tu contraseña: ${accessLink}\n\nDespués, para ingresar usá tu DNI (${dni}) y esa contraseña.`
-        )
-      : null;
+  // El dirigente ya quedo creado; el acceso se genera siempre, para poder
+  // compartirle la invitacion por WhatsApp apenas se guarda.
+  const access = await grantLeaderAccess({
+    supabase,
+    leaderId: leaderId as string,
+    fullName,
+    dniNormalized: normalizeDni(dni),
+    dniForMessage: dni,
+    organizationId: session.organizationId,
+    existingProfileId: null,
+    ip,
+    userAgent,
+  });
 
-  return { error: null, success: true, accessLink, whatsappLink };
+  if (!access.ok) {
+    // El dirigente quedo creado igual; el acceso se puede generar despues
+    // desde la lista con el boton de invitar.
+    return { error: null, success: true, whatsappLink: null };
+  }
+
+  return { error: null, success: true, whatsappLink: access.whatsappLink };
+}
+
+export async function resendInviteAction(leaderId: string): Promise<CreateLeaderState> {
+  const session = await getSessionContext();
+  if (!session || session.role !== "superadmin") {
+    return { error: "No tenés permiso para hacer esto.", success: false };
+  }
+
+  const supabase = await createClient();
+  const { ip, userAgent } = await getRequestMeta();
+
+  // Con el cliente normal (no admin): las policies de individuals/leaders ya
+  // exigen que pertenezcan a la organizacion de quien llama, asi que un
+  // superadmin no puede generar accesos para dirigentes de otra
+  // organizacion pasando un id ajeno.
+  const [{ data: individual }, { data: leader }] = await Promise.all([
+    supabase
+      .from("individuals")
+      .select("dni_normalized, dni_display, full_name")
+      .eq("id", leaderId)
+      .maybeSingle(),
+    supabase.from("leaders").select("profile_id").eq("id", leaderId).maybeSingle(),
+  ]);
+
+  if (!individual || !leader) {
+    return { error: "No encontramos a este dirigente.", success: false };
+  }
+
+  const access = await grantLeaderAccess({
+    supabase,
+    leaderId,
+    fullName: individual.full_name,
+    dniNormalized: individual.dni_normalized,
+    dniForMessage: individual.dni_display,
+    organizationId: session.organizationId,
+    existingProfileId: leader.profile_id,
+    ip,
+    userAgent,
+  });
+
+  if (!access.ok) {
+    return { error: access.error, success: false };
+  }
+
+  revalidatePath("/superadmin/dirigentes");
+  return { error: null, success: true, whatsappLink: access.whatsappLink };
 }
 
 export type ActionResult = { error: string | null };
