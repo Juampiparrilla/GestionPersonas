@@ -1,0 +1,130 @@
+"use client";
+
+import { useState, useTransition } from "react";
+
+import type { LeaderAccessStatus } from "@/types/domain";
+
+import { removeLeaderAction, setLeaderAccessStatusAction } from "./actions";
+import { EditLeaderForm } from "./EditLeaderForm";
+
+const STATUS_LABEL: Record<LeaderAccessStatus, string> = {
+  active: "🟢 Activo",
+  read_only: "🔴 Solo lectura",
+  inactive: "⚪ Inactivo",
+};
+
+export function LeaderRowActions({
+  leaderId,
+  fullName,
+  phone,
+  accessStatus,
+  pointerCount,
+}: {
+  leaderId: string;
+  fullName: string;
+  phone: string | null;
+  accessStatus: LeaderAccessStatus;
+  pointerCount: number;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function changeStatus(status: LeaderAccessStatus) {
+    setError(null);
+    startTransition(async () => {
+      const result = await setLeaderAccessStatusAction(leaderId, status);
+      if (result.error) setError(result.error);
+    });
+  }
+
+  function confirmRemove() {
+    setConfirmingRemove(false);
+    setError(null);
+    startTransition(async () => {
+      const result = await removeLeaderAction(leaderId);
+      if (result.error) setError(result.error);
+    });
+  }
+
+  if (editing) {
+    return (
+      <EditLeaderForm
+        leaderId={leaderId}
+        fullName={fullName}
+        phone={phone}
+        onDone={() => setEditing(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <select
+          value={accessStatus}
+          disabled={isPending}
+          onChange={(event) => changeStatus(event.target.value as LeaderAccessStatus)}
+          className="h-10 rounded-lg border border-zinc-300 px-2 text-sm text-zinc-900"
+        >
+          <option value="active">{STATUS_LABEL.active}</option>
+          <option value="read_only">{STATUS_LABEL.read_only}</option>
+          <option value="inactive">{STATUS_LABEL.inactive}</option>
+        </select>
+
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          disabled={isPending}
+          className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+        >
+          ✏️ Editar
+        </button>
+
+        {!confirmingRemove ? (
+          <button
+            type="button"
+            onClick={() => setConfirmingRemove(true)}
+            disabled={isPending}
+            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+          >
+            🗑️ Quitar
+          </button>
+        ) : null}
+      </div>
+
+      {confirmingRemove ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+          <p className="text-red-800">
+            {pointerCount > 0
+              ? `Este dirigente tiene ${pointerCount} punteros. Si lo quitás, dejará de aparecer y sus punteros van a quedar disponibles para ser registrados nuevamente.`
+              : "¿Querés quitar a este dirigente?"}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmingRemove(false)}
+              className="h-9 flex-1 rounded-lg border border-zinc-300 text-sm font-medium text-zinc-700"
+            >
+              Volver
+            </button>
+            <button
+              type="button"
+              onClick={confirmRemove}
+              className="h-9 flex-1 rounded-lg bg-red-600 text-sm font-medium text-white"
+            >
+              Sí, quitar
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {error ? (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
