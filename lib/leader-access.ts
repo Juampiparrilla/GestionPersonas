@@ -5,21 +5,25 @@ import { headers } from "next/headers";
 import { buildSyntheticEmail } from "@/lib/synthetic-email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { createClient } from "@/lib/supabase/server";
-import { buildWhatsAppShareLink } from "@/utils/whatsapp";
+import { buildWhatsAppInviteLink } from "@/utils/whatsapp";
 
 export type GrantAccessResult =
-  | { ok: true; whatsappLink: string }
+  | { ok: true; whatsappLink: string | null; shareMessage: string }
   | { ok: false; error: string };
 
 // Crea la cuenta de acceso de un dirigente (si todavia no tenia una) o
 // genera un link nuevo para reenviarle la invitacion (si ya tenia cuenta
 // pero no la acepto, o para "olvide mi contraseña" asistido por el
-// Superadmin). Devuelve un link de WhatsApp listo para compartir -- nunca
-// manda nada por si mismo, el Superadmin decide a quien enviarselo.
+// Superadmin). Si hay telefono cargado devuelve un link de WhatsApp directo
+// a esa persona; wa.me REQUIERE un numero para funcionar, no existe un link
+// que abra un selector de contacto generico, asi que sin telefono se
+// devuelve el mensaje solo para copiar a mano. Nunca manda nada por si
+// mismo, el Superadmin decide cuando y a quien enviarselo.
 export async function grantLeaderAccess({
   supabase,
   leaderId,
   fullName,
+  phone,
   dniNormalized,
   dniForMessage,
   organizationId,
@@ -30,6 +34,7 @@ export async function grantLeaderAccess({
   supabase: Awaited<ReturnType<typeof createClient>>;
   leaderId: string;
   fullName: string;
+  phone: string | null;
   dniNormalized: string;
   dniForMessage: string;
   organizationId: string;
@@ -96,5 +101,9 @@ export async function grantLeaderAccess({
     `contraseña: ${generated.properties.action_link}\n\nDespués, para ingresar usá tu DNI ` +
     `(${dniForMessage}) y esa contraseña.`;
 
-  return { ok: true, whatsappLink: buildWhatsAppShareLink(message) };
+  return {
+    ok: true,
+    whatsappLink: phone ? buildWhatsAppInviteLink(phone, message) : null,
+    shareMessage: message,
+  };
 }

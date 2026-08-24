@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CreateLeaderForm } from "@/features/leaders/CreateLeaderForm";
+import { CollapsibleCreateLeader } from "@/features/leaders/CollapsibleCreateLeader";
 import { LeadersList } from "@/features/leaders/LeadersList";
 import { listActiveLeaders } from "@/features/leaders/queries";
 
@@ -16,7 +16,7 @@ export default async function DirigentesPage() {
         </Link>
       </div>
 
-      <CreateLeaderForm />
+      <CollapsibleCreateLeader />
 
       <LeadersList leaders={leaders} />
     </div>

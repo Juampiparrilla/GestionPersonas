@@ -2,7 +2,11 @@
 
 import { useState, useTransition } from "react";
 
+import { Spinner } from "@/components/Spinner";
+
 import { resendInviteAction } from "./actions";
+
+type Pending = { whatsappLink: string | null; shareMessage: string };
 
 export function InviteButton({
   leaderId,
@@ -15,39 +19,64 @@ export function InviteButton({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [link, setLink] = useState<string | null>(null);
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [copied, setCopied] = useState(false);
 
   function handleGenerate() {
     setError(null);
     startTransition(async () => {
       const result = await resendInviteAction(leaderId);
-      if (result.error || !result.whatsappLink) {
-        setError(result.error ?? "No pudimos generar el link.");
+      if (!result.ok) {
+        setError(result.error);
         return;
       }
-      setLink(result.whatsappLink);
+      setPending({ whatsappLink: result.whatsappLink, shareMessage: result.shareMessage });
     });
+  }
+
+  async function handleCopy(message: string) {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   }
 
   if (accepted) {
     return (
       <span className="flex h-10 items-center gap-1 rounded-lg border border-zinc-200 px-3 text-sm text-zinc-400">
-        ✅ Invitación aceptada
+        ✅ Ya inició sesión
       </span>
     );
   }
 
-  if (link) {
+  if (pending?.whatsappLink) {
     return (
       <a
-        href={link}
+        href={pending.whatsappLink}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => setLink(null)}
+        onClick={() => setPending(null)}
         className="flex h-10 items-center gap-1 rounded-lg bg-green-600 px-3 text-sm font-medium text-white hover:bg-green-700"
       >
         📱 Enviar por WhatsApp
       </a>
+    );
+  }
+
+  if (pending && !pending.whatsappLink) {
+    return (
+      <div className="flex flex-col gap-1">
+        <button
+          type="button"
+          onClick={() => handleCopy(pending.shareMessage)}
+          className="flex h-10 items-center gap-1 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+        >
+          📋 {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
+        </button>
+        <p className="text-xs text-zinc-500">
+          No hay teléfono cargado, así que no se puede abrir WhatsApp directo. Copiá el mensaje y
+          pegalo donde prefieras.
+        </p>
+      </div>
     );
   }
 
@@ -59,7 +88,15 @@ export function InviteButton({
         disabled={isPending}
         className="flex h-10 items-center gap-1 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
       >
-        {isPending ? "Generando…" : hasAccess ? "🔄 Reenviar invitación" : "📱 Invitar"}
+        {isPending ? (
+          <>
+            <Spinner className="h-4 w-4" /> Generando…
+          </>
+        ) : hasAccess ? (
+          "🔄 Reenviar invitación"
+        ) : (
+          "📱 Invitar"
+        )}
       </button>
       {error ? (
         <p role="alert" className="text-xs text-red-600">

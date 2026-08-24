@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 
+import { Spinner } from "@/components/Spinner";
 import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
@@ -22,9 +23,6 @@ export function CreateLeaderForm() {
   // vacios.
   const [formKey, setFormKey] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
-  // El link de WhatsApp queda disponible en `state` hasta el proximo submit;
-  // este flag lo oculta apenas se usa, sin esperar a esa proxima carga.
-  const [linkDismissed, setLinkDismissed] = useState(false);
 
   // Patron "ajustar estado durante el render" (en vez de useEffect) para
   // reaccionar a que state.success paso a true: https://react.dev/learn/you-might-not-need-an-effect
@@ -34,7 +32,6 @@ export function CreateLeaderForm() {
     if (state.success) {
       setFormKey((key) => key + 1);
       setShowSuccess(true);
-      setLinkDismissed(false);
     }
   }
 
@@ -80,28 +77,23 @@ export function CreateLeaderForm() {
       ) : null}
       {showSuccess ? (
         <p role="status" className="text-sm text-green-700">
-          ✅ Dirigente agregado correctamente.
+          ✅ El dirigente fue creado exitosamente. Para darle acceso, usá el botón de invitar en su
+          fila de la lista.
         </p>
-      ) : null}
-
-      {state.success && state.whatsappLink && !linkDismissed ? (
-        <a
-          href={state.whatsappLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setLinkDismissed(true)}
-          className="flex h-12 items-center justify-center rounded-lg bg-green-600 text-base font-semibold text-white transition-colors hover:bg-green-700"
-        >
-          📱 Enviar invitación por WhatsApp
-        </a>
       ) : null}
 
       <button
         type="submit"
         disabled={pending}
-        className="h-12 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
       >
-        {pending ? "Guardando…" : "Guardar dirigente"}
+        {pending ? (
+          <>
+            <Spinner className="h-4 w-4" /> Guardando…
+          </>
+        ) : (
+          "Guardar dirigente"
+        )}
       </button>
     </form>
   );

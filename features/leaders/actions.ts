@@ -10,11 +10,7 @@ import type { LeaderAccessStatus } from "@/types/domain";
 import { isValidDniFormat, normalizeDni } from "@/utils/dni";
 import { friendlyRpcError } from "@/utils/rpc-errors";
 
-export type CreateLeaderState = {
-  error: string | null;
-  success: boolean;
-  whatsappLink?: string | null;
-};
+export type CreateLeaderState = { error: string | null; success: boolean };
 
 export async function createLeaderAction(
   _prevState: CreateLeaderState,
@@ -54,12 +50,15 @@ export async function createLeaderAction(
 
   revalidatePath("/superadmin/dirigentes");
 
-  // El dirigente ya quedo creado; el acceso se genera siempre, para poder
-  // compartirle la invitacion por WhatsApp apenas se guarda.
-  const access = await grantLeaderAccess({
+  // El dirigente ya quedo creado; el acceso se genera siempre en silencio,
+  // asi el boton de invitar/reenviar de la lista ya tiene algo para mandar.
+  // Si esto falla, no es un error para el usuario: el dirigente igual quedo
+  // creado, y el acceso se puede generar despues desde la lista.
+  await grantLeaderAccess({
     supabase,
     leaderId: leaderId as string,
     fullName,
+    phone: phone || null,
     dniNormalized: normalizeDni(dni),
     dniForMessage: dni,
     organizationId: session.organizationId,
@@ -68,19 +67,17 @@ export async function createLeaderAction(
     userAgent,
   });
 
-  if (!access.ok) {
-    // El dirigente quedo creado igual; el acceso se puede generar despues
-    // desde la lista con el boton de invitar.
-    return { error: null, success: true, whatsappLink: null };
-  }
-
-  return { error: null, success: true, whatsappLink: access.whatsappLink };
+  return { error: null, success: true };
 }
 
-export async function resendInviteAction(leaderId: string): Promise<CreateLeaderState> {
+export type InviteResult =
+  | { ok: false; error: string }
+  | { ok: true; whatsappLink: string | null; shareMessage: string };
+
+export async function resendInviteAction(leaderId: string): Promise<InviteResult> {
   const session = await getSessionContext();
   if (!session || session.role !== "superadmin") {
-    return { error: "No tenés permiso para hacer esto.", success: false };
+    return { ok: false, error: "No tenés permiso para hacer esto." };
   }
 
   const supabase = await createClient();
@@ -93,20 +90,21 @@ export async function resendInviteAction(leaderId: string): Promise<CreateLeader
   const [{ data: individual }, { data: leader }] = await Promise.all([
     supabase
       .from("individuals")
-      .select("dni_normalized, dni_display, full_name")
+      .select("dni_normalized, dni_display, full_name, phone")
       .eq("id", leaderId)
       .maybeSingle(),
     supabase.from("leaders").select("profile_id").eq("id", leaderId).maybeSingle(),
   ]);
 
   if (!individual || !leader) {
-    return { error: "No encontramos a este dirigente.", success: false };
+    return { ok: false, error: "No encontramos a este dirigente." };
   }
 
   const access = await grantLeaderAccess({
     supabase,
     leaderId,
     fullName: individual.full_name,
+    phone: individual.phone,
     dniNormalized: individual.dni_normalized,
     dniForMessage: individual.dni_display,
     organizationId: session.organizationId,
@@ -116,11 +114,11 @@ export async function resendInviteAction(leaderId: string): Promise<CreateLeader
   });
 
   if (!access.ok) {
-    return { error: access.error, success: false };
+    return { ok: false, error: access.error };
   }
 
   revalidatePath("/superadmin/dirigentes");
-  return { error: null, success: true, whatsappLink: access.whatsappLink };
+  return { ok: true, whatsappLink: access.whatsappLink, shareMessage: access.shareMessage };
 }
 
 export type ActionResult = { error: string | null };
