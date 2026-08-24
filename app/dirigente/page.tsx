@@ -17,6 +17,8 @@ export default async function DirigenteHome() {
 
   const totalPersonas = pointers.reduce((sum, pointer) => sum + pointer.peopleCount, 0);
   const punterosSinPersonas = pointers.filter((pointer) => pointer.peopleCount === 0);
+  const promedioPersonasPorPuntero =
+    pointers.length > 0 ? Math.round(totalPersonas / pointers.length) : 0;
 
   if (!writeStatus.canWrite) {
     const message =
@@ -36,10 +38,11 @@ export default async function DirigenteHome() {
           <p className="mt-1 text-sm text-amber-800">{message}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Punteros" value={pointers.length} />
           <StatCard label="Personas registradas" value={totalPersonas} />
           <StatCard label="Vehículos" value={vehicles.length} />
+          <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} />
         </div>
       </div>
     );
@@ -70,10 +73,11 @@ export default async function DirigenteHome() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Punteros" value={pointers.length} />
         <StatCard label="Personas registradas" value={totalPersonas} />
         <StatCard label="Vehículos" value={vehicles.length} />
+        <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
