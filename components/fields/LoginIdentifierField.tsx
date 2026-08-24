@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { formatDniInput } from "@/utils/dni";
 
+const MAX_LENGTH = 40;
+
 // Campo "inteligente" para el login: mientras lo que se escribe sean solo
 // numeros, se formatea como DNI (XX.XXX.XXX). Apenas aparece una letra o un
 // '@', se deja de formatear y se trata como texto libre (correo) -- asi los
@@ -23,7 +25,7 @@ export function LoginIdentifierField({
   const [value, setValue] = useState("");
 
   function handleChange(raw: string) {
-    const withoutSpaces = raw.replace(/\s/g, "");
+    const withoutSpaces = raw.replace(/\s/g, "").slice(0, MAX_LENGTH);
     const looksLikeEmail = /[a-zA-Z@]/.test(withoutSpaces);
     setValue(looksLikeEmail ? withoutSpaces : formatDniInput(withoutSpaces));
   }

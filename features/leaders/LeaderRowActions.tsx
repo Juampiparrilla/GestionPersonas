@@ -11,8 +11,8 @@ import { InviteButton } from "./InviteButton";
 
 const STATUS_LABEL: Record<LeaderAccessStatus, string> = {
   active: "🟢 Activo",
-  read_only: "🔴 Solo lectura",
-  inactive: "⚪ Inactivo",
+  read_only: "⚪ Solo lectura",
+  inactive: "🔴 Inactivo",
 };
 
 export function LeaderRowActions({

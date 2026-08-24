@@ -54,6 +54,7 @@ const PUBLIC_PATHS = [
   "/recuperar-contrasena",
   "/actualizar-contrasena",
   "/auth/callback",
+  "/auth/verify",
 ];
 
 export const config = {

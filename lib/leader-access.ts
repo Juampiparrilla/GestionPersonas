@@ -106,7 +106,8 @@ export async function grantLeaderAccess({
   }
 
   const ownLink =
-    `${origin}/actualizar-contrasena?token_hash=${generated.properties.hashed_token}&type=${type}`;
+    `${origin}/auth/verify?token_hash=${generated.properties.hashed_token}&type=${type}` +
+    `&next=/actualizar-contrasena`;
 
   const message =
     `Hola ${fullName}! Te sumamos a Gestión de Personas. Entrá a este link para crear tu ` +
