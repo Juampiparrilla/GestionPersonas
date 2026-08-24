@@ -45,7 +45,14 @@ export async function grantLeaderAccess({
   const admin = createAdminClient();
   const headersList = await headers();
   const origin = headersList.get("origin") ?? "";
-  const redirectTo = `${origin}/auth/callback?next=/actualizar-contrasena`;
+  // OJO: los links generados con admin.generateLink() NO usan el flujo de
+  // codigo (?code=) que procesa /auth/callback -- no hay un browser que haya
+  // iniciado el pedido, asi que Supabase no tiene con que verificar un PKCE
+  // code verifier. En cambio, el token viaja en el FRAGMENTO de la URL
+  // (#access_token=...), que un servidor nunca puede leer (los navegadores
+  // no lo mandan en la request). Por eso este redirect va DIRECTO a
+  // /actualizar-contrasena, cuya pantalla lo procesa del lado del cliente.
+  const redirectTo = `${origin}/actualizar-contrasena`;
 
   let email: string;
   if (existingProfileId) {

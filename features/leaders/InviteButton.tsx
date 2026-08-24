@@ -37,7 +37,10 @@ export function InviteButton({
   async function handleCopy(message: string) {
     await navigator.clipboard.writeText(message);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => {
+      setCopied(false);
+      setPending(null);
+    }, 1500);
   }
 
   if (accepted) {
