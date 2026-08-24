@@ -45,6 +45,7 @@ export function LeaderCard({
           leaderId={leader.id}
           fullName={leader.fullName}
           phone={leader.phone}
+          address={leader.address}
           accessStatus={leader.accessStatus}
           pointerCount={leader.pointerCount}
           hasAccess={leader.hasAccess}

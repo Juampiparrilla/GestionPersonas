@@ -7,6 +7,7 @@ export type LeaderListItem = {
   fullName: string;
   dni: string;
   phone: string | null;
+  address: string | null;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
   personCount: number;
@@ -31,7 +32,7 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       supabase.from("leaders").select("id, access_status, profile_id").eq("is_removed", false),
       supabase
         .from("individuals")
-        .select("id, full_name, dni_display, phone")
+        .select("id, full_name, dni_display, phone, address")
         .eq("position", "leader")
         .eq("status", "active"),
     ]);
@@ -97,6 +98,7 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       fullName: individual.full_name,
       dni: individual.dni_display,
       phone: individual.phone,
+      address: individual.address,
       accessStatus: leader.access_status,
       pointerCount: pointerCountByLeader.get(leader.id) ?? 0,
       personCount: personCountByLeader.get(leader.id) ?? 0,

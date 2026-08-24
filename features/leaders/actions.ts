@@ -19,6 +19,7 @@ export async function createLeaderAction(
   const fullName = String(formData.get("fullName") ?? "").trim();
   const dni = String(formData.get("dni") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
 
   if (!fullName || !dni) {
     return { error: "Completá el nombre y el DNI.", success: false };
@@ -40,6 +41,7 @@ export async function createLeaderAction(
     p_full_name: fullName,
     p_phone: phone || null,
     p_profile_id: null,
+    p_address: address || null,
     p_ip: ip,
     p_user_agent: userAgent,
   });
@@ -148,7 +150,8 @@ export async function setLeaderAccessStatusAction(
 export async function updateLeaderAction(
   leaderId: string,
   fullName: string,
-  phone: string | null
+  phone: string | null,
+  address: string | null
 ): Promise<ActionResult> {
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
@@ -157,6 +160,7 @@ export async function updateLeaderAction(
     p_leader_id: leaderId,
     p_full_name: fullName,
     p_phone: phone,
+    p_address: address,
     p_ip: ip,
     p_user_agent: userAgent,
   });

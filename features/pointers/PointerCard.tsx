@@ -46,6 +46,7 @@ export function PointerCard({
           pointerId={pointer.id}
           fullName={pointer.fullName}
           phone={pointer.phone}
+          address={pointer.address}
           peopleCount={pointer.peopleCount}
           canWrite={canWrite}
           isEditing={isEditing}

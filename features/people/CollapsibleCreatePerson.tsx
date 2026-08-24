@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 
 import { CreatePersonForm } from "./CreatePersonForm";
 
+const PIN_STORAGE_KEY = "gestion-personas:personas:formAbierto";
 const SUCCESS_MESSAGE_MS = 4000;
+
+function readPinned(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(PIN_STORAGE_KEY) === "true";
+}
 
 export function CollapsibleCreatePerson({
   pointerId,
@@ -17,7 +23,8 @@ export function CollapsibleCreatePerson({
   onOpenChange?: (open: boolean) => void;
   closeSignal?: number;
 }) {
-  const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(readPinned);
+  const [open, setOpen] = useState(readPinned);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
@@ -42,8 +49,15 @@ export function CollapsibleCreatePerson({
   const handleCreated = useCallback(() => {
     setShowSuccess(true);
     setFormKey((key) => key + 1);
-    setOpen(false);
-  }, []);
+    if (!pinned) {
+      setOpen(false);
+    }
+  }, [pinned]);
+
+  function togglePinned(nextPinned: boolean) {
+    setPinned(nextPinned);
+    localStorage.setItem(PIN_STORAGE_KEY, String(nextPinned));
+  }
 
   if (!canWrite) {
     return (
@@ -85,6 +99,16 @@ export function CollapsibleCreatePerson({
           </div>
 
           <CreatePersonForm key={formKey} pointerId={pointerId} onCreated={handleCreated} />
+
+          <label className="flex items-center gap-2 self-start text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              checked={pinned}
+              onChange={(event) => togglePinned(event.target.checked)}
+              className="h-4 w-4 rounded border-zinc-300"
+            />
+            📌 Mantener este formulario siempre abierto
+          </label>
         </div>
       )}
     </div>

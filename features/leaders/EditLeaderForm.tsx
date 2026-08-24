@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 
+import { AddressField } from "@/components/fields/AddressField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
 
@@ -11,11 +12,13 @@ export function EditLeaderForm({
   leaderId,
   fullName,
   phone,
+  address,
   onDone,
 }: {
   leaderId: string;
   fullName: string;
   phone: string | null;
+  address: string | null;
   onDone: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -25,6 +28,7 @@ export function EditLeaderForm({
     setError(null);
     const newFullName = String(formData.get("fullName") ?? "").trim();
     const newPhone = String(formData.get("phone") ?? "").trim();
+    const newAddress = String(formData.get("address") ?? "").trim();
 
     if (!newFullName) {
       setError("El nombre no puede quedar vacío.");
@@ -32,7 +36,12 @@ export function EditLeaderForm({
     }
 
     startTransition(async () => {
-      const result = await updateLeaderAction(leaderId, newFullName, newPhone || null);
+      const result = await updateLeaderAction(
+        leaderId,
+        newFullName,
+        newPhone || null,
+        newAddress || null
+      );
       if (result.error) {
         setError(result.error);
         return;
@@ -67,6 +76,18 @@ export function EditLeaderForm({
           id={`edit-phone-${leaderId}`}
           name="phone"
           defaultValue={phone ?? ""}
+          className="h-11 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor={`edit-address-${leaderId}`} className="text-sm font-medium text-zinc-700">
+          Dirección
+        </label>
+        <AddressField
+          id={`edit-address-${leaderId}`}
+          name="address"
+          defaultValue={address ?? ""}
           className="h-11 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900"
         />
       </div>

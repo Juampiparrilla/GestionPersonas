@@ -17,6 +17,7 @@ export async function createPointerAction(
   const fullName = String(formData.get("fullName") ?? "").trim();
   const dni = String(formData.get("dni") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
 
   if (!fullName || !dni) {
     return { error: "Completá el nombre y el DNI.", success: false };
@@ -38,6 +39,7 @@ export async function createPointerAction(
     p_dni: normalizeDni(dni),
     p_full_name: fullName,
     p_phone: phone || null,
+    p_address: address || null,
     p_ip: ip,
     p_user_agent: userAgent,
   });
@@ -55,7 +57,8 @@ export type ActionResult = { error: string | null };
 export async function updatePointerAction(
   pointerId: string,
   fullName: string,
-  phone: string | null
+  phone: string | null,
+  address: string | null
 ): Promise<ActionResult> {
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
@@ -64,6 +67,7 @@ export async function updatePointerAction(
     p_pointer_id: pointerId,
     p_full_name: fullName,
     p_phone: phone,
+    p_address: address,
     p_ip: ip,
     p_user_agent: userAgent,
   });

@@ -59,6 +59,7 @@ export function PersonCard({
           pointerId={pointerId}
           fullName={person.fullName}
           phone={person.phone}
+          address={person.address}
           canWrite={canWrite}
           isEditing={isEditing}
           onStartEdit={onStartEdit}

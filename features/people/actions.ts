@@ -18,6 +18,7 @@ export async function createPersonAction(
   const fullName = String(formData.get("fullName") ?? "").trim();
   const dni = String(formData.get("dni") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
 
   if (!fullName || !dni) {
     return { error: "Completá el nombre y el DNI.", success: false };
@@ -39,6 +40,7 @@ export async function createPersonAction(
     p_dni: normalizeDni(dni),
     p_full_name: fullName,
     p_phone: phone || null,
+    p_address: address || null,
     p_ip: ip,
     p_user_agent: userAgent,
   });
@@ -57,7 +59,8 @@ export type ActionResult = { error: string | null };
 export async function updatePersonAction(
   personId: string,
   fullName: string,
-  phone: string | null
+  phone: string | null,
+  address: string | null
 ): Promise<ActionResult> {
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
@@ -66,6 +69,7 @@ export async function updatePersonAction(
     p_person_id: personId,
     p_full_name: fullName,
     p_phone: phone,
+    p_address: address,
     p_ip: ip,
     p_user_agent: userAgent,
   });

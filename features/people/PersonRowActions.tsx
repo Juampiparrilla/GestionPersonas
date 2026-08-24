@@ -12,6 +12,7 @@ export function PersonRowActions({
   pointerId,
   fullName,
   phone,
+  address,
   canWrite,
   isEditing,
   onStartEdit,
@@ -21,6 +22,7 @@ export function PersonRowActions({
   pointerId: string;
   fullName: string;
   phone: string | null;
+  address: string | null;
   canWrite: boolean;
   isEditing: boolean;
   onStartEdit: () => void;
@@ -46,7 +48,13 @@ export function PersonRowActions({
 
   if (isEditing) {
     return (
-      <EditPersonForm personId={personId} fullName={fullName} phone={phone} onDone={onStopEdit} />
+      <EditPersonForm
+        personId={personId}
+        fullName={fullName}
+        phone={phone}
+        address={address}
+        onDone={onStopEdit}
+      />
     );
   }
 

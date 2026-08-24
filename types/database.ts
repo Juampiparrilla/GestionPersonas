@@ -51,6 +51,7 @@ type IndividualRow = {
   dni_display: string;
   full_name: string;
   phone: string | null;
+  address: string | null;
   position: IndividualPosition | null;
   status: IndividualStatus;
   created_at: string;
@@ -182,6 +183,7 @@ export type Database = {
           p_full_name: string;
           p_phone: string | null;
           p_profile_id?: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
@@ -192,6 +194,7 @@ export type Database = {
           p_leader_id: string;
           p_full_name: string;
           p_phone: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
@@ -242,6 +245,7 @@ export type Database = {
           p_dni: string;
           p_full_name: string;
           p_phone: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
@@ -252,6 +256,7 @@ export type Database = {
           p_pointer_id: string;
           p_full_name: string;
           p_phone: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
@@ -272,6 +277,7 @@ export type Database = {
           p_dni: string;
           p_full_name: string;
           p_phone: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
@@ -282,6 +288,7 @@ export type Database = {
           p_person_id: string;
           p_full_name: string;
           p_phone: string | null;
+          p_address?: string | null;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };

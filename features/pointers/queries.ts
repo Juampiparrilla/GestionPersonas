@@ -6,6 +6,7 @@ export type PointerListItem = {
   fullName: string;
   dni: string;
   phone: string | null;
+  address: string | null;
   peopleCount: number;
 };
 
@@ -27,7 +28,7 @@ export async function listMyPointers(): Promise<PointerListItem[]> {
         .eq("is_removed", false),
       supabase
         .from("individuals")
-        .select("id, full_name, dni_display, phone")
+        .select("id, full_name, dni_display, phone, address")
         .eq("position", "pointer")
         .eq("status", "active"),
     ]);
@@ -56,6 +57,7 @@ export async function listMyPointers(): Promise<PointerListItem[]> {
       fullName: individual.full_name,
       dni: individual.dni_display,
       phone: individual.phone,
+      address: individual.address,
       peopleCount: peopleCountByPointer.get(pointer.id) ?? 0,
     });
   }

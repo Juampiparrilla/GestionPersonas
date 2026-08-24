@@ -52,12 +52,6 @@ export default async function DirigenteHome() {
         <LogoutButton />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatCard label="Punteros" value={pointers.length} />
-        <StatCard label="Personas registradas" value={totalPersonas} />
-        <StatCard label="Vehículos" value={vehicles.length} />
-      </div>
-
       {punterosSinPersonas.length > 0 ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="font-medium text-amber-900">
@@ -75,6 +69,12 @@ export default async function DirigenteHome() {
           </p>
         </div>
       ) : null}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatCard label="Punteros" value={pointers.length} />
+        <StatCard label="Personas registradas" value={totalPersonas} />
+        <StatCard label="Vehículos" value={vehicles.length} />
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Link

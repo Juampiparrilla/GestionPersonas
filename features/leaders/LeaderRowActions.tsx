@@ -19,6 +19,7 @@ export function LeaderRowActions({
   leaderId,
   fullName,
   phone,
+  address,
   accessStatus,
   pointerCount,
   hasAccess,
@@ -30,6 +31,7 @@ export function LeaderRowActions({
   leaderId: string;
   fullName: string;
   phone: string | null;
+  address: string | null;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
   hasAccess: boolean;
@@ -65,7 +67,13 @@ export function LeaderRowActions({
 
   if (isEditing) {
     return (
-      <EditLeaderForm leaderId={leaderId} fullName={fullName} phone={phone} onDone={onStopEdit} />
+      <EditLeaderForm
+        leaderId={leaderId}
+        fullName={fullName}
+        phone={phone}
+        address={address}
+        onDone={onStopEdit}
+      />
     );
   }
 

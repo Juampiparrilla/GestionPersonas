@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 
+import { AddressField } from "@/components/fields/AddressField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
 
@@ -11,11 +12,13 @@ export function EditPointerForm({
   pointerId,
   fullName,
   phone,
+  address,
   onDone,
 }: {
   pointerId: string;
   fullName: string;
   phone: string | null;
+  address: string | null;
   onDone: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -25,6 +28,7 @@ export function EditPointerForm({
     setError(null);
     const newFullName = String(formData.get("fullName") ?? "").trim();
     const newPhone = String(formData.get("phone") ?? "").trim();
+    const newAddress = String(formData.get("address") ?? "").trim();
 
     if (!newFullName) {
       setError("El nombre no puede quedar vacío.");
@@ -32,7 +36,12 @@ export function EditPointerForm({
     }
 
     startTransition(async () => {
-      const result = await updatePointerAction(pointerId, newFullName, newPhone || null);
+      const result = await updatePointerAction(
+        pointerId,
+        newFullName,
+        newPhone || null,
+        newAddress || null
+      );
       if (result.error) {
         setError(result.error);
         return;
@@ -67,6 +76,18 @@ export function EditPointerForm({
           id={`edit-phone-${pointerId}`}
           name="phone"
           defaultValue={phone ?? ""}
+          className="h-11 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor={`edit-address-${pointerId}`} className="text-sm font-medium text-zinc-700">
+          Dirección
+        </label>
+        <AddressField
+          id={`edit-address-${pointerId}`}
+          name="address"
+          defaultValue={address ?? ""}
           className="h-11 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900"
         />
       </div>

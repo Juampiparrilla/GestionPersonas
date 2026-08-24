@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 
 import { Spinner } from "@/components/Spinner";
+import { AddressField } from "@/components/fields/AddressField";
 import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
@@ -50,6 +51,13 @@ export function CreatePersonForm({
           Teléfono (opcional)
         </label>
         <PhoneField id="phone" name="phone" className={inputClassName} />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="address" className="text-sm font-medium text-zinc-700">
+          Dirección (opcional)
+        </label>
+        <AddressField id="address" name="address" className={inputClassName} />
       </div>
 
       {state.error ? (

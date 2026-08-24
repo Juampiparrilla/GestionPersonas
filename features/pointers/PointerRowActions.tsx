@@ -12,6 +12,7 @@ export function PointerRowActions({
   pointerId,
   fullName,
   phone,
+  address,
   peopleCount,
   canWrite,
   isEditing,
@@ -21,6 +22,7 @@ export function PointerRowActions({
   pointerId: string;
   fullName: string;
   phone: string | null;
+  address: string | null;
   peopleCount: number;
   canWrite: boolean;
   isEditing: boolean;
@@ -45,7 +47,13 @@ export function PointerRowActions({
 
   if (isEditing) {
     return (
-      <EditPointerForm pointerId={pointerId} fullName={fullName} phone={phone} onDone={onStopEdit} />
+      <EditPointerForm
+        pointerId={pointerId}
+        fullName={fullName}
+        phone={phone}
+        address={address}
+        onDone={onStopEdit}
+      />
     );
   }
 
