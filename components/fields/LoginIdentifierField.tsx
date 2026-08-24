@@ -23,8 +23,9 @@ export function LoginIdentifierField({
   const [value, setValue] = useState("");
 
   function handleChange(raw: string) {
-    const looksLikeEmail = /[a-zA-Z@]/.test(raw);
-    setValue(looksLikeEmail ? raw : formatDniInput(raw));
+    const withoutSpaces = raw.replace(/\s/g, "");
+    const looksLikeEmail = /[a-zA-Z@]/.test(withoutSpaces);
+    setValue(looksLikeEmail ? withoutSpaces : formatDniInput(withoutSpaces));
   }
 
   return (
