@@ -39,12 +39,13 @@ export function LeaderRowActions({
   onStopEdit: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [isStatusPending, startStatusTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function changeStatus(status: LeaderAccessStatus) {
     setError(null);
-    startTransition(async () => {
+    startStatusTransition(async () => {
       const result = await setLeaderAccessStatusAction(leaderId, status);
       if (result.error) setError(result.error);
     });
@@ -71,24 +72,31 @@ export function LeaderRowActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
-        <select
-          value={accessStatus}
-          disabled={isPending}
-          onChange={(event) => changeStatus(event.target.value as LeaderAccessStatus)}
-          className="h-10 rounded-lg border border-zinc-300 px-2 text-sm text-zinc-900"
-        >
-          <option value="active">{STATUS_LABEL.active}</option>
-          <option value="read_only">{STATUS_LABEL.read_only}</option>
-          <option value="inactive">{STATUS_LABEL.inactive}</option>
-        </select>
+        <div className="relative">
+          <select
+            value={accessStatus}
+            disabled={isPending || isStatusPending}
+            onChange={(event) => changeStatus(event.target.value as LeaderAccessStatus)}
+            className="h-10 w-full rounded-lg border border-zinc-300 px-2 text-sm text-zinc-900 disabled:opacity-60"
+          >
+            <option value="active">{STATUS_LABEL.active}</option>
+            <option value="read_only">{STATUS_LABEL.read_only}</option>
+            <option value="inactive">{STATUS_LABEL.inactive}</option>
+          </select>
+          {isStatusPending ? (
+            <span className="pointer-events-none absolute inset-y-0 right-8 flex items-center text-zinc-500">
+              <Spinner className="h-4 w-4" />
+            </span>
+          ) : null}
+        </div>
 
         <InviteButton leaderId={leaderId} hasAccess={hasAccess} accepted={accepted} />
 
         <button
           type="button"
           onClick={onStartEdit}
-          disabled={isPending}
-          className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+          disabled={isPending || isStatusPending}
+          className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
         >
           ✏️ Editar
         </button>
@@ -97,8 +105,8 @@ export function LeaderRowActions({
           <button
             type="button"
             onClick={() => setConfirmingRemove(true)}
-            disabled={isPending}
-            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            disabled={isPending || isStatusPending}
+            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
           >
             🗑️ Quitar
           </button>
