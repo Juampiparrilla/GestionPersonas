@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { LeaderRowActions } from "./LeaderRowActions";
+import { LeaderCard } from "./LeaderCard";
 import type { LeaderListItem } from "./queries";
 
 export function LeadersList({
@@ -27,32 +27,14 @@ export function LeadersList({
   return (
     <div className="flex flex-col gap-3">
       {leaders.map((leader, index) => (
-        <div
+        <LeaderCard
           key={leader.id}
-          className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4"
-        >
-          <div>
-            <p className="font-medium text-zinc-900">
-              {index + 1}. {leader.fullName}
-            </p>
-            <p className="text-sm text-zinc-600">
-              DNI {leader.dni} · {leader.pointerCount} punteros
-              {leader.phone ? ` · ${leader.phone}` : ""}
-            </p>
-          </div>
-          <LeaderRowActions
-            leaderId={leader.id}
-            fullName={leader.fullName}
-            phone={leader.phone}
-            accessStatus={leader.accessStatus}
-            pointerCount={leader.pointerCount}
-            hasAccess={leader.hasAccess}
-            accepted={leader.accepted}
-            isEditing={editingId === leader.id}
-            onStartEdit={() => setEditingId(leader.id)}
-            onStopEdit={() => setEditingId(null)}
-          />
-        </div>
+          leader={leader}
+          index={index}
+          isEditing={editingId === leader.id}
+          onStartEdit={() => setEditingId(leader.id)}
+          onStopEdit={() => setEditingId(null)}
+        />
       ))}
     </div>
   );
