@@ -9,6 +9,8 @@ export type LeaderListItem = {
   phone: string | null;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
+  personCount: number;
+  vehicleCount: number;
   hasAccess: boolean;
   accepted: boolean;
 };
@@ -37,14 +39,34 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
   if (leadersError) throw new Error(leadersError.message);
   if (individualsError) throw new Error(individualsError.message);
 
-  const { data: pointerRows } = await supabase
-    .from("pointers")
-    .select("leader_id")
-    .eq("is_removed", false);
+  const [{ data: pointerRows }, { data: vehicleRows }] = await Promise.all([
+    supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
+    supabase.from("vehicles").select("leader_id").eq("is_removed", false),
+  ]);
 
   const pointerCountByLeader = new Map<string, number>();
+  const leaderIdByPointer = new Map<string, string>();
   for (const row of pointerRows ?? []) {
     pointerCountByLeader.set(row.leader_id, (pointerCountByLeader.get(row.leader_id) ?? 0) + 1);
+    leaderIdByPointer.set(row.id, row.leader_id);
+  }
+
+  const vehicleCountByLeader = new Map<string, number>();
+  for (const row of vehicleRows ?? []) {
+    vehicleCountByLeader.set(row.leader_id, (vehicleCountByLeader.get(row.leader_id) ?? 0) + 1);
+  }
+
+  const personCountByLeader = new Map<string, number>();
+  if (leaderIdByPointer.size > 0) {
+    const { data: peopleRows } = await supabase
+      .from("registered_people")
+      .select("pointer_id")
+      .eq("is_removed", false);
+    for (const row of peopleRows ?? []) {
+      const leaderId = leaderIdByPointer.get(row.pointer_id);
+      if (!leaderId) continue;
+      personCountByLeader.set(leaderId, (personCountByLeader.get(leaderId) ?? 0) + 1);
+    }
   }
 
   const individualsById = new Map((individuals ?? []).map((row) => [row.id, row]));
@@ -77,6 +99,8 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       phone: individual.phone,
       accessStatus: leader.access_status,
       pointerCount: pointerCountByLeader.get(leader.id) ?? 0,
+      personCount: personCountByLeader.get(leader.id) ?? 0,
+      vehicleCount: vehicleCountByLeader.get(leader.id) ?? 0,
       hasAccess: Boolean(leader.profile_id),
       accepted: leader.profile_id ? (acceptedByProfile.get(leader.profile_id) ?? false) : false,
     });

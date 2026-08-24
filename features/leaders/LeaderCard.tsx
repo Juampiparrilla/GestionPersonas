@@ -32,7 +32,8 @@ export function LeaderCard({
             {index + 1}. {leader.fullName}
           </p>
           <p className="text-sm text-zinc-600">
-            DNI {leader.dni} · {leader.pointerCount} punteros
+            DNI {leader.dni} · {leader.pointerCount} punteros · {leader.personCount} personas ·{" "}
+            {leader.vehicleCount} vehículos
             {leader.phone ? ` · ${leader.phone}` : ""}
           </p>
         </div>
