@@ -23,7 +23,7 @@ export function AddressField({
       name={name}
       className={className}
       autoComplete="street-address"
-      placeholder="Calle, número, barrio"
+      placeholder="Calle 123 - Barrio Norte"
       value={value}
       onChange={(event) => setValue(formatAddressInput(event.target.value))}
     />

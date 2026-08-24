@@ -5,6 +5,7 @@ import { StatCard } from "@/components/StatCard";
 import { getSuperadminStats } from "@/features/leaders/queries";
 import { GlobalLoadingToggle } from "@/features/settings/GlobalLoadingToggle";
 import { getLoadingEnabled } from "@/features/settings/queries";
+import { SearchPanel } from "@/features/search/SearchPanel";
 import { getSessionContext } from "@/lib/session";
 
 export default async function SuperadminHome() {
@@ -24,6 +25,8 @@ export default async function SuperadminHome() {
       </div>
 
       <GlobalLoadingToggle loadingEnabled={loadingEnabled} />
+
+      <SearchPanel />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Dirigentes" value={stats.leaders} />
