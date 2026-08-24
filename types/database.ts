@@ -41,6 +41,7 @@ type ProfileRow = {
   role: UserRole;
   leader_id: string | null;
   created_at: string;
+  password_set_at: string | null;
 };
 
 type IndividualRow = {
@@ -148,8 +149,8 @@ export type Database = {
       organizations: ReadOnlyTable<OrganizationRow>;
       profiles: {
         Row: ProfileRow;
-        Insert: Omit<ProfileRow, "leader_id" | "created_at"> &
-          Partial<Pick<ProfileRow, "leader_id" | "created_at">>;
+        Insert: Omit<ProfileRow, "leader_id" | "created_at" | "password_set_at"> &
+          Partial<Pick<ProfileRow, "leader_id" | "created_at" | "password_set_at">>;
         Update: Partial<ProfileRow>;
         Relationships: [];
       };
@@ -229,6 +230,10 @@ export type Database = {
           p_ip?: string | null;
           p_user_agent?: string | null;
         };
+        Returns: undefined;
+      };
+      fn_mark_password_set: {
+        Args: Record<string, never>;
         Returns: undefined;
       };
     };

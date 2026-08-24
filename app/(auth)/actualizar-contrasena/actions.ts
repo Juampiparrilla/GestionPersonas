@@ -31,6 +31,11 @@ export async function updatePassword(
     };
   }
 
+  // Marca que esta cuenta ya completo el paso de elegir contraseña (a
+  // diferencia de solo haber abierto el link). Esto es lo que la lista de
+  // dirigentes usa para saber si una invitacion fue realmente aceptada.
+  await supabase.rpc("fn_mark_password_set");
+
   const session = await getSessionContext();
   redirect(session ? roleHomePath(session.role) : "/login");
 }

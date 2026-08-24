@@ -42,13 +42,7 @@ export function CreateLeaderForm() {
   }, [showSuccess]);
 
   return (
-    <form
-      key={formKey}
-      action={formAction}
-      className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4"
-    >
-      <h2 className="font-medium text-zinc-900">Agregar dirigente</h2>
-
+    <form key={formKey} action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label htmlFor="fullName" className="text-sm font-medium text-zinc-700">
           Nombre completo *

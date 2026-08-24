@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 
+import { LoginIdentifierField } from "@/components/fields/LoginIdentifierField";
+
 import { login, type LoginState } from "./actions";
 
 const initialState: LoginState = { error: null };
@@ -15,12 +17,10 @@ export function LoginForm() {
         <label htmlFor="identifier" className="text-sm font-medium text-zinc-700">
           Correo electrónico o DNI
         </label>
-        <input
+        <LoginIdentifierField
           id="identifier"
           name="identifier"
-          type="text"
           required
-          autoComplete="username"
           className="h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
         />
       </div>
@@ -57,7 +57,7 @@ export function LoginForm() {
         href="/recuperar-contrasena"
         className="text-center text-sm text-zinc-600 underline underline-offset-2"
       >
-        Olvidé mi contraseña
+        ¿No podés entrar?
       </a>
     </form>
   );

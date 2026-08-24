@@ -1,5 +1,4 @@
 import { getSessionContext } from "@/lib/session";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { LeaderAccessStatus } from "@/types/domain";
 
@@ -50,19 +49,22 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
 
   const individualsById = new Map((individuals ?? []).map((row) => [row.id, row]));
 
-  // "Aceptada" = la cuenta ya inicio sesion alguna vez. Solo se puede saber
-  // via el Admin API (last_sign_in_at no esta expuesto por el cliente
-  // normal), por eso esta unica parte usa el cliente con service_role.
-  const admin = createAdminClient();
-  const acceptedByLeader = new Map<string, boolean>();
-  await Promise.all(
-    (leaders ?? [])
-      .filter((leader): leader is typeof leader & { profile_id: string } => Boolean(leader.profile_id))
-      .map(async (leader) => {
-        const { data } = await admin.auth.admin.getUserById(leader.profile_id);
-        acceptedByLeader.set(leader.id, Boolean(data.user?.last_sign_in_at));
-      })
-  );
+  // "Aceptada" = esa cuenta ya termino de elegir su contraseña (no solo
+  // abrio el link) -- ver fn_mark_password_set y actualizar-contrasena.
+  const profileIds = (leaders ?? [])
+    .map((leader) => leader.profile_id)
+    .filter((id): id is string => Boolean(id));
+
+  const acceptedByProfile = new Map<string, boolean>();
+  if (profileIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, password_set_at")
+      .in("id", profileIds);
+    for (const profile of profiles ?? []) {
+      acceptedByProfile.set(profile.id, Boolean(profile.password_set_at));
+    }
+  }
 
   const items: LeaderListItem[] = [];
   for (const leader of leaders ?? []) {
@@ -76,7 +78,7 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       accessStatus: leader.access_status,
       pointerCount: pointerCountByLeader.get(leader.id) ?? 0,
       hasAccess: Boolean(leader.profile_id),
-      accepted: acceptedByLeader.get(leader.id) ?? false,
+      accepted: leader.profile_id ? (acceptedByProfile.get(leader.profile_id) ?? false) : false,
     });
   }
 

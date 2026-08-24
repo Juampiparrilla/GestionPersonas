@@ -20,7 +20,6 @@ export function CollapsibleCreateLeader() {
   function togglePinned(nextPinned: boolean) {
     setPinned(nextPinned);
     localStorage.setItem(PIN_STORAGE_KEY, String(nextPinned));
-    if (nextPinned) setOpen(true);
   }
 
   if (!open) {
@@ -28,7 +27,7 @@ export function CollapsibleCreateLeader() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-14 items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 text-base font-semibold text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
+        className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
       >
         + Agregar dirigente
       </button>
@@ -36,8 +35,21 @@ export function CollapsibleCreateLeader() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-medium text-zinc-900">Agregar dirigente</h2>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Cerrar"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+        >
+          ✕
+        </button>
+      </div>
+
       <CreateLeaderForm />
+
       <label className="flex items-center gap-2 self-start text-sm text-zinc-600">
         <input
           type="checkbox"
@@ -47,15 +59,6 @@ export function CollapsibleCreateLeader() {
         />
         📌 Mantener este formulario siempre abierto
       </label>
-      {!pinned ? (
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="self-start text-sm text-zinc-600 underline underline-offset-2"
-        >
-          Cerrar
-        </button>
-      ) : null}
     </div>
   );
 }
