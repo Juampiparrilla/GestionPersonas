@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Spinner } from "@/components/Spinner";
 import { DniField } from "@/components/fields/DniField";
@@ -13,36 +13,22 @@ const initialState: CreateLeaderState = { error: null, success: false };
 const inputClassName =
   "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
 
-const SUCCESS_MESSAGE_MS = 4000;
-
-export function CreateLeaderForm() {
+// El padre (CollapsibleCreateLeader) es quien limpia este formulario: le
+// pasa un `key` que cambia cada vez que hay un alta exitosa, forzando un
+// remontado completo (los campos son controlados por sus propios
+// componentes, un form.reset() nativo no alcanzaria). Este componente solo
+// avisa "se creo" via onCreated, nunca se reinicia a si mismo.
+export function CreateLeaderForm({ onCreated }: { onCreated: () => void }) {
   const [state, formAction, pending] = useActionState(createLeaderAction, initialState);
-  // Los campos son controlados por sus propios componentes (DniField, etc.),
-  // asi que un form.reset() nativo no los limpiaria. En cambio, al guardar
-  // con exito cambiamos la key del form para remontarlo entero con campos
-  // vacios.
-  const [formKey, setFormKey] = useState(0);
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  // Patron "ajustar estado durante el render" (en vez de useEffect) para
-  // reaccionar a que state.success paso a true: https://react.dev/learn/you-might-not-need-an-effect
-  const [handledSuccess, setHandledSuccess] = useState(state.success);
-  if (state.success !== handledSuccess) {
-    setHandledSuccess(state.success);
-    if (state.success) {
-      setFormKey((key) => key + 1);
-      setShowSuccess(true);
-    }
-  }
 
   useEffect(() => {
-    if (!showSuccess) return;
-    const timeout = setTimeout(() => setShowSuccess(false), SUCCESS_MESSAGE_MS);
-    return () => clearTimeout(timeout);
-  }, [showSuccess]);
+    if (state.success) {
+      onCreated();
+    }
+  }, [state, onCreated]);
 
   return (
-    <form key={formKey} action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label htmlFor="fullName" className="text-sm font-medium text-zinc-700">
           Nombre completo *
@@ -67,12 +53,6 @@ export function CreateLeaderForm() {
       {state.error ? (
         <p role="alert" className="text-sm text-red-600">
           {state.error}
-        </p>
-      ) : null}
-      {showSuccess ? (
-        <p role="status" className="text-sm text-green-700">
-          ✅ El dirigente fue creado exitosamente. Para darle acceso, usá el botón de invitar en su
-          fila de la lista.
         </p>
       ) : null}
 

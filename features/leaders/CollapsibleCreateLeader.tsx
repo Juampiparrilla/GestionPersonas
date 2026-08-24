@@ -1,64 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { CreateLeaderForm } from "./CreateLeaderForm";
 
 const PIN_STORAGE_KEY = "gestion-personas:dirigentes:formAbierto";
+const SUCCESS_MESSAGE_MS = 4000;
 
 function readPinned(): boolean {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(PIN_STORAGE_KEY) === "true";
 }
 
-export function CollapsibleCreateLeader() {
+export function CollapsibleCreateLeader({
+  onOpenChange,
+}: {
+  onOpenChange?: (open: boolean) => void;
+}) {
   // Arranca cerrado; si esta "fijado" (guardado en este navegador), arranca
   // abierto directamente la proxima vez que se entre a esta pantalla.
   const [pinned, setPinned] = useState(readPinned);
   const [open, setOpen] = useState(readPinned);
+  const [showSuccess, setShowSuccess] = useState(false);
+  // Cambia cada alta exitosa; se lo pasamos como `key` a CreateLeaderForm
+  // para remontarlo con los campos vacios (patron recomendado por React en
+  // vez de que el hijo se reinicie a si mismo).
+  const [formKey, setFormKey] = useState(0);
+
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
+
+  useEffect(() => {
+    if (!showSuccess) return;
+    const timeout = setTimeout(() => setShowSuccess(false), SUCCESS_MESSAGE_MS);
+    return () => clearTimeout(timeout);
+  }, [showSuccess]);
+
+  // El mensaje se muestra siempre (esta afuera del formulario que se puede
+  // colapsar), y el formulario solo se colapsa si no esta fijado -- asi en
+  // los dos casos queda claro que la carga funciono.
+  const handleCreated = useCallback(() => {
+    setShowSuccess(true);
+    setFormKey((key) => key + 1);
+    if (!pinned) {
+      setOpen(false);
+    }
+  }, [pinned]);
 
   function togglePinned(nextPinned: boolean) {
     setPinned(nextPinned);
     localStorage.setItem(PIN_STORAGE_KEY, String(nextPinned));
   }
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-      >
-        + Agregar dirigente
-      </button>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-medium text-zinc-900">Agregar dirigente</h2>
+    <div className="flex flex-col gap-2">
+      {showSuccess ? (
+        <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+          ✅ El dirigente fue creado exitosamente. Para darle acceso, usá el botón de invitar en su
+          fila de la lista.
+        </p>
+      ) : null}
+
+      {!open ? (
         <button
           type="button"
-          onClick={() => setOpen(false)}
-          aria-label="Cerrar"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+          onClick={() => setOpen(true)}
+          className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          ✕
+          + Agregar dirigente
         </button>
-      </div>
+      ) : (
+        <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium text-zinc-900">Agregar dirigente</h2>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Cerrar"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            >
+              ✕
+            </button>
+          </div>
 
-      <CreateLeaderForm />
+          <CreateLeaderForm key={formKey} onCreated={handleCreated} />
 
-      <label className="flex items-center gap-2 self-start text-sm text-zinc-600">
-        <input
-          type="checkbox"
-          checked={pinned}
-          onChange={(event) => togglePinned(event.target.checked)}
-          className="h-4 w-4 rounded border-zinc-300"
-        />
-        📌 Mantener este formulario siempre abierto
-      </label>
+          <label className="flex items-center gap-2 self-start text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              checked={pinned}
+              onChange={(event) => togglePinned(event.target.checked)}
+              className="h-4 w-4 rounded border-zinc-300"
+            />
+            📌 Mantener este formulario siempre abierto
+          </label>
+        </div>
+      )}
     </div>
   );
 }

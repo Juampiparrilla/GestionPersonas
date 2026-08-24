@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import { CollapsibleCreateLeader } from "@/features/leaders/CollapsibleCreateLeader";
-import { LeadersList } from "@/features/leaders/LeadersList";
+import { DirigentesClient } from "@/features/leaders/DirigentesClient";
 import { listActiveLeaders } from "@/features/leaders/queries";
 
 export default async function DirigentesPage() {
@@ -16,9 +15,7 @@ export default async function DirigentesPage() {
         </Link>
       </div>
 
-      <CollapsibleCreateLeader />
-
-      <LeadersList leaders={leaders} />
+      <DirigentesClient leaders={leaders} />
     </div>
   );
 }

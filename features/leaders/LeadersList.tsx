@@ -5,7 +5,13 @@ import { useState } from "react";
 import { LeaderRowActions } from "./LeaderRowActions";
 import type { LeaderListItem } from "./queries";
 
-export function LeadersList({ leaders }: { leaders: LeaderListItem[] }) {
+export function LeadersList({
+  leaders,
+  emptyMessage = "Todavía no hay dirigentes cargados.",
+}: {
+  leaders: LeaderListItem[];
+  emptyMessage?: string;
+}) {
   // Solo un dirigente puede estar en edicion a la vez: se guarda ACA (en el
   // padre), no en cada fila, para que abrir uno cierre cualquier otro.
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -13,7 +19,7 @@ export function LeadersList({ leaders }: { leaders: LeaderListItem[] }) {
   if (leaders.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
-        Todavía no hay dirigentes cargados.
+        {emptyMessage}
       </p>
     );
   }
