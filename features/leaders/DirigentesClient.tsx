@@ -11,6 +11,23 @@ import type { LeaderListItem } from "./queries";
 export function DirigentesClient({ leaders }: { leaders: LeaderListItem[] }) {
   const [formOpen, setFormOpen] = useState(false);
   const [query, setQuery] = useState("");
+  // Nunca se crea y se edita al mismo tiempo: abrir el formulario de alta
+  // cierra cualquier edicion en curso, y empezar a editar cierra el
+  // formulario de alta (via closeCreateSignal).
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [closeCreateSignal, setCloseCreateSignal] = useState<number>();
+
+  function handleFormOpenChange(open: boolean) {
+    setFormOpen(open);
+    if (open) {
+      setEditingId(null);
+    }
+  }
+
+  function handleStartEdit(id: string) {
+    setEditingId(id);
+    setCloseCreateSignal((value) => (value ?? 0) + 1);
+  }
 
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedDniQuery = normalizeDni(query);
@@ -26,7 +43,7 @@ export function DirigentesClient({ leaders }: { leaders: LeaderListItem[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <CollapsibleCreateLeader onOpenChange={setFormOpen} />
+      <CollapsibleCreateLeader onOpenChange={handleFormOpenChange} closeSignal={closeCreateSignal} />
 
       {!formOpen ? (
         <div className="relative">
@@ -50,6 +67,9 @@ export function DirigentesClient({ leaders }: { leaders: LeaderListItem[] }) {
             ? "No encontramos ningún dirigente con ese nombre o DNI."
             : "Todavía no hay dirigentes cargados."
         }
+        editingId={formOpen ? null : editingId}
+        onStartEdit={handleStartEdit}
+        onStopEdit={() => setEditingId(null)}
       />
     </div>
   );

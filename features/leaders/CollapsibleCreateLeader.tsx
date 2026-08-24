@@ -14,8 +14,13 @@ function readPinned(): boolean {
 
 export function CollapsibleCreateLeader({
   onOpenChange,
+  closeSignal,
 }: {
   onOpenChange?: (open: boolean) => void;
+  // Cambia (a cualquier valor distinto de undefined) cuando el padre quiere
+  // forzar el cierre -- por ejemplo, cuando se empieza a editar un dirigente
+  // en la lista. Nunca se crea y se edita al mismo tiempo.
+  closeSignal?: number;
 }) {
   // Arranca cerrado; si esta "fijado" (guardado en este navegador), arranca
   // abierto directamente la proxima vez que se entre a esta pantalla.
@@ -30,6 +35,16 @@ export function CollapsibleCreateLeader({
   useEffect(() => {
     onOpenChange?.(open);
   }, [open, onOpenChange]);
+
+  // Patron "ajustar estado durante el render" (en vez de useEffect) para
+  // reaccionar a que closeSignal cambio: https://react.dev/learn/you-might-not-need-an-effect
+  const [handledCloseSignal, setHandledCloseSignal] = useState(closeSignal);
+  if (closeSignal !== handledCloseSignal) {
+    setHandledCloseSignal(closeSignal);
+    if (closeSignal !== undefined) {
+      setOpen(false);
+    }
+  }
 
   useEffect(() => {
     if (!showSuccess) return;

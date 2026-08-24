@@ -1,21 +1,19 @@
-"use client";
-
-import { useState } from "react";
-
 import { LeaderCard } from "./LeaderCard";
 import type { LeaderListItem } from "./queries";
 
 export function LeadersList({
   leaders,
   emptyMessage = "Todavía no hay dirigentes cargados.",
+  editingId,
+  onStartEdit,
+  onStopEdit,
 }: {
   leaders: LeaderListItem[];
   emptyMessage?: string;
+  editingId: string | null;
+  onStartEdit: (id: string) => void;
+  onStopEdit: () => void;
 }) {
-  // Solo un dirigente puede estar en edicion a la vez: se guarda ACA (en el
-  // padre), no en cada fila, para que abrir uno cierre cualquier otro.
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   if (leaders.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
@@ -32,8 +30,8 @@ export function LeadersList({
           leader={leader}
           index={index}
           isEditing={editingId === leader.id}
-          onStartEdit={() => setEditingId(leader.id)}
-          onStopEdit={() => setEditingId(null)}
+          onStartEdit={() => onStartEdit(leader.id)}
+          onStopEdit={onStopEdit}
         />
       ))}
     </div>
