@@ -45,14 +45,6 @@ export async function grantLeaderAccess({
   const admin = createAdminClient();
   const headersList = await headers();
   const origin = headersList.get("origin") ?? "";
-  // OJO: los links generados con admin.generateLink() NO usan el flujo de
-  // codigo (?code=) que procesa /auth/callback -- no hay un browser que haya
-  // iniciado el pedido, asi que Supabase no tiene con que verificar un PKCE
-  // code verifier. En cambio, el token viaja en el FRAGMENTO de la URL
-  // (#access_token=...), que un servidor nunca puede leer (los navegadores
-  // no lo mandan en la request). Por eso este redirect va DIRECTO a
-  // /actualizar-contrasena, cuya pantalla lo procesa del lado del cliente.
-  const redirectTo = `${origin}/actualizar-contrasena`;
 
   let email: string;
   if (existingProfileId) {
@@ -65,10 +57,20 @@ export async function grantLeaderAccess({
     email = buildSyntheticEmail(dniNormalized, organizationId);
   }
 
+  const type = existingProfileId ? "recovery" : "invite";
+
+  // OJO: admin.generateLink() arma su `action_link` para el flujo "implicit"
+  // (token en el FRAGMENTO de la URL), pero el cliente de este proyecto usa
+  // "pkce" (asi viene fijo en @supabase/ssr, no se puede desactivar) y
+  // RECHAZA esos links -- por eso nunca funcionaban, sin importar la URL de
+  // redireccion. En vez de usar action_link, armamos nuestro propio link con
+  // el `hashed_token` (properties.hashed_token) y lo verificamos nosotros
+  // mismos del lado del servidor con supabase.auth.verifyOtp({ token_hash,
+  // type }), que no depende de ningun flujo de redireccion.
   const { data: generated, error: generateError } = await admin.auth.admin.generateLink({
-    type: existingProfileId ? "recovery" : "invite",
+    type,
     email,
-    options: { redirectTo },
+    options: { redirectTo: `${origin}/actualizar-contrasena` },
   });
 
   if (generateError || !generated.user) {
@@ -103,9 +105,12 @@ export async function grantLeaderAccess({
     }
   }
 
+  const ownLink =
+    `${origin}/actualizar-contrasena?token_hash=${generated.properties.hashed_token}&type=${type}`;
+
   const message =
     `Hola ${fullName}! Te sumamos a Gestión de Personas. Entrá a este link para crear tu ` +
-    `contraseña: ${generated.properties.action_link}\n\nDespués, para ingresar usá tu DNI ` +
+    `contraseña: ${ownLink}\n\nDespués, para ingresar usá tu DNI ` +
     `(${dniForMessage}) y esa contraseña.`;
 
   return {

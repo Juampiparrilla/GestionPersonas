@@ -90,7 +90,9 @@ export function LeaderRowActions({
           ) : null}
         </div>
 
-        <InviteButton leaderId={leaderId} hasAccess={hasAccess} accepted={accepted} />
+        {accessStatus !== "inactive" ? (
+          <InviteButton leaderId={leaderId} hasAccess={hasAccess} accepted={accepted} />
+        ) : null}
 
         <button
           type="button"
