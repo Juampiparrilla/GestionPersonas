@@ -236,6 +236,101 @@ export type Database = {
         Args: Record<string, never>;
         Returns: undefined;
       };
+      fn_create_pointer: {
+        Args: {
+          p_leader_id: string;
+          p_dni: string;
+          p_full_name: string;
+          p_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: string;
+      };
+      fn_update_pointer: {
+        Args: {
+          p_pointer_id: string;
+          p_full_name: string;
+          p_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_remove_pointer: {
+        Args: {
+          p_pointer_id: string;
+          p_reason?: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_create_person: {
+        Args: {
+          p_pointer_id: string;
+          p_dni: string;
+          p_full_name: string;
+          p_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: string;
+      };
+      fn_update_person: {
+        Args: {
+          p_person_id: string;
+          p_full_name: string;
+          p_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_remove_person: {
+        Args: {
+          p_person_id: string;
+          p_reason?: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_create_vehicle: {
+        Args: {
+          p_leader_id: string;
+          p_type: VehicleType;
+          p_plate: string;
+          p_driver_full_name: string;
+          p_driver_dni: string;
+          p_driver_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: string;
+      };
+      fn_update_vehicle: {
+        Args: {
+          p_vehicle_id: string;
+          p_type: VehicleType;
+          p_plate: string;
+          p_driver_full_name: string;
+          p_driver_dni: string;
+          p_driver_phone: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_remove_vehicle: {
+        Args: {
+          p_vehicle_id: string;
+          p_reason?: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;
