@@ -80,7 +80,7 @@ export function CollapsibleCreateVehicle({
           onClick={() => setOpen(true)}
           className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          🚗+ Agregar vehículo
+          +🚗 Agregar vehículo
         </button>
       ) : (
         <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">

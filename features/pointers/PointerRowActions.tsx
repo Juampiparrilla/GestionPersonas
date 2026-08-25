@@ -64,7 +64,7 @@ export function PointerRowActions({
           href={`/dirigente/punteros/${pointerId}`}
           className="flex h-10 items-center gap-1 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
         >
-          👤+ Ver personas
+          +👤 Ver personas
         </Link>
 
         {canWrite ? (

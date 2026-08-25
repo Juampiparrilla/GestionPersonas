@@ -38,7 +38,7 @@ export default async function DirigenteHome() {
           <p className="mt-1 text-sm text-amber-800">{message}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard label="Punteros" value={pointers.length} />
           <StatCard label="Personas registradas" value={totalPersonas} />
           <StatCard label="Vehículos" value={vehicles.length} />
@@ -73,7 +73,7 @@ export default async function DirigenteHome() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Punteros" value={pointers.length} />
         <StatCard label="Personas registradas" value={totalPersonas} />
         <StatCard label="Vehículos" value={vehicles.length} />
@@ -85,13 +85,13 @@ export default async function DirigenteHome() {
           href="/dirigente/punteros"
           className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          👤+ PUNTEROS
+          +👤 PUNTEROS
         </Link>
         <Link
           href="/dirigente/vehiculos"
           className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          🚗+ VEHÍCULOS
+          +🚗 VEHÍCULOS
         </Link>
       </div>
     </div>
