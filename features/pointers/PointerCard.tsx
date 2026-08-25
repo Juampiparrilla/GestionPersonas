@@ -30,7 +30,7 @@ export function PointerCard({
         className="flex items-center justify-between text-left"
       >
         <div>
-          <p className="font-medium text-zinc-900">
+          <p className="font-bold text-zinc-900">
             {index + 1}. {pointer.fullName}
           </p>
           <p className="text-sm text-zinc-600">
