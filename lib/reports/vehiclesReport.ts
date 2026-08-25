@@ -4,16 +4,25 @@ import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/VehicleCard";
 import type { VehicleLeaderGroup } from "@/features/vehicles/queries";
 
 import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
-import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell } from "./pdfHelpers";
+import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 // Los vehiculos no tienen Direccion (es del conductor, no se carga ese dato).
 const COLUMN_HEADERS = ["Patente", "Tipo", "Conductor", "DNI conductor", "Teléfono conductor"];
 
-export async function buildVehiclesReportPdf(groups: VehicleLeaderGroup[]): Promise<Buffer> {
+export async function buildVehiclesReportPdf(
+  groups: VehicleLeaderGroup[],
+  mode: PdfReportMode = "combined"
+): Promise<Buffer> {
   const content: Content[] = [];
 
-  for (const group of groups) {
-    content.push(groupHeaderRow(`${group.leaderName} · ${group.vehicles.length} vehículos`));
+  groups.forEach((group, index) => {
+    content.push(
+      groupHeaderRow(
+        `${index + 1}. ${group.leaderName} · ${group.vehicles.length} vehículos`,
+        "group",
+        mode === "separated" && index > 0 ? "before" : undefined
+      )
+    );
 
     if (group.vehicles.length === 0) {
       content.push({
@@ -23,7 +32,7 @@ export async function buildVehiclesReportPdf(groups: VehicleLeaderGroup[]): Prom
         color: "#71717a",
         margin: [4, 2, 0, 6],
       });
-      continue;
+      return;
     }
 
     content.push({
@@ -44,7 +53,7 @@ export async function buildVehiclesReportPdf(groups: VehicleLeaderGroup[]): Prom
       layout: "lightHorizontalLines",
       margin: [0, 0, 0, 6],
     });
-  }
+  });
 
   return renderPdfBuffer(content, "Reporte de Vehículos");
 }
@@ -62,12 +71,12 @@ export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Pr
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  for (const group of groups) {
-    addGroupHeaderRow(sheet, `${group.leaderName} (${group.vehicles.length} vehículos)`, columnCount);
+  groups.forEach((group, index) => {
+    addGroupHeaderRow(sheet, `${index + 1}. ${group.leaderName} (${group.vehicles.length} vehículos)`, columnCount);
 
     if (group.vehicles.length === 0) {
       addEmptyRow(sheet, "Sin vehículos cargados.", columnCount);
-      continue;
+      return;
     }
 
     for (const vehicle of group.vehicles) {
@@ -79,7 +88,7 @@ export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Pr
         driverPhone: vehicle.driverPhone ?? "",
       });
     }
-  }
+  });
 
   return workbookToBuffer(workbook);
 }

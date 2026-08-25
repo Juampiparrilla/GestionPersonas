@@ -21,7 +21,11 @@ export default async function SuperadminVehiculosPage() {
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref="/api/reportes/vehiculos/pdf" excelHref="/api/reportes/vehiculos/excel" />
+      <ReportDownloadButtons
+        pdfHref="/api/reportes/vehiculos/pdf"
+        excelHref="/api/reportes/vehiculos/excel"
+        showPdfModes
+      />
 
       <AllVehiclesView groups={groups} />
     </div>

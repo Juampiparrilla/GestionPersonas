@@ -7,6 +7,15 @@ const GROUP_HEADER_FILL = "#27272a"; // zinc-800
 const SUBGROUP_HEADER_FILL = "#52525b"; // zinc-600
 const TABLE_HEADER_FILL = "#f4f4f5"; // zinc-100
 
+// "combined" = todas las hojas en un flujo continuo (como imprimir para uso
+// interno). "separated" fuerza que cada dirigente arranque en una hoja
+// nueva (para entregarle a cada uno la suya sin cortar papel a mano).
+export type PdfReportMode = "combined" | "separated";
+
+export function parsePdfReportMode(value: string | null): PdfReportMode {
+  return value === "separated" ? "separated" : "combined";
+}
+
 export function formatGeneratedAt(): string {
   return new Date().toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
 }
@@ -14,10 +23,13 @@ export function formatGeneratedAt(): string {
 // Barra resaltada de encabezado de grupo (ej. un dirigente). `variant`
 // "subgroup" se usa para un nivel anidado (ej. un puntero dentro de un
 // dirigente): mismo estilo pero mas angosto/indentado y un gris mas claro,
-// para que la jerarquia se note de un vistazo.
+// para que la jerarquia se note de un vistazo. `pageBreak: "before"` se usa
+// en el modo "separado" para que cada dirigente arranque en una hoja nueva
+// (para poder entregarle a cada uno solo la suya, sin tener que cortar).
 export function groupHeaderRow(
   label: string,
-  variant: "group" | "subgroup" = "group"
+  variant: "group" | "subgroup" = "group",
+  pageBreak?: "before"
 ): Content {
   return {
     table: {
@@ -37,6 +49,7 @@ export function groupHeaderRow(
     },
     layout: "noBorders",
     margin: variant === "group" ? [0, 10, 0, 2] : [14, 4, 0, 2],
+    ...(pageBreak ? { pageBreak } : {}),
   };
 }
 

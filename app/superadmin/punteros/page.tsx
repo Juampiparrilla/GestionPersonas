@@ -21,7 +21,11 @@ export default async function SuperadminPunterosPage() {
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref="/api/reportes/punteros/pdf" excelHref="/api/reportes/punteros/excel" />
+      <ReportDownloadButtons
+        pdfHref="/api/reportes/punteros/pdf"
+        excelHref="/api/reportes/punteros/excel"
+        showPdfModes
+      />
 
       <AllPointersView groups={groups} />
     </div>

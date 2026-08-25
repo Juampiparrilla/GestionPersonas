@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { listAllPeopleGroupedByLeader } from "@/features/people/queries";
 import { getSessionContext } from "@/lib/session";
+import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
 import { buildPeopleReportExcel } from "@/lib/reports/peopleReport";
 
 export async function GET() {
@@ -16,7 +17,7 @@ export async function GET() {
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="personas-${new Date().toISOString().slice(0, 10)}.xlsx"`,
+      "Content-Disposition": contentDispositionHeader(buildReportFilename(["Personas"], "xlsx")),
     },
   });
 }

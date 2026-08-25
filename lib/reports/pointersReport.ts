@@ -3,15 +3,24 @@ import type { Content } from "pdfmake/interfaces";
 import type { PointerLeaderGroup } from "@/features/pointers/queries";
 
 import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
-import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell } from "./pdfHelpers";
+import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección", "Personas"];
 
-export async function buildPointersReportPdf(groups: PointerLeaderGroup[]): Promise<Buffer> {
+export async function buildPointersReportPdf(
+  groups: PointerLeaderGroup[],
+  mode: PdfReportMode = "combined"
+): Promise<Buffer> {
   const content: Content[] = [];
 
-  for (const group of groups) {
-    content.push(groupHeaderRow(`${group.leaderName} · ${group.pointers.length} punteros`));
+  groups.forEach((group, index) => {
+    content.push(
+      groupHeaderRow(
+        `${index + 1}. ${group.leaderName} · ${group.pointers.length} punteros`,
+        "group",
+        mode === "separated" && index > 0 ? "before" : undefined
+      )
+    );
 
     if (group.pointers.length === 0) {
       content.push({
@@ -21,7 +30,7 @@ export async function buildPointersReportPdf(groups: PointerLeaderGroup[]): Prom
         color: "#71717a",
         margin: [4, 2, 0, 6],
       });
-      continue;
+      return;
     }
 
     content.push({
@@ -42,7 +51,7 @@ export async function buildPointersReportPdf(groups: PointerLeaderGroup[]): Prom
       layout: "lightHorizontalLines",
       margin: [0, 0, 0, 6],
     });
-  }
+  });
 
   return renderPdfBuffer(content, "Reporte de Punteros");
 }
@@ -60,12 +69,12 @@ export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Pr
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  for (const group of groups) {
-    addGroupHeaderRow(sheet, `${group.leaderName} (${group.pointers.length} punteros)`, columnCount);
+  groups.forEach((group, index) => {
+    addGroupHeaderRow(sheet, `${index + 1}. ${group.leaderName} (${group.pointers.length} punteros)`, columnCount);
 
     if (group.pointers.length === 0) {
       addEmptyRow(sheet, "Sin punteros cargados.", columnCount);
-      continue;
+      return;
     }
 
     for (const pointer of group.pointers) {
@@ -77,7 +86,7 @@ export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Pr
         people: pointer.peopleCount,
       });
     }
-  }
+  });
 
   return workbookToBuffer(workbook);
 }

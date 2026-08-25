@@ -21,7 +21,11 @@ export default async function SuperadminPersonasPage() {
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref="/api/reportes/personas/pdf" excelHref="/api/reportes/personas/excel" />
+      <ReportDownloadButtons
+        pdfHref="/api/reportes/personas/pdf"
+        excelHref="/api/reportes/personas/excel"
+        showPdfModes
+      />
 
       <AllPeopleView groups={groups} />
     </div>

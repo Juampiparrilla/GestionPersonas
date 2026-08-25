@@ -3,18 +3,23 @@ import type { Content } from "pdfmake/interfaces";
 import type { PersonLeaderGroup } from "@/features/people/queries";
 
 import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
-import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell } from "./pdfHelpers";
+import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección"];
 
-export async function buildPeopleReportPdf(groups: PersonLeaderGroup[]): Promise<Buffer> {
+export async function buildPeopleReportPdf(
+  groups: PersonLeaderGroup[],
+  mode: PdfReportMode = "combined"
+): Promise<Buffer> {
   const content: Content[] = [];
 
-  for (const leaderGroup of groups) {
+  groups.forEach((leaderGroup, leaderIndex) => {
     const totalPeople = leaderGroup.pointerGroups.reduce((sum, pg) => sum + pg.people.length, 0);
     content.push(
       groupHeaderRow(
-        `${leaderGroup.leaderName} · ${leaderGroup.pointerGroups.length} punteros · ${totalPeople} personas`
+        `${leaderIndex + 1}. ${leaderGroup.leaderName} · ${leaderGroup.pointerGroups.length} punteros · ${totalPeople} personas`,
+        "group",
+        mode === "separated" && leaderIndex > 0 ? "before" : undefined
       )
     );
 
@@ -26,11 +31,16 @@ export async function buildPeopleReportPdf(groups: PersonLeaderGroup[]): Promise
         color: "#71717a",
         margin: [4, 2, 0, 6],
       });
-      continue;
+      return;
     }
 
-    for (const pointerGroup of leaderGroup.pointerGroups) {
-      content.push(groupHeaderRow(`Puntero: ${pointerGroup.pointerName} · ${pointerGroup.people.length} personas`, "subgroup"));
+    leaderGroup.pointerGroups.forEach((pointerGroup, pointerIndex) => {
+      content.push(
+        groupHeaderRow(
+          `${pointerIndex + 1}. Puntero: ${pointerGroup.pointerName} · ${pointerGroup.people.length} personas`,
+          "subgroup"
+        )
+      );
 
       if (pointerGroup.people.length === 0) {
         content.push({
@@ -40,7 +50,7 @@ export async function buildPeopleReportPdf(groups: PersonLeaderGroup[]): Promise
           color: "#71717a",
           margin: [18, 2, 0, 6],
         });
-        continue;
+        return;
       }
 
       content.push({
@@ -60,8 +70,8 @@ export async function buildPeopleReportPdf(groups: PersonLeaderGroup[]): Promise
         layout: "lightHorizontalLines",
         margin: [14, 0, 0, 6],
       });
-    }
-  }
+    });
+  });
 
   return renderPdfBuffer(content, "Reporte de Personas Registradas");
 }
@@ -78,30 +88,30 @@ export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promi
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  for (const leaderGroup of groups) {
+  groups.forEach((leaderGroup, leaderIndex) => {
     const totalPeople = leaderGroup.pointerGroups.reduce((sum, pg) => sum + pg.people.length, 0);
     addGroupHeaderRow(
       sheet,
-      `${leaderGroup.leaderName} (${leaderGroup.pointerGroups.length} punteros · ${totalPeople} personas)`,
+      `${leaderIndex + 1}. ${leaderGroup.leaderName} (${leaderGroup.pointerGroups.length} punteros · ${totalPeople} personas)`,
       columnCount
     );
 
     if (leaderGroup.pointerGroups.length === 0) {
       addEmptyRow(sheet, "Este dirigente todavía no tiene punteros.", columnCount);
-      continue;
+      return;
     }
 
-    for (const pointerGroup of leaderGroup.pointerGroups) {
+    leaderGroup.pointerGroups.forEach((pointerGroup, pointerIndex) => {
       addGroupHeaderRow(
         sheet,
-        `Puntero: ${pointerGroup.pointerName} (${pointerGroup.people.length} personas)`,
+        `${pointerIndex + 1}. Puntero: ${pointerGroup.pointerName} (${pointerGroup.people.length} personas)`,
         columnCount,
         "subgroup"
       );
 
       if (pointerGroup.people.length === 0) {
         addEmptyRow(sheet, "Este puntero todavía no tiene personas registradas.", columnCount);
-        continue;
+        return;
       }
 
       for (const person of pointerGroup.people) {
@@ -112,8 +122,8 @@ export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promi
           address: person.address ?? "",
         });
       }
-    }
-  }
+    });
+  });
 
   return workbookToBuffer(workbook);
 }

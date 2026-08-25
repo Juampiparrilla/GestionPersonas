@@ -4,6 +4,7 @@ import { listPeopleForPointer } from "@/features/people/queries";
 import type { PersonLeaderGroup } from "@/features/people/queries";
 import { getPointerBasics } from "@/features/pointers/queries";
 import { getSessionContext } from "@/lib/session";
+import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
 import { buildPeopleReportExcel } from "@/lib/reports/peopleReport";
 
 export async function GET(request: NextRequest) {
@@ -35,7 +36,9 @@ export async function GET(request: NextRequest) {
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="mis-personas-${new Date().toISOString().slice(0, 10)}.xlsx"`,
+      "Content-Disposition": contentDispositionHeader(
+        buildReportFilename([session.fullName, pointer.fullName], "xlsx")
+      ),
     },
   });
 }
