@@ -58,7 +58,9 @@ grant execute on function
   fn_restore_leader(uuid, text, text),
   fn_restore_vehicle(uuid, text, text),
   fn_set_leader_access_status(uuid, leader_access_status, text, text),
-  fn_set_global_loading(boolean, text, text)
+  fn_set_global_loading(boolean, text, text),
+  fn_create_organization(text, text, text),
+  fn_set_organization_active(uuid, boolean, text, text)
 to authenticated;
 
 -- Higiene a futuro: cualquier tabla/funcion que se cree en migraciones

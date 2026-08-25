@@ -11,7 +11,7 @@ export default async function VehiculosPage() {
   const session = await getSessionContext();
   const [vehicles, writeStatus] = await Promise.all([
     listMyVehicles(),
-    getLeaderWriteStatus(session!.organizationId, session!.leaderId!),
+    getLeaderWriteStatus(session!.organizationId!, session!.leaderId!),
   ]);
 
   return (

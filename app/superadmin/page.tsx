@@ -13,7 +13,7 @@ export default async function SuperadminHome() {
   const session = await getSessionContext();
   const [stats, loadingEnabled] = await Promise.all([
     getSuperadminStats(),
-    getLoadingEnabled(session!.organizationId),
+    getLoadingEnabled(session!.organizationId!),
   ]);
 
   const totalPersonas = stats.leaders + stats.pointers + stats.people;

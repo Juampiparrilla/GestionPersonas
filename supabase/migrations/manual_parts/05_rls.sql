@@ -23,12 +23,17 @@ alter table system_settings     enable row level security;
 -- prohibicion de escritura directa absoluta (no depende de acordarse de
 -- agregar una policy en cada tabla nueva).
 
+-- platform_admin (0014) ve todas las organizaciones; el resto solo la suya.
 create policy org_select on organizations for select
-  using (id = (select organization_id from fn_profile_context()));
+  using (
+    id = (select organization_id from fn_profile_context())
+    or (select role from fn_profile_context()) = 'platform_admin'
+  );
 
 create policy profiles_select on profiles for select
   using (
     id = auth.uid()
+    or (select role from fn_profile_context()) = 'platform_admin'
     or (
       (select role from fn_profile_context()) = 'superadmin'
       and organization_id = (select organization_id from fn_profile_context())
@@ -98,10 +103,15 @@ create policy vehicles_select on vehicles for select
     )
   );
 
+-- platform_admin (0014) ve auditoria de TODAS las organizaciones; superadmin
+-- sigue acotado a la propia, como siempre.
 create policy audit_select_admin on audit_logs for select
   using (
-    (select role from fn_profile_context()) = 'superadmin'
-    and organization_id = (select organization_id from fn_profile_context())
+    (select role from fn_profile_context()) = 'platform_admin'
+    or (
+      (select role from fn_profile_context()) = 'superadmin'
+      and organization_id = (select organization_id from fn_profile_context())
+    )
   );
 
 create policy settings_select on system_settings for select

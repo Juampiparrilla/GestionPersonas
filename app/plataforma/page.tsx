@@ -1,0 +1,27 @@
+import { LogoutButton } from "@/components/LogoutButton";
+import { OrganizationsClient } from "@/features/organizations/OrganizationsClient";
+import { listOrganizations } from "@/features/organizations/queries";
+import { getSessionContext } from "@/lib/session";
+
+export default async function PlataformaHome() {
+  const session = await getSessionContext();
+  const organizations = await listOrganizations();
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+        <LogoutButton />
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-zinc-900">Organizaciones</h2>
+        <p className="text-sm text-zinc-600">
+          Creá y administrá las organizaciones de la plataforma y sus administradores.
+        </p>
+      </div>
+
+      <OrganizationsClient organizations={organizations} />
+    </div>
+  );
+}

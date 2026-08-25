@@ -11,7 +11,7 @@ export default async function PunterosPage() {
   const session = await getSessionContext();
   const [pointers, writeStatus] = await Promise.all([
     listMyPointers(),
-    getLeaderWriteStatus(session!.organizationId, session!.leaderId!),
+    getLeaderWriteStatus(session!.organizationId!, session!.leaderId!),
   ]);
 
   return (

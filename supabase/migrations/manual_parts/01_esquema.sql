@@ -32,7 +32,11 @@ create extension if not exists pgcrypto;
 -- 1. ENUMS
 -- ============================================================================
 
-create type user_role as enum ('superadmin', 'leader', 'reports');
+-- 'platform_admin' (0013/0014): administra organizaciones, no pertenece a
+-- ninguna (profiles.organization_id es null para este rol). 'superadmin' se
+-- muestra en la UI como "Administrador de Organizacion" (relabel de texto,
+-- no de este identificador -- ver roleLabel() en el codigo de la app).
+create type user_role as enum ('superadmin', 'leader', 'reports', 'platform_admin');
 create type individual_status as enum ('active', 'available');
 create type individual_position as enum ('leader', 'pointer', 'person');
 create type leader_access_status as enum ('active', 'read_only', 'inactive');
@@ -42,17 +46,25 @@ create type vehicle_type as enum ('auto', 'moto', 'traffic', 'colectivo');
 -- 2. TABLAS
 -- ============================================================================
 
+-- created_by se agrega como FK mas abajo (referencia circular con profiles,
+-- igual que leader_id/profiles con leaders)
 create table organizations (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   is_active   boolean not null default true,
+  created_by  uuid,
   created_at  timestamptz not null default now()
 );
 
 -- leader_id se agrega como FK mas abajo (referencia circular con leaders)
+-- organization_id es nullable desde 0014: solo platform_admin no pertenece
+-- a ninguna organizacion. Todo profile con role != 'platform_admin' sigue
+-- teniendo organization_id obligatorio en la practica (lo exige la Server
+-- Action que crea la cuenta), pero no se puede expresar como NOT NULL de
+-- columna porque la misma tabla sirve a los dos casos.
 create table profiles (
   id               uuid primary key references auth.users(id) on delete cascade,
-  organization_id  uuid not null references organizations(id),
+  organization_id  uuid references organizations(id),
   full_name        text not null,
   role             user_role not null,
   leader_id        uuid,
@@ -119,6 +131,9 @@ create unique index uq_leaders_profile_id on leaders (profile_id) where profile_
 
 alter table profiles
   add constraint fk_profiles_leader foreign key (leader_id) references leaders(id);
+
+alter table organizations
+  add constraint fk_organizations_created_by foreign key (created_by) references profiles(id);
 
 create table pointers (
   id              uuid primary key references individuals(id),

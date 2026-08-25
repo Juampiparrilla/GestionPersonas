@@ -70,18 +70,29 @@ returns uuid language sql stable security definer set search_path = public as $$
 $$;
 
 -- Regla de permiso efectivo de escritura para un dirigente:
---   carga_global_habilitada AND dirigente.access_status = 'active' AND no removido
--- El bloqueo individual nunca afloja el cierre global (solo puede sumar restriccion).
+--   organizacion.is_active AND carga_global_habilitada AND
+--   dirigente.access_status = 'active' AND no removido
+-- El bloqueo individual nunca afloja el cierre global (solo puede sumar
+-- restriccion), y una organizacion desactivada por el Administrador de
+-- Plataforma (0014) bloquea a TODOS los roles de esa organizacion, incluido
+-- superadmin.
 create or replace function fn_can_leader_write(p_organization_id uuid)
 returns boolean language plpgsql stable security definer set search_path = public as $$
 declare
   ctx record;
   v_loading boolean;
+  v_org_active boolean;
 begin
   select * into ctx from fn_profile_context();
   if ctx.profile_id is null then
     return false;
   end if;
+
+  select is_active into v_org_active from organizations where id = p_organization_id;
+  if not coalesce(v_org_active, false) then
+    return false;
+  end if;
+
   if ctx.role = 'superadmin' then
     return true;
   end if;
@@ -96,11 +107,17 @@ begin
 end;
 $$;
 
+-- p_organization_id_override (0014): permite que un platform_admin (que no
+-- tiene organization_id propia) audite una accion contra la organizacion
+-- SOBRE LA QUE actua (ej. "creo la organizacion X") en vez de la suya
+-- propia, que no existe. Default null preserva el comportamiento anterior
+-- para todo el resto de las funciones, que jamas lo pasan.
 create or replace function fn_write_audit(
   p_action text, p_entity_type text, p_entity_id uuid,
   p_leader_id uuid, p_pointer_id uuid, p_person_id uuid,
   p_before jsonb, p_after jsonb,
-  p_ip text, p_user_agent text
+  p_ip text, p_user_agent text,
+  p_organization_id_override uuid default null
 ) returns void language plpgsql security definer set search_path = public as $$
 declare
   ctx record;
@@ -110,7 +127,8 @@ begin
     organization_id, actor_profile_id, actor_role, action, entity_type, entity_id,
     leader_id, pointer_id, person_id, before_data, after_data, ip_address, user_agent
   ) values (
-    ctx.organization_id, ctx.profile_id, ctx.role, p_action, p_entity_type, p_entity_id,
+    coalesce(p_organization_id_override, ctx.organization_id), ctx.profile_id, ctx.role,
+    p_action, p_entity_type, p_entity_id,
     p_leader_id, p_pointer_id, p_person_id, p_before, p_after, p_ip, p_user_agent
   );
 end;

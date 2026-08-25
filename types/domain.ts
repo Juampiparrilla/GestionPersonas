@@ -1,4 +1,4 @@
-export type UserRole = "superadmin" | "leader" | "reports";
+export type UserRole = "superadmin" | "leader" | "reports" | "platform_admin";
 
 export type LeaderAccessStatus = "active" | "read_only" | "inactive";
 

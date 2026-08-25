@@ -3,7 +3,9 @@ import type { UserRole } from "@/types/domain";
 
 export type SessionContext = {
   profileId: string;
-  organizationId: string;
+  // null solo para role === "platform_admin": no pertenece a ninguna
+  // organización. Todo el resto de los roles siempre la tiene.
+  organizationId: string | null;
   role: UserRole;
   leaderId: string | null;
   fullName: string;

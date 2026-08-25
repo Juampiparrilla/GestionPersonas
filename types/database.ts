@@ -31,12 +31,14 @@ type OrganizationRow = {
   id: string;
   name: string;
   is_active: boolean;
+  created_by: string | null;
   created_at: string;
 };
 
 type ProfileRow = {
   id: string;
-  organization_id: string;
+  // null solo para role === "platform_admin" (0014).
+  organization_id: string | null;
   full_name: string;
   role: UserRole;
   leader_id: string | null;
@@ -224,6 +226,19 @@ export type Database = {
       };
       fn_set_global_loading: {
         Args: { p_enabled: boolean; p_ip?: string | null; p_user_agent?: string | null };
+        Returns: undefined;
+      };
+      fn_create_organization: {
+        Args: { p_org_name: string; p_ip?: string | null; p_user_agent?: string | null };
+        Returns: string;
+      };
+      fn_set_organization_active: {
+        Args: {
+          p_organization_id: string;
+          p_is_active: boolean;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
         Returns: undefined;
       };
       fn_link_leader_profile: {

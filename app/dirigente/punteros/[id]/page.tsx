@@ -24,7 +24,7 @@ export default async function PointerDetailPage({
 
   const [people, writeStatus] = await Promise.all([
     listPeopleForPointer(id),
-    getLeaderWriteStatus(session.organizationId, session.leaderId!),
+    getLeaderWriteStatus(session.organizationId!, session.leaderId!),
   ]);
 
   return (

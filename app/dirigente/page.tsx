@@ -13,7 +13,7 @@ export default async function DirigenteHome() {
   const [pointers, vehicles, writeStatus] = await Promise.all([
     listMyPointers(),
     listMyVehicles(),
-    getLeaderWriteStatus(session!.organizationId, session!.leaderId!),
+    getLeaderWriteStatus(session!.organizationId!, session!.leaderId!),
   ]);
 
   const totalPersonas = pointers.reduce((sum, pointer) => sum + pointer.peopleCount, 0);

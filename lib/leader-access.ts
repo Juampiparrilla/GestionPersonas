@@ -120,3 +120,88 @@ export async function grantLeaderAccess({
     shareMessage: message,
   };
 }
+
+// Igual concepto que grantLeaderAccess de arriba, pero para el
+// Administrador de una Organización (multitenant, 0014): a diferencia de
+// un dirigente, el admin de organización NO tiene fila en `individuals`
+// (no forma parte de la jerarquía dirigente→puntero→persona, no tiene
+// DNI que resolver en el login), así que necesita un email REAL desde el
+// principio -- no se le puede armar uno sintético por DNI -- y no hay
+// `leaders` al que vincular vía fn_link_leader_profile. Se mantiene como
+// función separada (no una rama más dentro de grantLeaderAccess) para no
+// tocar ese flujo, que ya funciona y está probado.
+export async function grantOrgAdminAccess({
+  organizationId,
+  fullName,
+  phone,
+  email,
+  existingProfileId,
+}: {
+  organizationId: string;
+  fullName: string;
+  phone: string | null;
+  // Requerido al crear (no hay de donde sacarlo). Al reenviar
+  // (existingProfileId presente) se puede omitir: se resuelve solo,
+  // leyendo el email ya cargado en auth.users -- igual criterio que
+  // grantLeaderAccess.
+  email?: string;
+  existingProfileId: string | null;
+}): Promise<GrantAccessResult> {
+  const admin = createAdminClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin") ?? "";
+
+  let resolvedEmail = email ?? null;
+  if (existingProfileId) {
+    const { data: userResult } = await admin.auth.admin.getUserById(existingProfileId);
+    if (!userResult.user?.email) {
+      return { ok: false, error: "No pudimos generar el link. Probá de nuevo." };
+    }
+    resolvedEmail = userResult.user.email;
+  }
+  if (!resolvedEmail) {
+    return { ok: false, error: "Falta el correo del administrador." };
+  }
+  const emailToUse = resolvedEmail;
+
+  const type = existingProfileId ? "recovery" : "invite";
+
+  const { data: generated, error: generateError } = await admin.auth.admin.generateLink({
+    type,
+    email: emailToUse,
+    options: { redirectTo: `${origin}/actualizar-contrasena` },
+  });
+
+  if (generateError || !generated.user) {
+    return { ok: false, error: "No pudimos generar el link. Probá de nuevo." };
+  }
+
+  if (!existingProfileId) {
+    const { error: profileError } = await admin.from("profiles").insert({
+      id: generated.user.id,
+      organization_id: organizationId,
+      full_name: fullName,
+      role: "superadmin",
+    });
+
+    if (profileError) {
+      await admin.auth.admin.deleteUser(generated.user.id);
+      return { ok: false, error: "No pudimos crear la cuenta de acceso. Probá de nuevo." };
+    }
+  }
+
+  const ownLink =
+    `${origin}/auth/verify?token_hash=${generated.properties.hashed_token}&type=${type}` +
+    `&next=/actualizar-contrasena`;
+
+  const message =
+    `Hola ${fullName}! Te sumamos como administrador de tu organización en Gestión de ` +
+    `Personas. Entrá a este link para crear tu contraseña: ${ownLink}\n\nDespués, para ` +
+    `ingresar usá tu correo (${emailToUse}) y esa contraseña.`;
+
+  return {
+    ok: true,
+    whatsappLink: phone ? buildWhatsAppInviteLink(phone, message) : null,
+    shareMessage: message,
+  };
+}

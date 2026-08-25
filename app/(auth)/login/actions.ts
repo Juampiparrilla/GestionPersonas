@@ -15,11 +15,17 @@ export type LoginState = { error: string | null };
 // el cliente normal, RLS bloquearia la lectura). La contraseña en si sigue
 // verificandose con el flujo normal de Supabase Auth, nunca se saltea.
 //
-// Nota: dni_normalized es unico por organizacion, no globalmente. Con una
-// sola organizacion esto no es ambiguo; si en el futuro hay mas de una, esta
-// funcion necesitaria una forma de saber a que organizacion pertenece quien
-// esta iniciando sesion (ej. un subdominio por organizacion) antes de buscar
-// por DNI.
+// Nota multitenant (0014): dni_normalized es unico por organizacion, no
+// globalmente -- dos organizaciones distintas pueden tener cada una un
+// dirigente con el mismo DNI. Sin un selector de organizacion en el login
+// (fuera de alcance de esta fase), no hay forma de saber cual de los dos
+// quiso entrar: en vez de elegir uno arbitrariamente (podria hacer entrar
+// a la persona equivocada a la organizacion equivocada, aunque el propio
+// password nunca coincidiria por casualidad, es una ambiguedad real que
+// hay que resolver a proposito, no en silencio), se devuelve "no
+// encontrado" si hay mas de una coincidencia. Login por correo (el que
+// usan platform_admin/superadmin/reports) no tiene este problema: el
+// correo ya es global.
 async function resolveLoginEmail(
   admin: ReturnType<typeof createAdminClient>,
   identifier: string
@@ -31,19 +37,18 @@ async function resolveLoginEmail(
   const dni = normalizeDni(identifier);
   if (!dni) return null;
 
-  const { data: individual } = await admin
+  const { data: individuals } = await admin
     .from("individuals")
     .select("id")
     .eq("dni_normalized", dni)
-    .eq("position", "leader")
-    .maybeSingle();
+    .eq("position", "leader");
 
-  if (!individual) return null;
+  if (!individuals || individuals.length !== 1) return null;
 
   const { data: leader } = await admin
     .from("leaders")
     .select("profile_id")
-    .eq("id", individual.id)
+    .eq("id", individuals[0].id)
     .maybeSingle();
 
   if (!leader?.profile_id) return null;
@@ -80,7 +85,7 @@ export async function login(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", data.user.id)
     .maybeSingle();
 
@@ -89,6 +94,24 @@ export async function login(
     return {
       error: "Esta cuenta todavía no tiene acceso configurado. Consultá con el administrador.",
     };
+  }
+
+  // platform_admin no tiene organizacion propia, no aplica este chequeo.
+  // Todo otro rol siempre tiene organization_id (lo exige la Server Action
+  // que crea la cuenta); el tipo es nullable solo por platform_admin.
+  if (profile.role !== "platform_admin" && profile.organization_id) {
+    const { data: organization } = await supabase
+      .from("organizations")
+      .select("is_active")
+      .eq("id", profile.organization_id)
+      .maybeSingle();
+
+    if (organization && !organization.is_active) {
+      await supabase.auth.signOut();
+      return {
+        error: "Esta organización fue desactivada. Consultá con el administrador de la plataforma.",
+      };
+    }
   }
 
   redirect(roleHomePath(profile.role));
