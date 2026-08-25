@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Trash2, UsersRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 
@@ -62,9 +63,10 @@ export function PointerRowActions({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
         <Link
           href={`/dirigente/punteros/${pointerId}`}
-          className="flex h-10 items-center gap-1 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
         >
-          +👤 Ver personas
+          <UsersRound className="h-4 w-4" aria-hidden="true" />
+          Ver personas
         </Link>
 
         {canWrite ? (
@@ -72,9 +74,10 @@ export function PointerRowActions({
             type="button"
             onClick={onStartEdit}
             disabled={isPending}
-            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
           >
-            ✏️ Editar
+            <Pencil className="h-4 w-4" aria-hidden="true" />
+            Editar
           </button>
         ) : null}
 
@@ -83,9 +86,10 @@ export function PointerRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending}
-            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
           >
-            🗑️ Quitar
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            Quitar
           </button>
         ) : null}
       </div>

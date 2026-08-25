@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, CircleX, Eye, Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Spinner } from "@/components/Spinner";
@@ -10,9 +11,21 @@ import { EditLeaderForm } from "./EditLeaderForm";
 import { InviteButton } from "./InviteButton";
 
 const STATUS_LABEL: Record<LeaderAccessStatus, string> = {
-  active: "🟢 Activo",
-  read_only: "⚪ Solo lectura",
-  inactive: "🔴 Inactivo",
+  active: "Activo",
+  read_only: "Solo lectura",
+  inactive: "Inactivo",
+};
+
+const STATUS_ICON: Record<LeaderAccessStatus, typeof CircleCheck> = {
+  active: CircleCheck,
+  read_only: Eye,
+  inactive: CircleX,
+};
+
+const STATUS_ICON_COLOR: Record<LeaderAccessStatus, string> = {
+  active: "text-green-600",
+  read_only: "text-zinc-400",
+  inactive: "text-red-600",
 };
 
 export function LeaderRowActions({
@@ -81,11 +94,20 @@ export function LeaderRowActions({
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
         <div className="relative">
+          {(() => {
+            const StatusIcon = STATUS_ICON[accessStatus];
+            return (
+              <StatusIcon
+                className={`pointer-events-none absolute inset-y-0 left-2 my-auto h-4 w-4 ${STATUS_ICON_COLOR[accessStatus]}`}
+                aria-hidden="true"
+              />
+            );
+          })()}
           <select
             value={accessStatus}
             disabled={isPending || isStatusPending}
             onChange={(event) => changeStatus(event.target.value as LeaderAccessStatus)}
-            className="h-10 w-full rounded-lg border border-zinc-300 px-2 text-sm text-zinc-900 disabled:opacity-60"
+            className="h-10 w-full rounded-lg border border-zinc-300 py-2 pl-8 pr-2 text-sm text-zinc-900 disabled:opacity-60"
           >
             <option value="active">{STATUS_LABEL.active}</option>
             <option value="read_only">{STATUS_LABEL.read_only}</option>
@@ -106,9 +128,10 @@ export function LeaderRowActions({
           type="button"
           onClick={onStartEdit}
           disabled={isPending || isStatusPending}
-          className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+          className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
         >
-          ✏️ Editar
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+          Editar
         </button>
 
         {!confirmingRemove ? (
@@ -116,9 +139,10 @@ export function LeaderRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending || isStatusPending}
-            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
           >
-            🗑️ Quitar
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            Quitar
           </button>
         ) : null}
       </div>

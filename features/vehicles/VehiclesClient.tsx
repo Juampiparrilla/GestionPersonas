@@ -1,5 +1,6 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { normalizeDni } from "@/utils/dni";
@@ -57,7 +58,7 @@ export function VehiclesClient({
       {!formOpen ? (
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
-            🔎
+            <Search className="h-4 w-4" aria-hidden="true" />
           </span>
           <input
             type="text"

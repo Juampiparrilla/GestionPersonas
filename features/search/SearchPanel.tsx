@@ -1,5 +1,6 @@
 "use client";
 
+import { Car, ChevronDown, Search, UserRound, X } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { Spinner } from "@/components/Spinner";
@@ -8,11 +9,11 @@ import { searchDirectoryAction, type SearchResultKind, type SearchState } from "
 
 const initialState: SearchState = { error: null, results: [], query: null };
 
-const KIND_ICON: Record<SearchResultKind, string> = {
-  leader: "👤",
-  pointer: "👤",
-  person: "👤",
-  vehicle: "🚗",
+const KIND_ICON: Record<SearchResultKind, typeof UserRound> = {
+  leader: UserRound,
+  pointer: UserRound,
+  person: UserRound,
+  vehicle: Car,
 };
 
 export function SearchPanel() {
@@ -26,8 +27,11 @@ export function SearchPanel() {
         onClick={() => setExpanded(true)}
         className="flex w-full items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 text-left"
       >
-        <h2 className="font-medium text-zinc-900">🔎 Buscar en toda la base</h2>
-        <span className="text-lg text-zinc-400">▼</span>
+        <h2 className="flex items-center gap-2 font-medium text-zinc-900">
+          <Search className="h-5 w-5 text-zinc-500" aria-hidden="true" />
+          Buscar en toda la base
+        </h2>
+        <ChevronDown className="h-5 w-5 text-zinc-400" aria-hidden="true" />
       </button>
     );
   }
@@ -35,14 +39,17 @@ export function SearchPanel() {
   return (
     <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-zinc-900">🔎 Buscar en toda la base</h2>
+        <h2 className="flex items-center gap-2 font-medium text-zinc-900">
+          <Search className="h-5 w-5 text-zinc-500" aria-hidden="true" />
+          Buscar en toda la base
+        </h2>
         <button
           type="button"
           onClick={() => setExpanded(false)}
           aria-label="Cerrar"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
         >
-          ✕
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
 
@@ -82,14 +89,18 @@ export function SearchPanel() {
 
       {state.results.length > 0 ? (
         <div className="flex flex-col gap-2">
-          {state.results.map((result) => (
-            <div key={`${result.kind}-${result.id}`} className="rounded-lg border border-zinc-200 p-3">
-              <p className="font-medium text-zinc-900">
-                {KIND_ICON[result.kind]} {result.title}
-              </p>
-              <p className="text-sm text-zinc-600">{result.subtitle}</p>
-            </div>
-          ))}
+          {state.results.map((result) => {
+            const ResultIcon = KIND_ICON[result.kind];
+            return (
+              <div key={`${result.kind}-${result.id}`} className="rounded-lg border border-zinc-200 p-3">
+                <p className="flex items-center gap-2 font-medium text-zinc-900">
+                  <ResultIcon className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
+                  {result.title}
+                </p>
+                <p className="text-sm text-zinc-600">{result.subtitle}</p>
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>

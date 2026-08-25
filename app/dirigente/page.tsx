@@ -1,3 +1,4 @@
+import { Car, Divide, Lock, TriangleAlert, UserRoundPlus, UsersRound } from "lucide-react";
 import Link from "next/link";
 
 import { StatCard } from "@/components/StatCard";
@@ -34,15 +35,18 @@ export default async function DirigenteHome() {
         </div>
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="font-medium text-amber-900">🔒 Reporte general</p>
+          <p className="flex items-center gap-2 font-medium text-amber-900">
+            <Lock className="h-5 w-5" aria-hidden="true" />
+            Reporte general
+          </p>
           <p className="mt-1 text-sm text-amber-800">{message}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Punteros" value={pointers.length} />
-          <StatCard label="Personas registradas" value={totalPersonas} />
-          <StatCard label="Vehículos" value={vehicles.length} />
-          <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} />
+          <StatCard label="Punteros" value={pointers.length} icon={UserRoundPlus} />
+          <StatCard label="Personas registradas" value={totalPersonas} icon={UsersRound} />
+          <StatCard label="Vehículos" value={vehicles.length} icon={Car} />
+          <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} icon={Divide} />
         </div>
       </div>
     );
@@ -57,8 +61,9 @@ export default async function DirigenteHome() {
 
       {punterosSinPersonas.length > 0 ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="font-medium text-amber-900">
-            ⚠️ Tenés {punterosSinPersonas.length}{" "}
+          <p className="flex items-center gap-2 font-medium text-amber-900">
+            <TriangleAlert className="h-5 w-5 shrink-0" aria-hidden="true" />
+            Tenés {punterosSinPersonas.length}{" "}
             {punterosSinPersonas.length === 1
               ? "puntero sin personas registradas"
               : "punteros sin personas registradas"}
@@ -74,10 +79,10 @@ export default async function DirigenteHome() {
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Punteros" value={pointers.length} />
-        <StatCard label="Personas registradas" value={totalPersonas} />
-        <StatCard label="Vehículos" value={vehicles.length} />
-        <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} />
+        <StatCard label="Punteros" value={pointers.length} icon={UserRoundPlus} />
+        <StatCard label="Personas registradas" value={totalPersonas} icon={UsersRound} />
+        <StatCard label="Vehículos" value={vehicles.length} icon={Car} />
+        <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} icon={Divide} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -85,13 +90,15 @@ export default async function DirigenteHome() {
           href="/dirigente/punteros"
           className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          +👤 PUNTEROS
+          <UserRoundPlus className="h-5 w-5" aria-hidden="true" />
+          PUNTEROS
         </Link>
         <Link
           href="/dirigente/vehiculos"
           className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          +🚗 VEHÍCULOS
+          <Car className="h-5 w-5" aria-hidden="true" />
+          VEHÍCULOS
         </Link>
       </div>
     </div>

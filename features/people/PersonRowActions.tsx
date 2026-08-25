@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Spinner } from "@/components/Spinner";
@@ -65,9 +66,10 @@ export function PersonRowActions({
           type="button"
           onClick={onStartEdit}
           disabled={isPending}
-          className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+          className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
         >
-          ✏️ Editar
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+          Editar
         </button>
 
         {!confirmingRemove ? (
@@ -75,9 +77,10 @@ export function PersonRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending}
-            className="h-10 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
           >
-            🗑️ Quitar
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            Quitar
           </button>
         ) : null}
       </div>

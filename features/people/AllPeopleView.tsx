@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 import type { PersonLeaderGroup, PersonPointerGroup } from "./queries";
@@ -19,7 +20,11 @@ function PointerGroupCard({ group, index }: { group: PersonPointerGroup; index: 
         </p>
         <div className="flex items-center gap-2">
           <span className="text-sm text-zinc-600">{group.people.length} personas</span>
-          <span className="text-zinc-400">{expanded ? "▲" : "▼"}</span>
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
+          )}
         </div>
       </button>
 
@@ -64,7 +69,11 @@ function LeaderGroupCard({ group, index }: { group: PersonLeaderGroup; index: nu
           <span className="text-sm text-zinc-600">
             {group.pointerGroups.length} punteros · {totalPeople} personas
           </span>
-          <span className="text-lg text-zinc-400">{expanded ? "▲" : "▼"}</span>
+          {expanded ? (
+            <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+          )}
         </div>
       </button>
 

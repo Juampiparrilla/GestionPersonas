@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 import { LeaderRowActions } from "./LeaderRowActions";
@@ -37,7 +38,11 @@ export function LeaderCard({
             {leader.phone ? ` · ${leader.phone}` : ""}
           </p>
         </div>
-        <span className="text-lg text-zinc-400">{expanded ? "▲" : "▼"}</span>
+        {expanded ? (
+          <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+        ) : (
+          <ChevronDown className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+        )}
       </button>
 
       {expanded ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck, Copy, RefreshCw, Send } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Spinner } from "@/components/Spinner";
@@ -45,8 +46,9 @@ export function InviteButton({
 
   if (accepted) {
     return (
-      <span className="flex h-10 items-center gap-1 rounded-lg border border-zinc-200 px-3 text-sm text-zinc-400">
-        ✅ Ya inició sesión
+      <span className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-200 px-3 text-sm text-zinc-400">
+        <CircleCheck className="h-4 w-4" aria-hidden="true" />
+        Ya inició sesión
       </span>
     );
   }
@@ -58,9 +60,10 @@ export function InviteButton({
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => setPending(null)}
-        className="flex h-10 items-center gap-1 rounded-lg bg-green-600 px-3 text-sm font-medium text-white hover:bg-green-700"
+        className="flex h-10 items-center gap-1.5 rounded-lg bg-green-600 px-3 text-sm font-medium text-white hover:bg-green-700"
       >
-        📱 Enviar por WhatsApp
+        <Send className="h-4 w-4" aria-hidden="true" />
+        Enviar por WhatsApp
       </a>
     );
   }
@@ -71,9 +74,10 @@ export function InviteButton({
         <button
           type="button"
           onClick={() => handleCopy(pending.shareMessage)}
-          className="flex h-10 items-center gap-1 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
         >
-          📋 {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
+          <Copy className="h-4 w-4" aria-hidden="true" />
+          {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
         </button>
         <p className="text-xs text-zinc-500">
           No hay teléfono cargado, así que no se puede abrir WhatsApp directo. Copiá el mensaje y
@@ -89,16 +93,20 @@ export function InviteButton({
         type="button"
         onClick={handleGenerate}
         disabled={isPending}
-        className="flex h-10 items-center gap-1 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+        className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
       >
         {isPending ? (
           <>
             <Spinner className="h-4 w-4" /> Generando…
           </>
         ) : hasAccess ? (
-          "🔄 Reenviar invitación"
+          <>
+            <RefreshCw className="h-4 w-4" aria-hidden="true" /> Reenviar invitación
+          </>
         ) : (
-          "📱 Invitar"
+          <>
+            <Send className="h-4 w-4" aria-hidden="true" /> Invitar
+          </>
         )}
       </button>
       {error ? (

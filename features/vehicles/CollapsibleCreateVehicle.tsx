@@ -1,5 +1,6 @@
 "use client";
 
+import { Car, CircleCheck, Lock, Pin, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { CreateVehicleForm } from "./CreateVehicleForm";
@@ -59,8 +60,9 @@ export function CollapsibleCreateVehicle({
 
   if (!canWrite) {
     return (
-      <p className="rounded-lg bg-zinc-100 p-3 text-sm text-zinc-600">
-        🔒 La carga está cerrada en este momento. Podés consultar tus vehículos, pero no agregar
+      <p className="flex items-start gap-2 rounded-lg bg-zinc-100 p-3 text-sm text-zinc-600">
+        <Lock className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
+        La carga está cerrada en este momento. Podés consultar tus vehículos, pero no agregar
         ni modificar nada.
       </p>
     );
@@ -69,8 +71,9 @@ export function CollapsibleCreateVehicle({
   return (
     <div className="flex flex-col gap-2">
       {showSuccess ? (
-        <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-          ✅ El vehículo fue agregado exitosamente.
+        <p role="status" className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+          <CircleCheck className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
+          El vehículo fue agregado exitosamente.
         </p>
       ) : null}
 
@@ -78,9 +81,10 @@ export function CollapsibleCreateVehicle({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-12 items-center justify-center rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          +🚗 Agregar vehículo
+          <Car className="h-5 w-5" aria-hidden="true" />
+          Agregar vehículo
         </button>
       ) : (
         <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
@@ -90,9 +94,9 @@ export function CollapsibleCreateVehicle({
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Cerrar"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
             >
-              ✕
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -105,7 +109,8 @@ export function CollapsibleCreateVehicle({
               onChange={(event) => togglePinned(event.target.checked)}
               className="h-4 w-4 rounded border-zinc-300"
             />
-            📌 Mantener este formulario siempre abierto
+            <Pin className="h-4 w-4" aria-hidden="true" />
+            Mantener este formulario siempre abierto
           </label>
         </div>
       )}

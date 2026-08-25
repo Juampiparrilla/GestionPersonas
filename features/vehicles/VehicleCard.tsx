@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 import type { VehicleType } from "@/types/domain";
@@ -8,10 +9,10 @@ import { VehicleRowActions } from "./VehicleRowActions";
 import type { VehicleListItem } from "./queries";
 
 export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
-  auto: "🚗 Auto",
-  moto: "🏍️ Moto",
-  traffic: "🚐 Traffic",
-  colectivo: "🚌 Colectivo",
+  auto: "Auto",
+  moto: "Moto",
+  traffic: "Traffic",
+  colectivo: "Colectivo",
 };
 
 export function VehicleCard({
@@ -42,7 +43,11 @@ export function VehicleCard({
             {VEHICLE_TYPE_LABEL[vehicle.type]} · {vehicle.driverFullName} · DNI {vehicle.driverDni}
           </p>
         </div>
-        <span className="text-lg text-zinc-400">{expanded ? "▲" : "▼"}</span>
+        {expanded ? (
+          <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+        ) : (
+          <ChevronDown className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
+        )}
       </button>
 
       {expanded ? (

@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -34,7 +35,11 @@ export default async function PointerDetailPage({
             DNI {pointer.dni} · {people.length} personas
           </p>
         </div>
-        <Link href="/dirigente/punteros" className="text-sm text-zinc-600 underline underline-offset-2">
+        <Link
+          href="/dirigente/punteros"
+          className="flex items-center gap-1 text-sm text-zinc-600 underline underline-offset-2"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Volver
         </Link>
       </div>
