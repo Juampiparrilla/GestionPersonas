@@ -2,7 +2,7 @@ import type { Content } from "pdfmake/interfaces";
 
 import type { PersonLeaderGroup } from "@/features/people/queries";
 
-import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección"];
@@ -76,6 +76,9 @@ export async function buildPeopleReportPdf(
   return renderPdfBuffer(content, "Reporte de Personas Registradas");
 }
 
+// Formato PLANO (una fila por persona, sin encabezados de grupo fusionados):
+// PUNTERO y DIRIGENTE van como columnas al final de cada fila para poder
+// filtrar/ordenar por cualquiera de los dos en la planilla.
 export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Personas");
@@ -84,46 +87,31 @@ export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promi
     { header: "DNI", key: "dni", width: 14 },
     { header: "Teléfono", key: "phone", width: 16 },
     { header: "Dirección", key: "address", width: 28 },
+    { header: "PUNTERO", key: "pointer", width: 24 },
+    { header: "DIRIGENTE", key: "leader", width: 24 },
   ];
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  groups.forEach((leaderGroup, leaderIndex) => {
-    const totalPeople = leaderGroup.pointerGroups.reduce((sum, pg) => sum + pg.people.length, 0);
-    addGroupHeaderRow(
-      sheet,
-      `${leaderIndex + 1}. ${leaderGroup.leaderName} (${leaderGroup.pointerGroups.length} punteros · ${totalPeople} personas)`,
-      columnCount
-    );
-
-    if (leaderGroup.pointerGroups.length === 0) {
-      addEmptyRow(sheet, "Este dirigente todavía no tiene punteros.", columnCount);
-      return;
-    }
-
-    leaderGroup.pointerGroups.forEach((pointerGroup, pointerIndex) => {
-      addGroupHeaderRow(
-        sheet,
-        `${pointerIndex + 1}. Puntero: ${pointerGroup.pointerName} (${pointerGroup.people.length} personas)`,
-        columnCount,
-        "subgroup"
-      );
-
-      if (pointerGroup.people.length === 0) {
-        addEmptyRow(sheet, "Este puntero todavía no tiene personas registradas.", columnCount);
-        return;
-      }
-
+  let hasAnyRow = false;
+  for (const leaderGroup of groups) {
+    for (const pointerGroup of leaderGroup.pointerGroups) {
       for (const person of pointerGroup.people) {
+        hasAnyRow = true;
         sheet.addRow({
           name: person.fullName,
           dni: person.dni,
           phone: person.phone ?? "",
           address: person.address ?? "",
+          pointer: pointerGroup.pointerName,
+          leader: leaderGroup.leaderName,
         });
       }
-    });
-  });
+    }
+  }
+  if (!hasAnyRow) {
+    addEmptyRow(sheet, "Todavía no hay personas registradas.", columnCount);
+  }
 
   return workbookToBuffer(workbook);
 }

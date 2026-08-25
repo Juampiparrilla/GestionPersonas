@@ -55,13 +55,13 @@ export function SearchPanel() {
 
       <p className="text-sm text-zinc-600">Ingresá un DNI, un nombre o una patente.</p>
 
-      <form action={formAction} className="flex flex-col gap-2 sm:flex-row">
+      <form action={formAction} className="flex flex-col gap-2">
         <input
           type="text"
           name="query"
           placeholder="DNI, nombre o patente"
           maxLength={60}
-          className="h-14 flex-1 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
+          className="h-14 w-full rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
         />
         <button
           type="submit"

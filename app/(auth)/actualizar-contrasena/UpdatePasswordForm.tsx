@@ -12,7 +12,7 @@ export function UpdatePasswordForm() {
   const [state, formAction, pending] = useActionState(updatePassword, initialState);
 
   return (
-    <form action={formAction} className="flex w-full max-w-sm flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label htmlFor="password" className="text-sm font-medium text-zinc-700">
           Contraseña nueva

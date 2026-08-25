@@ -13,7 +13,7 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
-    <form action={formAction} className="flex w-full max-w-sm flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label htmlFor="identifier" className="text-sm font-medium text-zinc-700">
           Correo electrónico o DNI

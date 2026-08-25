@@ -3,7 +3,7 @@ import type { Content } from "pdfmake/interfaces";
 import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/vehicleTypeLabel";
 import type { VehicleLeaderGroup } from "@/features/vehicles/queries";
 
-import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 // Los vehiculos no tienen Direccion (es del conductor, no se carga ese dato).
@@ -58,6 +58,9 @@ export async function buildVehiclesReportPdf(
   return renderPdfBuffer(content, "Reporte de Vehículos");
 }
 
+// Formato PLANO (una fila por vehiculo, sin encabezados de grupo fusionados):
+// DIRIGENTE va como columna al final de cada fila para poder filtrar/ordenar
+// en la planilla.
 export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Vehículos");
@@ -67,28 +70,28 @@ export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Pr
     { header: "Conductor", key: "driver", width: 28 },
     { header: "DNI conductor", key: "driverDni", width: 16 },
     { header: "Teléfono conductor", key: "driverPhone", width: 18 },
+    { header: "DIRIGENTE", key: "leader", width: 24 },
   ];
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  groups.forEach((group, index) => {
-    addGroupHeaderRow(sheet, `${index + 1}. ${group.leaderName} (${group.vehicles.length} vehículos)`, columnCount);
-
-    if (group.vehicles.length === 0) {
-      addEmptyRow(sheet, "Sin vehículos cargados.", columnCount);
-      return;
-    }
-
+  let hasAnyRow = false;
+  for (const group of groups) {
     for (const vehicle of group.vehicles) {
+      hasAnyRow = true;
       sheet.addRow({
         plate: vehicle.plate,
         type: VEHICLE_TYPE_LABEL[vehicle.type],
         driver: vehicle.driverFullName,
         driverDni: vehicle.driverDni,
         driverPhone: vehicle.driverPhone ?? "",
+        leader: group.leaderName,
       });
     }
-  });
+  }
+  if (!hasAnyRow) {
+    addEmptyRow(sheet, "Todavía no hay vehículos cargados.", columnCount);
+  }
 
   return workbookToBuffer(workbook);
 }

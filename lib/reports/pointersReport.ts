@@ -2,7 +2,7 @@ import type { Content } from "pdfmake/interfaces";
 
 import type { PointerLeaderGroup } from "@/features/pointers/queries";
 
-import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección", "Personas"];
@@ -56,6 +56,10 @@ export async function buildPointersReportPdf(
   return renderPdfBuffer(content, "Reporte de Punteros");
 }
 
+// Formato PLANO (una fila por puntero, sin encabezados de grupo fusionados):
+// a diferencia del PDF, el Excel se usa para filtrar/ordenar en una
+// planilla, asi que la columna DIRIGENTE va al final de cada fila en vez de
+// una fila de grupo aparte.
 export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Punteros");
@@ -65,28 +69,28 @@ export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Pr
     { header: "Teléfono", key: "phone", width: 16 },
     { header: "Dirección", key: "address", width: 28 },
     { header: "Personas", key: "people", width: 12 },
+    { header: "DIRIGENTE", key: "leader", width: 24 },
   ];
   styleHeaderRow(sheet.getRow(1));
   const columnCount = sheet.columns.length;
 
-  groups.forEach((group, index) => {
-    addGroupHeaderRow(sheet, `${index + 1}. ${group.leaderName} (${group.pointers.length} punteros)`, columnCount);
-
-    if (group.pointers.length === 0) {
-      addEmptyRow(sheet, "Sin punteros cargados.", columnCount);
-      return;
-    }
-
+  let hasAnyRow = false;
+  for (const group of groups) {
     for (const pointer of group.pointers) {
+      hasAnyRow = true;
       sheet.addRow({
         name: pointer.fullName,
         dni: pointer.dni,
         phone: pointer.phone ?? "",
         address: pointer.address ?? "",
         people: pointer.peopleCount,
+        leader: group.leaderName,
       });
     }
-  });
+  }
+  if (!hasAnyRow) {
+    addEmptyRow(sheet, "Todavía no hay punteros cargados.", columnCount);
+  }
 
   return workbookToBuffer(workbook);
 }
