@@ -10,6 +10,71 @@ información electoral de ningún tipo (ver [ANALISIS.md](./ANALISIS.md)).
 - Tailwind CSS 4
 - Supabase (Postgres, Auth, RLS)
 
+## Funcionalidades
+
+### Roles
+
+- **Superadmin**: control total de la organización.
+- **Dirigente (leader)**: carga y gestiona sus propios punteros, las
+  personas registradas de cada puntero, y sus vehículos. Inicia sesión con
+  DNI, no con correo.
+- **Reports**: rol de solo consulta (pantalla propia en construcción).
+
+### Estructura de datos
+
+```
+Dirigente → Punteros → Personas registradas
+Dirigente → Vehículos
+```
+
+Cada nivel tiene nombre completo, DNI y teléfono/dirección opcionales (los
+vehículos en cambio tienen tipo, patente y datos del conductor). Alta,
+edición y baja (soft-delete) para las cuatro entidades, con búsqueda por
+nombre o DNI en las listas del dirigente.
+
+### Permisos de carga
+
+- **Interruptor global**: el Superadmin puede cerrar la carga de datos para
+  toda la organización de un toque.
+- **Estado individual por dirigente**: Activo / Solo lectura / Inactivo,
+  independiente del interruptor global (un bloqueo individual nunca afloja
+  el cierre global, solo puede sumar restricción).
+- Cuando un dirigente no puede cargar, ve toda su información en modo
+  lectura con el motivo explicado.
+
+### Invitaciones
+
+El Superadmin da de alta a un dirigente y genera una invitación (link por
+WhatsApp, o mensaje para copiar si no hay teléfono cargado) para que el
+propio dirigente defina su contraseña. El Superadmin puede reenviar la
+invitación en cualquier momento mientras no haya sido aceptada.
+
+### Búsqueda global
+
+Disponible para Superadmin y Reports: un solo campo busca por DNI, nombre
+o patente, con detección automática del tipo de búsqueda para no mezclar
+resultados (ej. que los dígitos de una patente no matcheen un DNI).
+
+### Reportes
+
+- **Vistas del Superadmin** (`/superadmin/reportes`): Punteros, Personas
+  registradas y Vehículos de toda la organización, agrupados por dirigente.
+- **Vistas del dirigente**: las mismas, pero acotadas a su propia
+  información (Mis Punteros, Personas registradas, Mis Vehículos).
+- **Reporte personalizado** (`/superadmin/reportes/personalizado`): el
+  Superadmin busca un dirigente o puntero puntual y elige qué generar —
+  dirigente + sus punteros, dirigente + punteros + personas, un puntero +
+  sus personas, o los vehículos de un dirigente.
+- Todos los reportes se generan en **PDF y Excel**, numerados
+  jerárquicamente (dirigente → puntero → persona).
+- En las vistas globales del Superadmin, el PDF tiene dos modos: **sin
+  saltos de línea** (todo en un flujo continuo, para uso interno) o **con
+  saltos de línea** (cada dirigente arranca en una hoja nueva, para
+  entregar por separado).
+- Los nombres de archivo incluyen fecha y hora (zona horaria Argentina) y
+  el tipo de reporte, ej. `Punteros_2026-08-25_01-56.pdf` o
+  `Juampi_Prueba_Personas_2026-08-25_01-56.pdf`.
+
 ## Estructura del proyecto
 
 ```
