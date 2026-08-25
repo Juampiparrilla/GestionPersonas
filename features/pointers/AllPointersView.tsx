@@ -15,7 +15,7 @@ function LeaderGroupCard({ group, index }: { group: PointerLeaderGroup; index: n
         onClick={() => setExpanded((value) => !value)}
         className="flex w-full items-center justify-between text-left"
       >
-        <p className="font-medium text-zinc-900">
+        <p className="font-bold text-zinc-900">
           {index + 1}. {group.leaderName}
         </p>
         <div className="flex items-center gap-2">
