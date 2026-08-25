@@ -45,7 +45,7 @@ export default async function SuperadminHome() {
           href="/superadmin/dirigentes"
           className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          👤+ Dirigentes
+          +👤 Dirigentes
         </Link>
         <Link
           href="/superadmin/reportes"
