@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { VehiclesClient } from "@/features/vehicles/VehiclesClient";
 import { listMyVehicles } from "@/features/vehicles/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
@@ -25,6 +26,8 @@ export default async function VehiculosPage() {
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons pdfHref="/api/reportes/mis-vehiculos/pdf" excelHref="/api/reportes/mis-vehiculos/excel" />
 
       <VehiclesClient vehicles={vehicles} canWrite={writeStatus.canWrite} />
     </div>

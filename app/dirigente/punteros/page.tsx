@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { PointersClient } from "@/features/pointers/PointersClient";
 import { listMyPointers } from "@/features/pointers/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
@@ -25,6 +26,8 @@ export default async function PunterosPage() {
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons pdfHref="/api/reportes/mis-punteros/pdf" excelHref="/api/reportes/mis-punteros/excel" />
 
       <PointersClient pointers={pointers} canWrite={writeStatus.canWrite} />
     </div>

@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { PeopleClient } from "@/features/people/PeopleClient";
 import { listPeopleForPointer } from "@/features/people/queries";
 import { getPointerBasics } from "@/features/pointers/queries";
@@ -43,6 +44,11 @@ export default async function PointerDetailPage({
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons
+        pdfHref={`/api/reportes/mis-personas/pdf?pointerId=${id}`}
+        excelHref={`/api/reportes/mis-personas/excel?pointerId=${id}`}
+      />
 
       <PeopleClient people={people} pointerId={id} canWrite={writeStatus.canWrite} />
     </div>
