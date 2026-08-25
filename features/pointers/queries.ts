@@ -65,6 +65,80 @@ export async function listMyPointers(): Promise<PointerListItem[]> {
   return items.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
 }
 
+export type PointerLeaderGroup = {
+  leaderId: string;
+  leaderName: string;
+  pointers: PointerListItem[];
+};
+
+// Vista de Superadmin: TODOS los punteros de la organizacion, agrupados por
+// dirigente (orden alfabetico de dirigente, y de puntero dentro de cada
+// grupo). Incluye dirigentes sin punteros para que se vea el panorama
+// completo, no solo los que ya tienen carga.
+export async function listAllPointersGroupedByLeader(): Promise<PointerLeaderGroup[]> {
+  const session = await getSessionContext();
+  if (!session || session.role !== "superadmin") return [];
+
+  const supabase = await createClient();
+
+  const [
+    { data: leaderIndividuals, error: leadersError },
+    { data: pointers, error: pointersError },
+    { data: pointerIndividuals, error: individualsError },
+  ] = await Promise.all([
+    supabase.from("individuals").select("id, full_name").eq("position", "leader").eq("status", "active"),
+    supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
+    supabase
+      .from("individuals")
+      .select("id, full_name, dni_display, phone, address")
+      .eq("position", "pointer")
+      .eq("status", "active"),
+  ]);
+
+  if (leadersError) throw new Error(leadersError.message);
+  if (pointersError) throw new Error(pointersError.message);
+  if (individualsError) throw new Error(individualsError.message);
+
+  const { data: peopleRows } = await supabase
+    .from("registered_people")
+    .select("pointer_id")
+    .eq("is_removed", false);
+
+  const peopleCountByPointer = new Map<string, number>();
+  for (const row of peopleRows ?? []) {
+    peopleCountByPointer.set(row.pointer_id, (peopleCountByPointer.get(row.pointer_id) ?? 0) + 1);
+  }
+
+  const pointerIndividualById = new Map((pointerIndividuals ?? []).map((row) => [row.id, row]));
+
+  const groups: PointerLeaderGroup[] = (leaderIndividuals ?? []).map((leader) => ({
+    leaderId: leader.id,
+    leaderName: leader.full_name,
+    pointers: [],
+  }));
+  const groupByLeaderId = new Map(groups.map((group) => [group.leaderId, group]));
+
+  for (const pointer of pointers ?? []) {
+    const individual = pointerIndividualById.get(pointer.id);
+    const group = groupByLeaderId.get(pointer.leader_id);
+    if (!individual || !group) continue;
+    group.pointers.push({
+      id: individual.id,
+      fullName: individual.full_name,
+      dni: individual.dni_display,
+      phone: individual.phone,
+      address: individual.address,
+      peopleCount: peopleCountByPointer.get(pointer.id) ?? 0,
+    });
+  }
+
+  for (const group of groups) {
+    group.pointers.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
+  }
+
+  return groups.sort((a, b) => a.leaderName.localeCompare(b.leaderName, "es"));
+}
+
 export type PointerBasics = { id: string; fullName: string; dni: string; leaderId: string };
 
 // Para la pantalla de detalle: nombre del puntero + confirmar que le

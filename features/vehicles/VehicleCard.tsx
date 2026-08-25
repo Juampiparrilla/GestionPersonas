@@ -7,7 +7,7 @@ import type { VehicleType } from "@/types/domain";
 import { VehicleRowActions } from "./VehicleRowActions";
 import type { VehicleListItem } from "./queries";
 
-const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
+export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
   auto: "🚗 Auto",
   moto: "🏍️ Moto",
   traffic: "🚐 Traffic",

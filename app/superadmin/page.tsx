@@ -35,12 +35,32 @@ export default async function SuperadminHome() {
         <StatCard label="Vehículos" value={stats.vehicles} />
       </div>
 
-      <Link
-        href="/superadmin/dirigentes"
-        className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-      >
-        👤 Dirigentes
-      </Link>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Link
+          href="/superadmin/dirigentes"
+          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          👤 Dirigentes
+        </Link>
+        <Link
+          href="/superadmin/punteros"
+          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          👤 Punteros
+        </Link>
+        <Link
+          href="/superadmin/personas"
+          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          🙋 Personas
+        </Link>
+        <Link
+          href="/superadmin/vehiculos"
+          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          🚗 Vehículos
+        </Link>
+      </div>
     </div>
   );
 }
