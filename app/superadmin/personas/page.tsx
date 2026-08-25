@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { AllPeopleView } from "@/features/people/AllPeopleView";
 import { listAllPeopleGroupedByLeader } from "@/features/people/queries";
 
@@ -19,6 +20,8 @@ export default async function SuperadminPersonasPage() {
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons pdfHref="/api/reportes/personas/pdf" excelHref="/api/reportes/personas/excel" />
 
       <AllPeopleView groups={groups} />
     </div>

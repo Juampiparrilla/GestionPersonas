@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { AllPointersView } from "@/features/pointers/AllPointersView";
 import { listAllPointersGroupedByLeader } from "@/features/pointers/queries";
 
@@ -19,6 +20,8 @@ export default async function SuperadminPunterosPage() {
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons pdfHref="/api/reportes/punteros/pdf" excelHref="/api/reportes/punteros/excel" />
 
       <AllPointersView groups={groups} />
     </div>

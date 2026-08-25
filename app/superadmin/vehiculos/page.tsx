@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { AllVehiclesView } from "@/features/vehicles/AllVehiclesView";
 import { listAllVehiclesGroupedByLeader } from "@/features/vehicles/queries";
 
@@ -19,6 +20,8 @@ export default async function SuperadminVehiculosPage() {
           Volver
         </Link>
       </div>
+
+      <ReportDownloadButtons pdfHref="/api/reportes/vehiculos/pdf" excelHref="/api/reportes/vehiculos/excel" />
 
       <AllVehiclesView groups={groups} />
     </div>
