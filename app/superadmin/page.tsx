@@ -15,6 +15,9 @@ export default async function SuperadminHome() {
     getLoadingEnabled(session!.organizationId),
   ]);
 
+  const totalRegistros = stats.leaders + stats.pointers + stats.people;
+  const promedioPersonasPorPuntero = stats.pointers > 0 ? Math.round(stats.people / stats.pointers) : 0;
+
   return (
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
       <div className="flex items-center justify-between">
@@ -33,6 +36,8 @@ export default async function SuperadminHome() {
         <StatCard label="Punteros" value={stats.pointers} />
         <StatCard label="Personas registradas" value={stats.people} />
         <StatCard label="Vehículos" value={stats.vehicles} />
+        <StatCard label="Total de registros" value={totalRegistros} />
+        <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
