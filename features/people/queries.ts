@@ -50,14 +50,21 @@ export async function listPeopleForPointer(pointerId: string): Promise<PersonLis
 export type PersonPointerGroup = {
   pointerId: string;
   pointerName: string;
-  leaderName: string;
   people: PersonListItem[];
 };
 
-// Vista de Superadmin: TODAS las personas registradas, agrupadas por
-// puntero (con el dirigente indicado entre parentesis en el titulo). Incluye
-// punteros sin personas registradas para dar el panorama completo.
-export async function listAllPeopleGroupedByPointer(): Promise<PersonPointerGroup[]> {
+export type PersonLeaderGroup = {
+  leaderId: string;
+  leaderName: string;
+  pointerGroups: PersonPointerGroup[];
+};
+
+// Vista de Superadmin: TODAS las personas registradas, anidadas en 3
+// niveles -- dirigente > sus punteros > las personas de cada puntero -- en
+// vez de una lista plana de punteros repitiendo el nombre del dirigente en
+// cada tarjeta. Incluye dirigentes sin punteros y punteros sin personas
+// para dar el panorama completo.
+export async function listAllPeopleGroupedByLeader(): Promise<PersonLeaderGroup[]> {
   const session = await getSessionContext();
   if (!session || session.role !== "superadmin") return [];
 
@@ -87,23 +94,35 @@ export async function listAllPeopleGroupedByPointer(): Promise<PersonPointerGrou
   if (peopleError) throw new Error(peopleError.message);
   if (personIndividualsError) throw new Error(personIndividualsError.message);
 
-  const leaderNameById = new Map((leaderIndividuals ?? []).map((row) => [row.id, row.full_name]));
-  const pointerNameById = new Map((pointerIndividuals ?? []).map((row) => [row.id, row.full_name]));
+  const pointerIndividualById = new Map((pointerIndividuals ?? []).map((row) => [row.id, row]));
   const personIndividualById = new Map((personIndividuals ?? []).map((row) => [row.id, row]));
 
-  const groups: PersonPointerGroup[] = (pointers ?? []).map((pointer) => ({
-    pointerId: pointer.id,
-    pointerName: pointerNameById.get(pointer.id) ?? "Puntero desconocido",
-    leaderName: leaderNameById.get(pointer.leader_id) ?? "dirigente desconocido",
-    people: [],
+  const leaderGroups: PersonLeaderGroup[] = (leaderIndividuals ?? []).map((leader) => ({
+    leaderId: leader.id,
+    leaderName: leader.full_name,
+    pointerGroups: [],
   }));
-  const groupByPointerId = new Map(groups.map((group) => [group.pointerId, group]));
+  const leaderGroupById = new Map(leaderGroups.map((group) => [group.leaderId, group]));
+
+  const pointerGroupByPointerId = new Map<string, PersonPointerGroup>();
+  for (const pointer of pointers ?? []) {
+    const individual = pointerIndividualById.get(pointer.id);
+    const leaderGroup = leaderGroupById.get(pointer.leader_id);
+    if (!individual || !leaderGroup) continue;
+    const pointerGroup: PersonPointerGroup = {
+      pointerId: pointer.id,
+      pointerName: individual.full_name,
+      people: [],
+    };
+    leaderGroup.pointerGroups.push(pointerGroup);
+    pointerGroupByPointerId.set(pointer.id, pointerGroup);
+  }
 
   for (const person of people ?? []) {
     const individual = personIndividualById.get(person.id);
-    const group = groupByPointerId.get(person.pointer_id);
-    if (!individual || !group) continue;
-    group.people.push({
+    const pointerGroup = pointerGroupByPointerId.get(person.pointer_id);
+    if (!individual || !pointerGroup) continue;
+    pointerGroup.people.push({
       id: individual.id,
       fullName: individual.full_name,
       dni: individual.dni_display,
@@ -112,12 +131,12 @@ export async function listAllPeopleGroupedByPointer(): Promise<PersonPointerGrou
     });
   }
 
-  for (const group of groups) {
-    group.people.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
+  for (const leaderGroup of leaderGroups) {
+    leaderGroup.pointerGroups.sort((a, b) => a.pointerName.localeCompare(b.pointerName, "es"));
+    for (const pointerGroup of leaderGroup.pointerGroups) {
+      pointerGroup.people.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
+    }
   }
 
-  return groups.sort((a, b) => {
-    const leaderCompare = a.leaderName.localeCompare(b.leaderName, "es");
-    return leaderCompare !== 0 ? leaderCompare : a.pointerName.localeCompare(b.pointerName, "es");
-  });
+  return leaderGroups.sort((a, b) => a.leaderName.localeCompare(b.leaderName, "es"));
 }

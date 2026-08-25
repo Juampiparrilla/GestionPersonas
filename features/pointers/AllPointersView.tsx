@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import type { PointerLeaderGroup } from "./queries";
 
-function LeaderGroupCard({ group }: { group: PointerLeaderGroup }) {
+function LeaderGroupCard({ group, index }: { group: PointerLeaderGroup; index: number }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -14,7 +14,9 @@ function LeaderGroupCard({ group }: { group: PointerLeaderGroup }) {
         onClick={() => setExpanded((value) => !value)}
         className="flex w-full items-center justify-between text-left"
       >
-        <p className="font-medium text-zinc-900">{group.leaderName}</p>
+        <p className="font-medium text-zinc-900">
+          {index + 1}. {group.leaderName}
+        </p>
         <div className="flex items-center gap-2">
           <span className="text-sm text-zinc-600">{group.pointers.length} punteros</span>
           <span className="text-lg text-zinc-400">{expanded ? "▲" : "▼"}</span>
@@ -55,8 +57,8 @@ export function AllPointersView({ groups }: { groups: PointerLeaderGroup[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {groups.map((group) => (
-        <LeaderGroupCard key={group.leaderId} group={group} />
+      {groups.map((group, index) => (
+        <LeaderGroupCard key={group.leaderId} group={group} index={index} />
       ))}
     </div>
   );

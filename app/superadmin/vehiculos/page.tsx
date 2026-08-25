@@ -10,7 +10,7 @@ export default async function SuperadminVehiculosPage() {
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-zinc-900">Vehículos</h1>
-        <Link href="/superadmin" className="text-sm text-zinc-600 underline underline-offset-2">
+        <Link href="/superadmin/reportes" className="text-sm text-zinc-600 underline underline-offset-2">
           Volver
         </Link>
       </div>

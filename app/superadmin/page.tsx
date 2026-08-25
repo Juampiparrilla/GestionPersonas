@@ -43,22 +43,10 @@ export default async function SuperadminHome() {
           👤 Dirigentes
         </Link>
         <Link
-          href="/superadmin/punteros"
+          href="/superadmin/reportes"
           className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
-          👤 Punteros
-        </Link>
-        <Link
-          href="/superadmin/personas"
-          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          🙋 Personas
-        </Link>
-        <Link
-          href="/superadmin/vehiculos"
-          className="flex h-14 items-center justify-center rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          🚗 Vehículos
+          📊 Reportes
         </Link>
       </div>
     </div>

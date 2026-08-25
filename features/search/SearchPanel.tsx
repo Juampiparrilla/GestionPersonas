@@ -9,9 +9,9 @@ import { searchDirectoryAction, type SearchResultKind, type SearchState } from "
 const initialState: SearchState = { error: null, results: [], query: null };
 
 const KIND_ICON: Record<SearchResultKind, string> = {
-  leader: "🧑‍💼",
+  leader: "👤",
   pointer: "👤",
-  person: "🙋",
+  person: "👤",
   vehicle: "🚗",
 };
 
