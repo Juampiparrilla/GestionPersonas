@@ -27,13 +27,14 @@ export function OrgAdminInviteButton({
   const [copied, setCopied] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [dni, setDni] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
   function handleGenerate() {
     setError(null);
     startTransition(async () => {
-      const result = await grantOrCreateOrgAdminAction(organizationId, fullName, email, phone || null);
+      const result = await grantOrCreateOrgAdminAction(organizationId, fullName, dni, email, phone || null);
       if (!result.ok) {
         setError(result.error);
         return;
@@ -106,8 +107,16 @@ export function OrgAdminInviteButton({
           className={inputClassName}
         />
         <input
+          type="text"
+          inputMode="numeric"
+          placeholder="DNI"
+          value={dni}
+          onChange={(event) => setDni(event.target.value)}
+          className={inputClassName}
+        />
+        <input
           type="email"
-          placeholder="Correo del administrador"
+          placeholder="Correo (opcional)"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           className={inputClassName}

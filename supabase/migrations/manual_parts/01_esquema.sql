@@ -68,8 +68,16 @@ create table profiles (
   full_name        text not null,
   role             user_role not null,
   leader_id        uuid,
+  -- 0015: login por DNI para roles sin fila en `individuals` (administrador
+  -- de organizacion / de plataforma). Unica GLOBALMENTE cuando esta cargada
+  -- (a diferencia del DNI de un dirigente, que es unico por organizacion):
+  -- estas cuentas las crea solo el Administrador de Plataforma, bajo
+  -- volumen, no vale la pena reproducir la ambiguedad entre organizaciones.
+  dni_normalized   text,
   created_at       timestamptz not null default now()
 );
+
+create unique index uq_profiles_dni on profiles (dni_normalized) where dni_normalized is not null;
 
 create table permissions (
   id           uuid primary key default gen_random_uuid(),

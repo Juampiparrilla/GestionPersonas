@@ -6,6 +6,7 @@ import { grantOrgAdminAccess } from "@/lib/leader-access";
 import { getRequestMeta } from "@/lib/request-meta";
 import { getSessionContext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { isValidDniFormat, normalizeDni } from "@/utils/dni";
 import { friendlyRpcError } from "@/utils/rpc-errors";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,16 +19,20 @@ export async function createOrganizationAction(
 ): Promise<CreateOrganizationState> {
   const orgName = String(formData.get("orgName") ?? "").trim();
   const adminFullName = String(formData.get("adminFullName") ?? "").trim();
+  const adminDni = String(formData.get("adminDni") ?? "").trim();
   const adminEmail = String(formData.get("adminEmail") ?? "").trim();
   const adminPhone = String(formData.get("adminPhone") ?? "").trim();
 
-  if (!orgName || !adminFullName || !adminEmail) {
+  if (!orgName || !adminFullName || !adminDni) {
     return {
-      error: "Completá el nombre de la organización, y el nombre y correo del administrador.",
+      error: "Completá el nombre de la organización, y el nombre y DNI del administrador.",
       success: false,
     };
   }
-  if (!EMAIL_PATTERN.test(adminEmail)) {
+  if (!isValidDniFormat(adminDni)) {
+    return { error: "El DNI del administrador no es válido.", success: false };
+  }
+  if (adminEmail && !EMAIL_PATTERN.test(adminEmail)) {
     return { error: "El correo del administrador no es válido.", success: false };
   }
 
@@ -59,7 +64,9 @@ export async function createOrganizationAction(
     organizationId: organizationId as string,
     fullName: adminFullName,
     phone: adminPhone || null,
-    email: adminEmail,
+    email: adminEmail || null,
+    dniNormalized: normalizeDni(adminDni),
+    dniForMessage: adminDni,
     existingProfileId: null,
   });
 
@@ -76,6 +83,7 @@ export type OrgInviteResult =
 export async function grantOrCreateOrgAdminAction(
   organizationId: string,
   adminFullName: string,
+  adminDni: string,
   adminEmail: string,
   adminPhone: string | null
 ): Promise<OrgInviteResult> {
@@ -88,23 +96,31 @@ export async function grantOrCreateOrgAdminAction(
 
   const { data: existingAdmin } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, full_name")
     .eq("organization_id", organizationId)
     .eq("role", "superadmin")
     .maybeSingle();
 
-  if (!existingAdmin && (!adminFullName.trim() || !adminEmail.trim())) {
-    return { ok: false, error: "Completá el nombre y el correo del administrador." };
+  if (!existingAdmin && (!adminFullName.trim() || !adminDni.trim())) {
+    return { ok: false, error: "Completá el nombre y el DNI del administrador." };
   }
-  if (!existingAdmin && !EMAIL_PATTERN.test(adminEmail)) {
+  if (!existingAdmin && !isValidDniFormat(adminDni)) {
+    return { ok: false, error: "El DNI del administrador no es válido." };
+  }
+  if (!existingAdmin && adminEmail && !EMAIL_PATTERN.test(adminEmail)) {
     return { ok: false, error: "El correo del administrador no es válido." };
   }
 
   const access = await grantOrgAdminAccess({
     organizationId,
-    fullName: adminFullName,
+    // Al reenviar (existingAdmin presente), el boton no pide estos datos
+    // de nuevo -- se usa el nombre ya guardado, no lo que haya quedado en
+    // el estado del formulario (que ni se muestra en ese caso).
+    fullName: existingAdmin ? existingAdmin.full_name : adminFullName,
     phone: adminPhone,
-    email: adminEmail || undefined,
+    email: adminEmail || null,
+    dniNormalized: existingAdmin ? undefined : normalizeDni(adminDni),
+    dniForMessage: existingAdmin ? undefined : adminDni,
     existingProfileId: existingAdmin?.id ?? null,
   });
 

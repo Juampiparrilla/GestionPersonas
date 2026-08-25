@@ -7,6 +7,7 @@ import { getSuperadminStats } from "@/features/leaders/queries";
 import { GlobalLoadingToggle } from "@/features/settings/GlobalLoadingToggle";
 import { getLoadingEnabled } from "@/features/settings/queries";
 import { SearchPanel } from "@/features/search/SearchPanel";
+import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function SuperadminHome() {
@@ -22,9 +23,12 @@ export default async function SuperadminHome() {
   return (
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">
-          Bienvenido, {session?.fullName}
-        </h1>
+        <div>
+          <h1 className="text-xl font-semibold text-zinc-900">
+            Bienvenido, {session?.fullName}
+          </h1>
+          <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
+        </div>
         <LogoutButton />
       </div>
 

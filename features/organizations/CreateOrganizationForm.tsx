@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 
 import { Spinner } from "@/components/Spinner";
+import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
 
@@ -45,16 +46,17 @@ export function CreateOrganizationForm({ onCreated }: { onCreated: () => void })
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="adminEmail" className="text-sm font-medium text-zinc-700">
-          Correo electrónico *
+        <label htmlFor="adminDni" className="text-sm font-medium text-zinc-700">
+          DNI *
         </label>
-        <input
-          id="adminEmail"
-          name="adminEmail"
-          type="email"
-          required
-          className={inputClassName}
-        />
+        <DniField id="adminDni" name="adminDni" required className={inputClassName} />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="adminEmail" className="text-sm font-medium text-zinc-700">
+          Correo electrónico (opcional)
+        </label>
+        <input id="adminEmail" name="adminEmail" type="email" className={inputClassName} />
       </div>
 
       <div className="flex flex-col gap-1">

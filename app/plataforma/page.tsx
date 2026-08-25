@@ -1,6 +1,7 @@
 import { LogoutButton } from "@/components/LogoutButton";
 import { OrganizationsClient } from "@/features/organizations/OrganizationsClient";
 import { listOrganizations } from "@/features/organizations/queries";
+import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function PlataformaHome() {
@@ -10,7 +11,10 @@ export default async function PlataformaHome() {
   return (
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+          <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
+        </div>
         <LogoutButton />
       </div>
 

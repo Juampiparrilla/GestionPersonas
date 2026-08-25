@@ -42,6 +42,8 @@ type ProfileRow = {
   full_name: string;
   role: UserRole;
   leader_id: string | null;
+  // 0015: login por DNI para roles sin fila en `individuals`.
+  dni_normalized: string | null;
   created_at: string;
   password_set_at: string | null;
 };

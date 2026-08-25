@@ -15,17 +15,20 @@ export type LoginState = { error: string | null };
 // el cliente normal, RLS bloquearia la lectura). La contraseña en si sigue
 // verificandose con el flujo normal de Supabase Auth, nunca se saltea.
 //
-// Nota multitenant (0014): dni_normalized es unico por organizacion, no
-// globalmente -- dos organizaciones distintas pueden tener cada una un
-// dirigente con el mismo DNI. Sin un selector de organizacion en el login
-// (fuera de alcance de esta fase), no hay forma de saber cual de los dos
-// quiso entrar: en vez de elegir uno arbitrariamente (podria hacer entrar
-// a la persona equivocada a la organizacion equivocada, aunque el propio
-// password nunca coincidiria por casualidad, es una ambiguedad real que
-// hay que resolver a proposito, no en silencio), se devuelve "no
-// encontrado" si hay mas de una coincidencia. Login por correo (el que
-// usan platform_admin/superadmin/reports) no tiene este problema: el
-// correo ya es global.
+// Nota multitenant (0014): dni_normalized de un DIRIGENTE es unico por
+// organizacion, no globalmente -- dos organizaciones distintas pueden tener
+// cada una un dirigente con el mismo DNI. Sin un selector de organizacion
+// en el login (fuera de alcance de esta fase), no hay forma de saber cual
+// de los dos quiso entrar: en vez de elegir uno arbitrariamente (podria
+// hacer entrar a la persona equivocada a la organizacion equivocada,
+// aunque el propio password nunca coincidiria por casualidad, es una
+// ambiguedad real que hay que resolver a proposito, no en silencio), se
+// devuelve "no encontrado" si hay mas de una coincidencia.
+//
+// Administradores de organizacion/plataforma (0015) resuelven por
+// profiles.dni_normalized en cambio, que SI es unico globalmente (los crea
+// solo el Administrador de Plataforma, bajo volumen) -- no tienen ese
+// problema de ambiguedad.
 async function resolveLoginEmail(
   admin: ReturnType<typeof createAdminClient>,
   identifier: string
@@ -43,18 +46,33 @@ async function resolveLoginEmail(
     .eq("dni_normalized", dni)
     .eq("position", "leader");
 
-  if (!individuals || individuals.length !== 1) return null;
+  if (individuals && individuals.length === 1) {
+    const { data: leader } = await admin
+      .from("leaders")
+      .select("profile_id")
+      .eq("id", individuals[0].id)
+      .maybeSingle();
 
-  const { data: leader } = await admin
-    .from("leaders")
-    .select("profile_id")
-    .eq("id", individuals[0].id)
+    if (leader?.profile_id) {
+      const { data: userResult } = await admin.auth.admin.getUserById(leader.profile_id);
+      if (userResult.user?.email) return userResult.user.email;
+    }
+  } else if (individuals && individuals.length > 1) {
+    return null;
+  }
+
+  const { data: adminProfile } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("dni_normalized", dni)
     .maybeSingle();
 
-  if (!leader?.profile_id) return null;
+  if (adminProfile) {
+    const { data: userResult } = await admin.auth.admin.getUserById(adminProfile.id);
+    return userResult.user?.email ?? null;
+  }
 
-  const { data: userResult } = await admin.auth.admin.getUserById(leader.profile_id);
-  return userResult.user?.email ?? null;
+  return null;
 }
 
 export async function login(

@@ -83,6 +83,9 @@ export async function grantLeaderAccess({
       organization_id: organizationId,
       full_name: fullName,
       role: "leader",
+      // Los dirigentes resuelven el login por individuals/leaders, no por
+      // esta columna (0015, especifica de administradores).
+      dni_normalized: null,
     });
 
     if (profileError) {
@@ -122,12 +125,15 @@ export async function grantLeaderAccess({
 }
 
 // Igual concepto que grantLeaderAccess de arriba, pero para el
-// Administrador de una Organización (multitenant, 0014): a diferencia de
-// un dirigente, el admin de organización NO tiene fila en `individuals`
-// (no forma parte de la jerarquía dirigente→puntero→persona, no tiene
-// DNI que resolver en el login), así que necesita un email REAL desde el
-// principio -- no se le puede armar uno sintético por DNI -- y no hay
-// `leaders` al que vincular vía fn_link_leader_profile. Se mantiene como
+// Administrador de una Organización (multitenant, 0014/0015): a diferencia
+// de un dirigente, el admin de organización NO tiene fila en `individuals`
+// (no forma parte de la jerarquía dirigente→puntero→persona) -- su DNI se
+// guarda directo en `profiles.dni_normalized` (único globalmente, ver
+// 0015) en vez de en esa tabla, y no hay `leaders` al que vincular vía
+// fn_link_leader_profile. El correo es opcional: si no se carga uno real,
+// se arma uno sintético (mismo mecanismo que ya usan los dirigentes) para
+// que la cuenta de Supabase Auth igual tenga un email único interno --
+// nunca se le muestra a la persona, entra con su DNI. Se mantiene como
 // función separada (no una rama más dentro de grantLeaderAccess) para no
 // tocar ese flujo, que ya funciona y está probado.
 export async function grantOrgAdminAccess({
@@ -135,32 +141,49 @@ export async function grantOrgAdminAccess({
   fullName,
   phone,
   email,
+  dniNormalized,
+  dniForMessage,
   existingProfileId,
 }: {
   organizationId: string;
   fullName: string;
   phone: string | null;
-  // Requerido al crear (no hay de donde sacarlo). Al reenviar
-  // (existingProfileId presente) se puede omitir: se resuelve solo,
-  // leyendo el email ya cargado en auth.users -- igual criterio que
-  // grantLeaderAccess.
-  email?: string;
+  // Opcional al crear (se arma uno sintético si falta). Al reenviar
+  // (existingProfileId presente) se ignora: se resuelve solo, leyendo el
+  // email ya cargado en auth.users -- igual criterio que grantLeaderAccess.
+  email?: string | null;
+  // Requerido al crear. Al reenviar se ignora: se lee el que ya quedó
+  // guardado en profiles.dni_normalized.
+  dniNormalized?: string;
+  dniForMessage?: string;
   existingProfileId: string | null;
 }): Promise<GrantAccessResult> {
   const admin = createAdminClient();
   const headersList = await headers();
   const origin = headersList.get("origin") ?? "";
 
-  let resolvedEmail = email ?? null;
+  let resolvedEmail: string | null = null;
+  let resolvedDniForMessage = dniForMessage ?? null;
+
   if (existingProfileId) {
-    const { data: userResult } = await admin.auth.admin.getUserById(existingProfileId);
+    const [{ data: userResult }, { data: existingProfile }] = await Promise.all([
+      admin.auth.admin.getUserById(existingProfileId),
+      admin.from("profiles").select("dni_normalized").eq("id", existingProfileId).maybeSingle(),
+    ]);
     if (!userResult.user?.email) {
       return { ok: false, error: "No pudimos generar el link. Probá de nuevo." };
     }
     resolvedEmail = userResult.user.email;
+    resolvedDniForMessage = existingProfile?.dni_normalized ?? null;
+  } else {
+    if (!dniNormalized) {
+      return { ok: false, error: "Falta el DNI del administrador." };
+    }
+    resolvedEmail = email && email.trim() ? email.trim() : buildSyntheticEmail(dniNormalized, organizationId);
   }
+
   if (!resolvedEmail) {
-    return { ok: false, error: "Falta el correo del administrador." };
+    return { ok: false, error: "No pudimos generar el link. Probá de nuevo." };
   }
   const emailToUse = resolvedEmail;
 
@@ -182,6 +205,7 @@ export async function grantOrgAdminAccess({
       organization_id: organizationId,
       full_name: fullName,
       role: "superadmin",
+      dni_normalized: dniNormalized ?? null,
     });
 
     if (profileError) {
@@ -197,7 +221,7 @@ export async function grantOrgAdminAccess({
   const message =
     `Hola ${fullName}! Te sumamos como administrador de tu organización en Gestión de ` +
     `Personas. Entrá a este link para crear tu contraseña: ${ownLink}\n\nDespués, para ` +
-    `ingresar usá tu correo (${emailToUse}) y esa contraseña.`;
+    `ingresar usá tu DNI (${resolvedDniForMessage ?? ""}) y esa contraseña.`;
 
   return {
     ok: true,
