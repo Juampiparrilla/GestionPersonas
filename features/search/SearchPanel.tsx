@@ -53,12 +53,12 @@ export function SearchPanel() {
           type="text"
           name="query"
           placeholder="DNI, nombre o patente"
-          className="h-12 flex-1 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
+          className="h-14 flex-1 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
         />
         <button
           type="submit"
           disabled={pending}
-          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+          className="flex h-14 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
         >
           {pending ? (
             <>
