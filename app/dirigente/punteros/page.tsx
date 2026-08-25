@@ -29,12 +29,11 @@ export default async function PunterosPage() {
 
       <ReportDownloadButtons
         pdfHref="/api/reportes/mis-punteros/pdf"
-        excelHref="/api/reportes/mis-punteros/excel"
+        showExcel={false}
         primaryLabel="Punteros"
         secondary={{
           label: "Personas registradas",
           pdfHref: "/api/reportes/mis-personas/pdf",
-          excelHref: "/api/reportes/mis-personas/excel",
         }}
       />
 

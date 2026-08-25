@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 
+import { PasswordField } from "@/components/fields/PasswordField";
+
 import { updatePassword, type UpdatePasswordState } from "./actions";
 
 const initialState: UpdatePasswordState = { error: null };
@@ -15,10 +17,9 @@ export function UpdatePasswordForm() {
         <label htmlFor="password" className="text-sm font-medium text-zinc-700">
           Contraseña nueva
         </label>
-        <input
+        <PasswordField
           id="password"
           name="password"
-          type="password"
           required
           autoComplete="new-password"
           className="h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
@@ -29,10 +30,9 @@ export function UpdatePasswordForm() {
         <label htmlFor="confirmPassword" className="text-sm font-medium text-zinc-700">
           Repetí la contraseña
         </label>
-        <input
+        <PasswordField
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           required
           autoComplete="new-password"
           className="h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"

@@ -60,6 +60,7 @@ export function SearchPanel() {
           type="text"
           name="query"
           placeholder="DNI, nombre o patente"
+          maxLength={60}
           className="h-14 flex-1 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
         />
         <button

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { LoginIdentifierField } from "@/components/fields/LoginIdentifierField";
+import { PasswordField } from "@/components/fields/PasswordField";
 
 import { login, type LoginState } from "./actions";
 
@@ -29,10 +30,9 @@ export function LoginForm() {
         <label htmlFor="password" className="text-sm font-medium text-zinc-700">
           Contraseña
         </label>
-        <input
+        <PasswordField
           id="password"
           name="password"
-          type="password"
           required
           autoComplete="current-password"
           className="h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"

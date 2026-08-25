@@ -55,18 +55,28 @@ create policy leaders_select on leaders for select
     )
   );
 
+-- Un dirigente DADO DE BAJA (is_leader_removed) pierde tambien la lectura,
+-- no solo la escritura (ver migracion 0012) -- si no, alguien removido que
+-- todavia recuerda su contraseña podria seguir viendo sus datos viejos.
+-- read_only NO activa is_removed, asi que ese modo sigue leyendo normal.
 create policy pointers_select on pointers for select
   using (
     (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or leader_id = (select leader_id from fn_profile_context())
+    or (
+      leader_id = (select leader_id from fn_profile_context())
+      and not (select is_leader_removed from fn_profile_context())
+    )
   );
 
 create policy registered_people_select on registered_people for select
   using (
     (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or exists (
-      select 1 from pointers p
-      where p.id = registered_people.pointer_id and p.leader_id = (select leader_id from fn_profile_context())
+    or (
+      not (select is_leader_removed from fn_profile_context())
+      and exists (
+        select 1 from pointers p
+        where p.id = registered_people.pointer_id and p.leader_id = (select leader_id from fn_profile_context())
+      )
     )
   );
 
@@ -82,7 +92,10 @@ create policy individuals_select_admin on individuals for select
 create policy vehicles_select on vehicles for select
   using (
     (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or leader_id = (select leader_id from fn_profile_context())
+    or (
+      leader_id = (select leader_id from fn_profile_context())
+      and not (select is_leader_removed from fn_profile_context())
+    )
   );
 
 create policy audit_select_admin on audit_logs for select

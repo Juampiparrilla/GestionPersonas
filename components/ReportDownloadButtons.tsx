@@ -11,14 +11,16 @@ export function ReportDownloadButtons({
   pdfHref,
   excelHref,
   showPdfModes = false,
+  showExcel = true,
   primaryLabel,
   secondary,
 }: {
   pdfHref: string;
-  excelHref: string;
+  excelHref?: string;
   showPdfModes?: boolean;
+  showExcel?: boolean;
   primaryLabel?: string;
-  secondary?: { label: string; pdfHref: string; excelHref: string };
+  secondary?: { label: string; pdfHref: string; excelHref?: string };
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -68,10 +70,12 @@ export function ReportDownloadButtons({
                 <Files className="h-4 w-4 shrink-0" aria-hidden="true" />
                 PDF - Con saltos de línea
               </a>
-              <a href={excelHref} className={LINK_CLASS}>
-                <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
-                Excel
-              </a>
+              {showExcel && excelHref ? (
+                <a href={excelHref} className={LINK_CLASS}>
+                  <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Excel
+                </a>
+              ) : null}
             </>
           ) : (
             <div className="flex gap-2">
@@ -79,10 +83,12 @@ export function ReportDownloadButtons({
                 <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
                 PDF
               </a>
-              <a href={excelHref} className={LINK_CLASS}>
-                <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
-                Excel
-              </a>
+              {showExcel && excelHref ? (
+                <a href={excelHref} className={LINK_CLASS}>
+                  <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Excel
+                </a>
+              ) : null}
             </div>
           )}
         </div>
@@ -95,10 +101,12 @@ export function ReportDownloadButtons({
                 <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
                 PDF
               </a>
-              <a href={secondary.excelHref} className={LINK_CLASS}>
-                <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
-                Excel
-              </a>
+              {showExcel && secondary.excelHref ? (
+                <a href={secondary.excelHref} className={LINK_CLASS}>
+                  <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Excel
+                </a>
+              ) : null}
             </div>
           </div>
         ) : null}

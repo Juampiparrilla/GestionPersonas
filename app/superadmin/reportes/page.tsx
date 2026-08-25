@@ -1,4 +1,4 @@
-import { ArrowLeft, Car, FileSliders, UsersRound } from "lucide-react";
+import { ArrowLeft, Car, FileSliders, UserRound, UsersRound } from "lucide-react";
 import Link from "next/link";
 
 export default function SuperadminReportesPage() {
@@ -16,6 +16,13 @@ export default function SuperadminReportesPage() {
       </div>
 
       <div className="flex flex-col gap-3">
+        <Link
+          href="/superadmin/dirigentes"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          <UserRound className="h-5 w-5" aria-hidden="true" />
+          Dirigentes
+        </Link>
         <Link
           href="/superadmin/punteros"
           className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
