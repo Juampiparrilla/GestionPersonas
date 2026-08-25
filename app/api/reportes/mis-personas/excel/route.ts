@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { listPeopleForPointer } from "@/features/people/queries";
+import { listMyPeopleGroupedByPointer, listPeopleForPointer } from "@/features/people/queries";
 import type { PersonLeaderGroup } from "@/features/people/queries";
 import { getPointerBasics } from "@/features/pointers/queries";
 import { getSessionContext } from "@/lib/session";
@@ -14,8 +14,19 @@ export async function GET(request: NextRequest) {
   }
 
   const pointerId = request.nextUrl.searchParams.get("pointerId");
+
   if (!pointerId) {
-    return NextResponse.json({ error: "Falta el puntero" }, { status: 400 });
+    const pointerGroups = await listMyPeopleGroupedByPointer();
+    const groups: PersonLeaderGroup[] = [
+      { leaderId: session.leaderId, leaderName: `Dirigente: ${session.fullName}`, pointerGroups },
+    ];
+    const buffer = await buildPeopleReportExcel(groups);
+    return new NextResponse(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": contentDispositionHeader(buildReportFilename([session.fullName, "Personas"], "xlsx")),
+      },
+    });
   }
 
   const pointer = await getPointerBasics(pointerId);
@@ -32,12 +43,11 @@ export async function GET(request: NextRequest) {
     },
   ];
   const buffer = await buildPeopleReportExcel(groups);
-
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": contentDispositionHeader(
-        buildReportFilename([session.fullName, pointer.fullName], "xlsx")
+        buildReportFilename([session.fullName, pointer.fullName, "Personas"], "xlsx")
       ),
     },
   });

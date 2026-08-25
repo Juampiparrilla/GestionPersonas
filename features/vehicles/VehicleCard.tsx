@@ -3,17 +3,9 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
-import type { VehicleType } from "@/types/domain";
-
 import { VehicleRowActions } from "./VehicleRowActions";
+import { VEHICLE_TYPE_LABEL } from "./vehicleTypeLabel";
 import type { VehicleListItem } from "./queries";
-
-export const VEHICLE_TYPE_LABEL: Record<VehicleType, string> = {
-  auto: "Auto",
-  moto: "Moto",
-  traffic: "Traffic",
-  colectivo: "Colectivo",
-};
 
 export function VehicleCard({
   vehicle,

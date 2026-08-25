@@ -1,4 +1,4 @@
-import { ArrowLeft, Car, UsersRound } from "lucide-react";
+import { ArrowLeft, Car, FileSliders, UsersRound } from "lucide-react";
 import Link from "next/link";
 
 export default function SuperadminReportesPage() {
@@ -36,6 +36,13 @@ export default function SuperadminReportesPage() {
         >
           <Car className="h-5 w-5" aria-hidden="true" />
           Vehículos
+        </Link>
+        <Link
+          href="/superadmin/reportes/personalizado"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white text-base font-semibold text-zinc-900 transition-colors hover:bg-zinc-100"
+        >
+          <FileSliders className="h-5 w-5" aria-hidden="true" />
+          Reporte personalizado
         </Link>
       </div>
     </div>

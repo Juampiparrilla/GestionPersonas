@@ -21,7 +21,7 @@ export async function GET() {
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": contentDispositionHeader(buildReportFilename([session.fullName], "xlsx")),
+      "Content-Disposition": contentDispositionHeader(buildReportFilename([session.fullName, "Vehículos"], "xlsx")),
     },
   });
 }

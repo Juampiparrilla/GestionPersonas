@@ -7,10 +7,12 @@ export function ReportDownloadButtons({
   pdfHref,
   excelHref,
   showPdfModes = false,
+  secondary,
 }: {
   pdfHref: string;
   excelHref: string;
   showPdfModes?: boolean;
+  secondary?: { label: string; pdfHref: string; excelHref: string };
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -81,6 +83,26 @@ export function ReportDownloadButtons({
           <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
           Excel
         </a>
+
+        {secondary ? (
+          <>
+            <p className="mt-2 text-xs font-medium uppercase tracking-wide text-zinc-500">{secondary.label}</p>
+            <a
+              href={secondary.pdfHref}
+              className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              PDF
+            </a>
+            <a
+              href={secondary.excelHref}
+              className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
+              Excel
+            </a>
+          </>
+        ) : null}
       </div>
     </div>
   );

@@ -27,7 +27,15 @@ export default async function PunterosPage() {
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref="/api/reportes/mis-punteros/pdf" excelHref="/api/reportes/mis-punteros/excel" />
+      <ReportDownloadButtons
+        pdfHref="/api/reportes/mis-punteros/pdf"
+        excelHref="/api/reportes/mis-punteros/excel"
+        secondary={{
+          label: "Personas registradas",
+          pdfHref: "/api/reportes/mis-personas/pdf",
+          excelHref: "/api/reportes/mis-personas/excel",
+        }}
+      />
 
       <PointersClient pointers={pointers} canWrite={writeStatus.canWrite} />
     </div>

@@ -47,6 +47,74 @@ export async function listPeopleForPointer(pointerId: string): Promise<PersonLis
   return items.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
 }
 
+// Para el reporte "Personas registradas" del dirigente desde Mis Punteros:
+// todos sus punteros con las personas de cada uno, sin el nivel de dirigente
+// (ya se sabe quien es por la sesion).
+export async function listMyPeopleGroupedByPointer(): Promise<PersonPointerGroup[]> {
+  const session = await getSessionContext();
+  if (!session || session.role !== "leader" || !session.leaderId) return [];
+
+  const supabase = await createClient();
+
+  const [{ data: pointers, error: pointersError }, { data: pointerIndividuals, error: pointerIndividualsError }] =
+    await Promise.all([
+      supabase.from("pointers").select("id").eq("leader_id", session.leaderId).eq("is_removed", false),
+      supabase.from("individuals").select("id, full_name").eq("position", "pointer").eq("status", "active"),
+    ]);
+
+  if (pointersError) throw new Error(pointersError.message);
+  if (pointerIndividualsError) throw new Error(pointerIndividualsError.message);
+
+  const pointerIndividualById = new Map((pointerIndividuals ?? []).map((row) => [row.id, row]));
+
+  const pointerGroups: PersonPointerGroup[] = [];
+  const pointerGroupByPointerId = new Map<string, PersonPointerGroup>();
+  for (const pointer of pointers ?? []) {
+    const individual = pointerIndividualById.get(pointer.id);
+    if (!individual) continue;
+    const pointerGroup: PersonPointerGroup = { pointerId: pointer.id, pointerName: individual.full_name, people: [] };
+    pointerGroups.push(pointerGroup);
+    pointerGroupByPointerId.set(pointer.id, pointerGroup);
+  }
+
+  if (pointerGroups.length > 0) {
+    const [{ data: people, error: peopleError }, { data: personIndividuals, error: personIndividualsError }] =
+      await Promise.all([
+        supabase.from("registered_people").select("id, pointer_id").eq("is_removed", false),
+        supabase
+          .from("individuals")
+          .select("id, full_name, dni_display, phone, address")
+          .eq("position", "person")
+          .eq("status", "active"),
+      ]);
+
+    if (peopleError) throw new Error(peopleError.message);
+    if (personIndividualsError) throw new Error(personIndividualsError.message);
+
+    const personIndividualById = new Map((personIndividuals ?? []).map((row) => [row.id, row]));
+
+    for (const person of people ?? []) {
+      const individual = personIndividualById.get(person.id);
+      const pointerGroup = pointerGroupByPointerId.get(person.pointer_id);
+      if (!individual || !pointerGroup) continue;
+      pointerGroup.people.push({
+        id: individual.id,
+        fullName: individual.full_name,
+        dni: individual.dni_display,
+        phone: individual.phone,
+        address: individual.address,
+      });
+    }
+  }
+
+  pointerGroups.sort((a, b) => a.pointerName.localeCompare(b.pointerName, "es"));
+  for (const pointerGroup of pointerGroups) {
+    pointerGroup.people.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
+  }
+
+  return pointerGroups;
+}
+
 export type PersonPointerGroup = {
   pointerId: string;
   pointerName: string;

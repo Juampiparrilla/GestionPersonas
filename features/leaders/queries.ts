@@ -111,6 +111,23 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
   return items.sort((a, b) => a.fullName.localeCompare(b.fullName, "es"));
 }
 
+export type LeaderBasics = { id: string; fullName: string };
+
+export async function getLeaderBasics(leaderId: string): Promise<LeaderBasics | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("individuals")
+    .select("id, full_name")
+    .eq("id", leaderId)
+    .eq("position", "leader")
+    .maybeSingle();
+
+  if (!data) return null;
+
+  return { id: data.id, fullName: data.full_name };
+}
+
 export async function getSuperadminStats() {
   const supabase = await createClient();
 

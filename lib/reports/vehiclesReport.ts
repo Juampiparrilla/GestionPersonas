@@ -1,6 +1,6 @@
 import type { Content } from "pdfmake/interfaces";
 
-import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/VehicleCard";
+import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/vehicleTypeLabel";
 import type { VehicleLeaderGroup } from "@/features/vehicles/queries";
 
 import { addEmptyRow, addGroupHeaderRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";

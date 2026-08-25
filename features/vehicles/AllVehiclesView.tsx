@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
-import { VEHICLE_TYPE_LABEL } from "./VehicleCard";
+import { VEHICLE_TYPE_LABEL } from "./vehicleTypeLabel";
 import type { VehicleLeaderGroup } from "./queries";
 
 function LeaderGroupCard({ group, index }: { group: VehicleLeaderGroup; index: number }) {

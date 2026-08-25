@@ -1,6 +1,7 @@
 import pdfMake from "pdfmake";
 import type { Content, TDocumentDefinitions } from "pdfmake/interfaces";
 
+import { REPORT_TIME_ZONE } from "./filename";
 import { PDF_FONTS } from "./pdfFonts";
 
 const GROUP_HEADER_FILL = "#27272a"; // zinc-800
@@ -17,7 +18,11 @@ export function parsePdfReportMode(value: string | null): PdfReportMode {
 }
 
 export function formatGeneratedAt(): string {
-  return new Date().toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
+  return new Date().toLocaleString("es-AR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: REPORT_TIME_ZONE,
+  });
 }
 
 // Barra resaltada de encabezado de grupo (ej. un dirigente). `variant`
