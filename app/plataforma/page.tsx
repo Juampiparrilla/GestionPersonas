@@ -1,3 +1,6 @@
+import { ClipboardList } from "lucide-react";
+import Link from "next/link";
+
 import { LogoutButton } from "@/components/LogoutButton";
 import { OrganizationsClient } from "@/features/organizations/OrganizationsClient";
 import { listOrganizations } from "@/features/organizations/queries";
@@ -17,6 +20,14 @@ export default async function PlataformaHome() {
         </div>
         <LogoutButton />
       </div>
+
+      <Link
+        href="/plataforma/auditoria"
+        className="flex h-12 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+      >
+        <ClipboardList className="h-5 w-5" aria-hidden="true" />
+        Auditoría
+      </Link>
 
       <div>
         <h2 className="text-lg font-semibold text-zinc-900">Organizaciones</h2>

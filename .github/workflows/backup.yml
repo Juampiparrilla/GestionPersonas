@@ -1,0 +1,54 @@
+# Backup real de la base de datos (Fase 7 del plan multitenant).
+#
+# Por que GitHub Actions y no Vercel Cron: un dump real con `pg_dump` necesita
+# ese binario, que no esta disponible dentro de una funcion serverless de
+# Vercel (ni Hobby ni Pro lo traen, no se puede "instalar" en runtime de forma
+# confiable). GitHub Actions si permite instalar paquetes del sistema
+# (postgresql-client) en el runner, y su cron no tiene la limitacion de
+# "una vez al dia nomas" que tiene Vercel Hobby -- igual se deja en un
+# disparo diario porque es lo unico que necesita este backup.
+#
+# Por que UN SOLO dump para toda la base y no uno por organizacion: pg_dump
+# ya es rapido y consistente para el tamano actual de esta app: separar por
+# organizacion multiplicaria el trabajo sin necesidad (el aislamiento entre
+# organizaciones para quien LEE el historial se resuelve en
+# scheduled_job_runs, no hace falta resolverlo tambien en el archivo).
+name: Backup de la base de datos
+
+on:
+  schedule:
+    # 06:00 UTC = 03:00 America/Argentina/Buenos_Aires (sin horario de
+    # verano en Argentina desde hace anios, el offset -3 es fijo todo el
+    # ano).
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      organization_id:
+        description: >
+          UUID de la organizacion para "Generar respaldo ahora" (lo manda la
+          app). Dejar vacio para probar la corrida automatica a mano.
+        required: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias (solo necesita @supabase/supabase-js)
+        run: npm ci
+
+      - name: Instalar postgresql-client (trae pg_dump)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Generar y subir el backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          FORCE_ORGANIZATION_ID: ${{ github.event.inputs.organization_id }}
+        run: node scripts/backup/run.mjs

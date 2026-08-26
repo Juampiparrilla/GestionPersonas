@@ -4,6 +4,7 @@ import { listActiveLeaders } from "@/features/leaders/queries";
 import { getSessionContext } from "@/lib/session";
 import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
 import { buildLeadersReportExcel } from "@/lib/reports/leadersReport";
+import { getOrganizationName } from "@/lib/reports/organizationName";
 
 export async function GET() {
   const session = await getSessionContext();
@@ -11,8 +12,11 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const leaders = await listActiveLeaders();
-  const buffer = await buildLeadersReportExcel(leaders);
+  const [leaders, organizationName] = await Promise.all([
+    listActiveLeaders(),
+    getOrganizationName(session.organizationId!),
+  ]);
+  const buffer = await buildLeadersReportExcel(leaders, organizationName);
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

@@ -56,7 +56,7 @@ export async function createLeaderAction(
   // asi el boton de invitar/reenviar de la lista ya tiene algo para mandar.
   // Si esto falla, no es un error para el usuario: el dirigente igual quedo
   // creado, y el acceso se puede generar despues desde la lista.
-  await grantLeaderAccess({
+  const access = await grantLeaderAccess({
     supabase,
     leaderId: leaderId as string,
     fullName,
@@ -68,6 +68,14 @@ export async function createLeaderAction(
     ip,
     userAgent,
   });
+
+  if (access.ok) {
+    await supabase.rpc("fn_log_invitation_sent", {
+      p_leader_id: leaderId as string,
+      p_ip: ip,
+      p_user_agent: userAgent,
+    });
+  }
 
   return { error: null, success: true };
 }
@@ -118,6 +126,8 @@ export async function resendInviteAction(leaderId: string): Promise<InviteResult
   if (!access.ok) {
     return { ok: false, error: access.error };
   }
+
+  await supabase.rpc("fn_log_invitation_sent", { p_leader_id: leaderId, p_ip: ip, p_user_agent: userAgent });
 
   revalidatePath("/superadmin/dirigentes");
   return { ok: true, whatsappLink: access.whatsappLink, shareMessage: access.shareMessage };

@@ -18,6 +18,10 @@ export async function createPointerAction(
   const dni = String(formData.get("dni") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
+  // Solo lo llena CreatePointerForm cuando lo usa la carga asistida del
+  // Administrador de Organización (ver features/carga-asistida) -- un
+  // dirigente jamas manda este campo, siempre usa el suyo propio.
+  const targetLeaderId = String(formData.get("leaderId") ?? "").trim();
 
   if (!fullName || !dni) {
     return { error: "Completá el nombre y el DNI.", success: false };
@@ -27,7 +31,18 @@ export async function createPointerAction(
   }
 
   const session = await getSessionContext();
-  if (!session || session.role !== "leader" || !session.leaderId) {
+  if (!session) {
+    return { error: "No tenés permiso para hacer esto.", success: false };
+  }
+
+  let leaderId: string;
+  if (session.role === "leader" && session.leaderId) {
+    leaderId = session.leaderId;
+  } else if (session.role === "superadmin" && targetLeaderId) {
+    // fn_create_pointer ya valida que ese dirigente pertenezca a la
+    // organizacion del que llama -- no hace falta repetir ese chequeo acá.
+    leaderId = targetLeaderId;
+  } else {
     return { error: "No tenés permiso para hacer esto.", success: false };
   }
 
@@ -35,7 +50,7 @@ export async function createPointerAction(
   const { ip, userAgent } = await getRequestMeta();
 
   const { error } = await supabase.rpc("fn_create_pointer", {
-    p_leader_id: session.leaderId,
+    p_leader_id: leaderId,
     p_dni: normalizeDni(dni),
     p_full_name: fullName,
     p_phone: phone || null,
@@ -49,6 +64,7 @@ export async function createPointerAction(
   }
 
   revalidatePath("/dirigente/punteros");
+  revalidatePath("/superadmin/carga-asistida");
   return { error: null, success: true };
 }
 

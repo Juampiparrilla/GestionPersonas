@@ -7,6 +7,7 @@ import { getPointerBasics, listAllPointersGroupedByLeader } from "@/features/poi
 import { listAllVehiclesGroupedByLeader } from "@/features/vehicles/queries";
 import { getSessionContext } from "@/lib/session";
 import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
+import { getOrganizationName } from "@/lib/reports/organizationName";
 import { buildPeopleReportPdf } from "@/lib/reports/peopleReport";
 import { buildPointersReportPdf } from "@/lib/reports/pointersReport";
 import { buildVehiclesReportPdf } from "@/lib/reports/vehiclesReport";
@@ -29,12 +30,13 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type");
   const leaderId = request.nextUrl.searchParams.get("leaderId");
   const pointerId = request.nextUrl.searchParams.get("pointerId");
+  const organizationName = await getOrganizationName(session.organizationId!);
 
   if (type === "dirigente-punteros") {
     if (!leaderId) return NextResponse.json({ error: "Falta el dirigente" }, { status: 400 });
     const group = (await listAllPointersGroupedByLeader()).find((g) => g.leaderId === leaderId);
     if (!group) return NextResponse.json({ error: "Dirigente no encontrado" }, { status: 404 });
-    const buffer = await buildPointersReportPdf([group]);
+    const buffer = await buildPointersReportPdf([group], "combined", organizationName);
     return pdfResponse(buffer, buildReportFilename([group.leaderName, "Punteros"], "pdf"));
   }
 
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
     if (!leaderId) return NextResponse.json({ error: "Falta el dirigente" }, { status: 400 });
     const group = (await listAllPeopleGroupedByLeader()).find((g) => g.leaderId === leaderId);
     if (!group) return NextResponse.json({ error: "Dirigente no encontrado" }, { status: 404 });
-    const buffer = await buildPeopleReportPdf([group]);
+    const buffer = await buildPeopleReportPdf([group], "combined", organizationName);
     return pdfResponse(buffer, buildReportFilename([group.leaderName, "Personas"], "pdf"));
   }
 
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
         pointerGroups: [{ pointerId, pointerName: pointer.fullName, people }],
       },
     ];
-    const buffer = await buildPeopleReportPdf(groups);
+    const buffer = await buildPeopleReportPdf(groups, "combined", organizationName);
     return pdfResponse(buffer, buildReportFilename([leaderName, pointer.fullName, "Personas"], "pdf"));
   }
 
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
     if (!leaderId) return NextResponse.json({ error: "Falta el dirigente" }, { status: 400 });
     const group = (await listAllVehiclesGroupedByLeader()).find((g) => g.leaderId === leaderId);
     if (!group) return NextResponse.json({ error: "Dirigente no encontrado" }, { status: 404 });
-    const buffer = await buildVehiclesReportPdf([group]);
+    const buffer = await buildVehiclesReportPdf([group], "combined", organizationName);
     return pdfResponse(buffer, buildReportFilename([group.leaderName, "Vehículos"], "pdf"));
   }
 

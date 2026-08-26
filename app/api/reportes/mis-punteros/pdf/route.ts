@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { listMyPointers, type PointerLeaderGroup } from "@/features/pointers/queries";
 import { getSessionContext } from "@/lib/session";
 import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
+import { getOrganizationName } from "@/lib/reports/organizationName";
 import { buildPointersReportPdf } from "@/lib/reports/pointersReport";
 
 export async function GET() {
@@ -11,11 +12,14 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const pointers = await listMyPointers();
+  const [pointers, organizationName] = await Promise.all([
+    listMyPointers(),
+    getOrganizationName(session.organizationId!),
+  ]);
   const groups: PointerLeaderGroup[] = [
     { leaderId: session.leaderId, leaderName: `Dirigente: ${session.fullName}`, pointers },
   ];
-  const buffer = await buildPointersReportPdf(groups);
+  const buffer = await buildPointersReportPdf(groups, "combined", organizationName);
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

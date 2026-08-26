@@ -3,7 +3,7 @@ import type { Content } from "pdfmake/interfaces";
 import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/vehicleTypeLabel";
 import type { VehicleLeaderGroup } from "@/features/vehicles/queries";
 
-import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 // Los vehiculos no tienen Direccion (es del conductor, no se carga ese dato).
@@ -11,7 +11,8 @@ const COLUMN_HEADERS = ["Patente", "Tipo", "Conductor", "DNI conductor", "Teléf
 
 export async function buildVehiclesReportPdf(
   groups: VehicleLeaderGroup[],
-  mode: PdfReportMode = "combined"
+  mode: PdfReportMode = "combined",
+  organizationName?: string | null
 ): Promise<Buffer> {
   const content: Content[] = [];
 
@@ -55,13 +56,16 @@ export async function buildVehiclesReportPdf(
     });
   });
 
-  return renderPdfBuffer(content, "Reporte de Vehículos");
+  return renderPdfBuffer(content, "Reporte de Vehículos", organizationName);
 }
 
 // Formato PLANO (una fila por vehiculo, sin encabezados de grupo fusionados):
 // DIRIGENTE va como columna al final de cada fila para poder filtrar/ordenar
 // en la planilla.
-export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Promise<Buffer> {
+export async function buildVehiclesReportExcel(
+  groups: VehicleLeaderGroup[],
+  organizationName?: string | null
+): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Vehículos");
   sheet.columns = [
@@ -91,6 +95,10 @@ export async function buildVehiclesReportExcel(groups: VehicleLeaderGroup[]): Pr
   }
   if (!hasAnyRow) {
     addEmptyRow(sheet, "Todavía no hay vehículos cargados.", columnCount);
+  }
+
+  if (organizationName) {
+    addOrganizationTitleRow(sheet, organizationName, columnCount);
   }
 
   return workbookToBuffer(workbook);

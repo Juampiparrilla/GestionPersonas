@@ -1,4 +1,15 @@
-import { BarChart3, Car, Divide, Sigma, UserRound, UserRoundPlus, UsersRound } from "lucide-react";
+import {
+  BarChart3,
+  Car,
+  ClipboardList,
+  ClipboardPlus,
+  Divide,
+  MailCheck,
+  Sigma,
+  UserRound,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
 import Link from "next/link";
 
 import { LogoutButton } from "@/components/LogoutButton";
@@ -54,7 +65,7 @@ export default async function SuperadminHome() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Link
           href="/superadmin/dirigentes"
           className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
@@ -63,11 +74,32 @@ export default async function SuperadminHome() {
           Dirigentes
         </Link>
         <Link
+          href="/superadmin/carga-asistida"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          <ClipboardPlus className="h-5 w-5" aria-hidden="true" />
+          Carga asistida
+        </Link>
+        <Link
           href="/superadmin/reportes"
           className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
         >
           <BarChart3 className="h-5 w-5" aria-hidden="true" />
           Reportes
+        </Link>
+        <Link
+          href="/superadmin/auditoria"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          <ClipboardList className="h-5 w-5" aria-hidden="true" />
+          Auditoría
+        </Link>
+        <Link
+          href="/superadmin/respaldos"
+          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+        >
+          <MailCheck className="h-5 w-5" aria-hidden="true" />
+          Respaldos y reportes
         </Link>
       </div>
     </div>

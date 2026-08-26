@@ -24,7 +24,8 @@ grant usage on schema public to authenticated;
 
 grant select on
   organizations, profiles, permissions, role_permissions, user_permissions,
-  individuals, leaders, pointers, registered_people, vehicles, audit_logs, system_settings
+  individuals, leaders, pointers, registered_people, vehicles, audit_logs, system_settings,
+  report_email_schedules, scheduled_job_runs, backup_schedules
 to authenticated;
 
 -- fn_profile_context se ejecuta dentro de las policies RLS de arriba, que
@@ -60,7 +61,11 @@ grant execute on function
   fn_set_leader_access_status(uuid, leader_access_status, text, text),
   fn_set_global_loading(boolean, text, text),
   fn_create_organization(text, text, text),
-  fn_set_organization_active(uuid, boolean, text, text)
+  fn_set_organization_active(uuid, boolean, text, text),
+  fn_log_auth_event(text, text, text),
+  fn_log_invitation_sent(uuid, uuid, text, text),
+  fn_set_report_email_schedule(boolean, text, text, int, int, text[], text, text),
+  fn_set_backup_schedule(boolean, text, int, int, int, text, text)
 to authenticated;
 
 -- Higiene a futuro: cualquier tabla/funcion que se cree en migraciones

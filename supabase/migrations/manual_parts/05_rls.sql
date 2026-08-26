@@ -14,6 +14,9 @@ alter table registered_people   enable row level security;
 alter table vehicles            enable row level security;
 alter table audit_logs          enable row level security;
 alter table system_settings     enable row level security;
+alter table report_email_schedules enable row level security;
+alter table scheduled_job_runs  enable row level security;
+alter table backup_schedules    enable row level security;
 
 -- Principio general: SOLO existen policies de SELECT para los roles de la app.
 -- No hay ninguna policy de INSERT/UPDATE/DELETE para 'authenticated' en ninguna
@@ -116,4 +119,25 @@ create policy audit_select_admin on audit_logs for select
 
 create policy settings_select on system_settings for select
   using (organization_id = (select organization_id from fn_profile_context()));
+
+-- 0017: a diferencia de system_settings (que un dirigente tambien necesita
+-- leer para saber si la carga esta habilitada), esto es exclusivamente de
+-- gestion administrativa -- solo el Administrador de la propia organizacion.
+create policy report_email_schedules_select on report_email_schedules for select
+  using (
+    (select role from fn_profile_context()) = 'superadmin'
+    and organization_id = (select organization_id from fn_profile_context())
+  );
+
+create policy scheduled_job_runs_select on scheduled_job_runs for select
+  using (
+    (select role from fn_profile_context()) = 'superadmin'
+    and organization_id = (select organization_id from fn_profile_context())
+  );
+
+create policy backup_schedules_select on backup_schedules for select
+  using (
+    (select role from fn_profile_context()) = 'superadmin'
+    and organization_id = (select organization_id from fn_profile_context())
+  );
 

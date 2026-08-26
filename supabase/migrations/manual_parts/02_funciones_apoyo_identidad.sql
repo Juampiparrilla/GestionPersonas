@@ -134,6 +134,54 @@ begin
 end;
 $$;
 
+-- 0016: dos puntos de auditoria angostos que solo aceptan una accion fija
+-- (o una lista chica), a diferencia de fn_write_audit que NO se otorga a
+-- authenticated (dejaria fabricar cualquier entrada). Ver 0016_audit_login_invitation.sql.
+create or replace function fn_log_auth_event(
+  p_action text,
+  p_ip text default null,
+  p_user_agent text default null
+) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  ctx record;
+begin
+  select * into ctx from fn_require_profile();
+  if p_action not in ('LOGIN', 'LOGOUT') then
+    raise exception 'Accion invalida';
+  end if;
+
+  perform fn_write_audit(p_action, 'auth', null, null, null, null, null, null, p_ip, p_user_agent);
+end;
+$$;
+
+-- Se llama despues de generar con exito el link de invitacion/reenvio (ver
+-- lib/leader-access.ts). El destinatario puede ser un dirigente
+-- (p_leader_id) o el administrador de una organizacion (sin leader_id --
+-- el override cubre a platform_admin, que no tiene organization_id propio).
+create or replace function fn_log_invitation_sent(
+  p_leader_id uuid default null,
+  p_organization_id_override uuid default null,
+  p_ip text default null,
+  p_user_agent text default null
+) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  ctx record;
+begin
+  select * into ctx from fn_require_profile();
+  if ctx.role not in ('superadmin', 'platform_admin') then
+    raise exception 'No autorizado';
+  end if;
+
+  perform fn_write_audit(
+    'INVITATION_SENT', 'profile', null,
+    p_leader_id, null, null, null, null, p_ip, p_user_agent,
+    p_organization_id_override
+  );
+end;
+$$;
+
 -- ============================================================================
 -- 4. DUPLICADOS / IDENTIDAD
 -- ============================================================================

@@ -139,6 +139,39 @@ type SystemSettingsRow = {
   updated_at: string;
 };
 
+type ReportEmailScheduleRow = {
+  organization_id: string;
+  enabled: boolean;
+  recipient_email: string | null;
+  frequency: string;
+  day_of_week: number | null;
+  day_of_month: number | null;
+  report_types: string[];
+  updated_by: string | null;
+  updated_at: string;
+};
+
+type BackupScheduleRow = {
+  organization_id: string;
+  enabled: boolean;
+  frequency: string;
+  day_of_week: number | null;
+  day_of_month: number | null;
+  retention_count: number;
+  updated_by: string | null;
+  updated_at: string;
+};
+
+type ScheduledJobRunRow = {
+  id: string;
+  organization_id: string;
+  kind: "report_email" | "backup";
+  status: "success" | "error";
+  detail: Json | null;
+  duration_ms: number | null;
+  created_at: string;
+};
+
 type RestoreResult = {
   restored: boolean;
   conflict: boolean;
@@ -166,6 +199,19 @@ export type Database = {
       vehicles: ReadOnlyTable<VehicleRow>;
       audit_logs: ReadOnlyTable<AuditLogRow>;
       system_settings: ReadOnlyTable<SystemSettingsRow>;
+      report_email_schedules: ReadOnlyTable<ReportEmailScheduleRow>;
+      backup_schedules: ReadOnlyTable<BackupScheduleRow>;
+      // A diferencia del resto de las tablas de este mapa (que solo se leen
+      // desde el cliente de sesion, nunca se insertan directo), esta la
+      // escribe el cron/GitHub Action con service_role -- por eso el Insert
+      // deja `id`/`created_at` opcionales (tienen default en la base) en vez
+      // de heredar ReadOnlyTable, que los exige todos.
+      scheduled_job_runs: {
+        Row: ScheduledJobRunRow;
+        Insert: Omit<ScheduledJobRunRow, "id" | "created_at"> & Partial<Pick<ScheduledJobRunRow, "id" | "created_at">>;
+        Update: Partial<ScheduledJobRunRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -238,6 +284,48 @@ export type Database = {
         Args: {
           p_organization_id: string;
           p_is_active: boolean;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_log_auth_event: {
+        Args: {
+          p_action: string;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_log_invitation_sent: {
+        Args: {
+          p_leader_id?: string | null;
+          p_organization_id_override?: string | null;
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_set_report_email_schedule: {
+        Args: {
+          p_enabled: boolean;
+          p_recipient_email: string | null;
+          p_frequency: string;
+          p_day_of_week: number | null;
+          p_day_of_month: number | null;
+          p_report_types: string[];
+          p_ip?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      fn_set_backup_schedule: {
+        Args: {
+          p_enabled: boolean;
+          p_frequency: string;
+          p_day_of_week: number | null;
+          p_day_of_month: number | null;
+          p_retention_count: number;
           p_ip?: string | null;
           p_user_agent?: string | null;
         };

@@ -2,14 +2,15 @@ import type { Content } from "pdfmake/interfaces";
 
 import type { LeaderListItem } from "@/features/leaders/queries";
 
-import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["DNI", "Teléfono", "Dirección", "Punteros", "Personas", "Vehículos"];
 
 export async function buildLeadersReportPdf(
   leaders: LeaderListItem[],
-  mode: PdfReportMode = "combined"
+  mode: PdfReportMode = "combined",
+  organizationName?: string | null
 ): Promise<Buffer> {
   const content: Content[] = [];
 
@@ -48,10 +49,13 @@ export async function buildLeadersReportPdf(
     });
   });
 
-  return renderPdfBuffer(content, "Reporte de Dirigentes");
+  return renderPdfBuffer(content, "Reporte de Dirigentes", organizationName);
 }
 
-export async function buildLeadersReportExcel(leaders: LeaderListItem[]): Promise<Buffer> {
+export async function buildLeadersReportExcel(
+  leaders: LeaderListItem[],
+  organizationName?: string | null
+): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Dirigentes");
   sheet.columns = [
@@ -81,6 +85,10 @@ export async function buildLeadersReportExcel(leaders: LeaderListItem[]): Promis
       vehicles: leader.vehicleCount,
     });
   });
+
+  if (organizationName) {
+    addOrganizationTitleRow(sheet, organizationName, columnCount);
+  }
 
   return workbookToBuffer(workbook);
 }

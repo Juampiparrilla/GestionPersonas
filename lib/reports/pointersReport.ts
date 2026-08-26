@@ -2,14 +2,15 @@ import type { Content } from "pdfmake/interfaces";
 
 import type { PointerLeaderGroup } from "@/features/pointers/queries";
 
-import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección", "Personas"];
 
 export async function buildPointersReportPdf(
   groups: PointerLeaderGroup[],
-  mode: PdfReportMode = "combined"
+  mode: PdfReportMode = "combined",
+  organizationName?: string | null
 ): Promise<Buffer> {
   const content: Content[] = [];
 
@@ -53,14 +54,17 @@ export async function buildPointersReportPdf(
     });
   });
 
-  return renderPdfBuffer(content, "Reporte de Punteros");
+  return renderPdfBuffer(content, "Reporte de Punteros", organizationName);
 }
 
 // Formato PLANO (una fila por puntero, sin encabezados de grupo fusionados):
 // a diferencia del PDF, el Excel se usa para filtrar/ordenar en una
 // planilla, asi que la columna DIRIGENTE va al final de cada fila en vez de
 // una fila de grupo aparte.
-export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Promise<Buffer> {
+export async function buildPointersReportExcel(
+  groups: PointerLeaderGroup[],
+  organizationName?: string | null
+): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Punteros");
   sheet.columns = [
@@ -90,6 +94,10 @@ export async function buildPointersReportExcel(groups: PointerLeaderGroup[]): Pr
   }
   if (!hasAnyRow) {
     addEmptyRow(sheet, "Todavía no hay punteros cargados.", columnCount);
+  }
+
+  if (organizationName) {
+    addOrganizationTitleRow(sheet, organizationName, columnCount);
   }
 
   return workbookToBuffer(workbook);

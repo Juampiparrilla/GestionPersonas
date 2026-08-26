@@ -40,6 +40,19 @@ export function styleHeaderRow(row: ExcelJS.Row): void {
   });
 }
 
+// Inserta una fila de titulo con el nombre de la organizacion arriba del
+// encabezado ya escrito por `sheet.columns` -- se llama DESPUES de fijar
+// `sheet.columns` (que ya ocupo la fila 1 con los encabezados) y de
+// `styleHeaderRow`, para que `spliceRows` empuje ese encabezado a la fila 2
+// sin tener que reescribirlo.
+export function addOrganizationTitleRow(sheet: ExcelJS.Worksheet, organizationName: string, columnCount: number): void {
+  sheet.spliceRows(1, 0, [`Organización: ${organizationName}`]);
+  sheet.mergeCells(1, 1, 1, columnCount);
+  const cell = sheet.getRow(1).getCell(1);
+  cell.font = { bold: true };
+  sheet.getRow(1).height = 20;
+}
+
 export function addEmptyRow(sheet: ExcelJS.Worksheet, label: string, columnCount: number): void {
   const row = sheet.addRow([label]);
   sheet.mergeCells(row.number, 1, row.number, columnCount);

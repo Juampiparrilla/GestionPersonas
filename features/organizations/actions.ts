@@ -60,7 +60,7 @@ export async function createOrganizationAction(
   // siempre en silencio (mismo criterio que createLeaderAction para
   // dirigentes): si esto falla, la organización igual queda creada y se
   // puede reintentar después desde la lista ("crear/recrear administrador").
-  await grantOrgAdminAccess({
+  const access = await grantOrgAdminAccess({
     organizationId: organizationId as string,
     fullName: adminFullName,
     phone: adminPhone || null,
@@ -69,6 +69,16 @@ export async function createOrganizationAction(
     dniForMessage: adminDni,
     existingProfileId: null,
   });
+
+  if (access.ok) {
+    // ctx.organization_id es null para platform_admin (no tiene una propia)
+    // -- el override apunta la auditoria a la organizacion nueva.
+    await supabase.rpc("fn_log_invitation_sent", {
+      p_organization_id_override: organizationId as string,
+      p_ip: ip,
+      p_user_agent: userAgent,
+    });
+  }
 
   return { error: null, success: true };
 }
@@ -93,6 +103,7 @@ export async function grantOrCreateOrgAdminAction(
   }
 
   const supabase = await createClient();
+  const { ip, userAgent } = await getRequestMeta();
 
   const { data: existingAdmin } = await supabase
     .from("profiles")
@@ -127,6 +138,12 @@ export async function grantOrCreateOrgAdminAction(
   if (!access.ok) {
     return access;
   }
+
+  await supabase.rpc("fn_log_invitation_sent", {
+    p_organization_id_override: organizationId,
+    p_ip: ip,
+    p_user_agent: userAgent,
+  });
 
   revalidatePath("/plataforma");
   return access;

@@ -4,6 +4,7 @@ import { listActiveLeaders } from "@/features/leaders/queries";
 import { getSessionContext } from "@/lib/session";
 import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
 import { buildLeadersReportPdf } from "@/lib/reports/leadersReport";
+import { getOrganizationName } from "@/lib/reports/organizationName";
 import { parsePdfReportMode } from "@/lib/reports/pdfHelpers";
 
 export async function GET(request: NextRequest) {
@@ -13,8 +14,11 @@ export async function GET(request: NextRequest) {
   }
 
   const mode = parsePdfReportMode(request.nextUrl.searchParams.get("mode"));
-  const leaders = await listActiveLeaders();
-  const buffer = await buildLeadersReportPdf(leaders, mode);
+  const [leaders, organizationName] = await Promise.all([
+    listActiveLeaders(),
+    getOrganizationName(session.organizationId!),
+  ]);
+  const buffer = await buildLeadersReportPdf(leaders, mode, organizationName);
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

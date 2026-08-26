@@ -25,6 +25,9 @@ export async function createVehicleAction(
   const driverFullName = String(formData.get("driverFullName") ?? "").trim();
   const driverDni = String(formData.get("driverDni") ?? "").trim();
   const driverPhone = String(formData.get("driverPhone") ?? "").trim();
+  // Solo lo llena CreateVehicleForm cuando lo usa la carga asistida del
+  // Administrador de Organización (ver features/carga-asistida).
+  const targetLeaderId = String(formData.get("leaderId") ?? "").trim();
 
   if (!isVehicleType(type)) {
     return { error: "Elegí un tipo de vehículo.", success: false };
@@ -37,7 +40,18 @@ export async function createVehicleAction(
   }
 
   const session = await getSessionContext();
-  if (!session || session.role !== "leader" || !session.leaderId) {
+  if (!session) {
+    return { error: "No tenés permiso para hacer esto.", success: false };
+  }
+
+  let leaderId: string;
+  if (session.role === "leader" && session.leaderId) {
+    leaderId = session.leaderId;
+  } else if (session.role === "superadmin" && targetLeaderId) {
+    // fn_create_vehicle ya valida que ese dirigente pertenezca a la
+    // organizacion del que llama.
+    leaderId = targetLeaderId;
+  } else {
     return { error: "No tenés permiso para hacer esto.", success: false };
   }
 
@@ -45,7 +59,7 @@ export async function createVehicleAction(
   const { ip, userAgent } = await getRequestMeta();
 
   const { error } = await supabase.rpc("fn_create_vehicle", {
-    p_leader_id: session.leaderId,
+    p_leader_id: leaderId,
     p_type: type,
     p_plate: plate,
     p_driver_full_name: driverFullName,
@@ -60,6 +74,7 @@ export async function createVehicleAction(
   }
 
   revalidatePath("/dirigente/vehiculos");
+  revalidatePath("/superadmin/carga-asistida");
   return { error: null, success: true };
 }
 

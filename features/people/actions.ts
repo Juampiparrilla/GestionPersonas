@@ -27,8 +27,13 @@ export async function createPersonAction(
     return { error: "El DNI no es válido.", success: false };
   }
 
+  // pointerId ya viene explicito (bind del formulario, ver
+  // CreatePersonForm) -- fn_create_person valida por si sola que ese
+  // puntero pertenezca al dirigente correcto (el propio si es `leader`, o
+  // cualquiera de la organizacion si es `superadmin`, caso de la carga
+  // asistida). No hace falta resolver ni pasar un leaderId aparte acá.
   const session = await getSessionContext();
-  if (!session || session.role !== "leader") {
+  if (!session || (session.role !== "leader" && session.role !== "superadmin")) {
     return { error: "No tenés permiso para hacer esto.", success: false };
   }
 
@@ -51,6 +56,7 @@ export async function createPersonAction(
 
   revalidatePath(`/dirigente/punteros/${pointerId}`);
   revalidatePath("/dirigente/punteros");
+  revalidatePath("/superadmin/carga-asistida");
   return { error: null, success: true };
 }
 

@@ -2,14 +2,15 @@ import type { Content } from "pdfmake/interfaces";
 
 import type { PersonLeaderGroup } from "@/features/people/queries";
 
-import { addEmptyRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
+import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección"];
 
 export async function buildPeopleReportPdf(
   groups: PersonLeaderGroup[],
-  mode: PdfReportMode = "combined"
+  mode: PdfReportMode = "combined",
+  organizationName?: string | null
 ): Promise<Buffer> {
   const content: Content[] = [];
 
@@ -73,13 +74,16 @@ export async function buildPeopleReportPdf(
     });
   });
 
-  return renderPdfBuffer(content, "Reporte de Personas Registradas");
+  return renderPdfBuffer(content, "Reporte de Personas Registradas", organizationName);
 }
 
 // Formato PLANO (una fila por persona, sin encabezados de grupo fusionados):
 // PUNTERO y DIRIGENTE van como columnas al final de cada fila para poder
 // filtrar/ordenar por cualquiera de los dos en la planilla.
-export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promise<Buffer> {
+export async function buildPeopleReportExcel(
+  groups: PersonLeaderGroup[],
+  organizationName?: string | null
+): Promise<Buffer> {
   const workbook = newWorkbook();
   const sheet = workbook.addWorksheet("Personas");
   sheet.columns = [
@@ -111,6 +115,10 @@ export async function buildPeopleReportExcel(groups: PersonLeaderGroup[]): Promi
   }
   if (!hasAnyRow) {
     addEmptyRow(sheet, "Todavía no hay personas registradas.", columnCount);
+  }
+
+  if (organizationName) {
+    addOrganizationTitleRow(sheet, organizationName, columnCount);
   }
 
   return workbookToBuffer(workbook);

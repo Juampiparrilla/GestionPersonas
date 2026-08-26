@@ -68,7 +68,8 @@ export function tableCell(text: string): Content {
 
 export async function renderPdfBuffer(
   content: Content[],
-  title: string
+  title: string,
+  organizationName?: string | null
 ): Promise<Buffer> {
   const docDefinition: TDocumentDefinitions = {
     pageSize: "A4",
@@ -76,6 +77,9 @@ export async function renderPdfBuffer(
     defaultStyle: { font: "Helvetica", fontSize: 9 },
     content: [
       { text: title, fontSize: 16, bold: true, margin: [0, 0, 0, 2] },
+      ...(organizationName
+        ? ([{ text: `Organización: ${organizationName}`, fontSize: 9, color: "#3f3f46", margin: [0, 0, 0, 2] }] as Content[])
+        : []),
       { text: `Generado el ${formatGeneratedAt()}`, fontSize: 8, color: "#71717a", margin: [0, 0, 0, 10] },
       ...content,
     ],

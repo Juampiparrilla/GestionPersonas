@@ -213,6 +213,48 @@ create table system_settings (
   updated_at       timestamptz not null default now()
 );
 
+-- 0017: reportes automaticos por email, 1 fila por organizacion (igual
+-- patron que system_settings).
+create table report_email_schedules (
+  organization_id  uuid primary key references organizations(id),
+  enabled          boolean not null default false,
+  recipient_email  text,
+  frequency        text not null default 'daily' check (frequency in ('daily', 'weekly', 'monthly')),
+  day_of_week      int check (day_of_week between 0 and 6),
+  day_of_month     int check (day_of_month between 1 and 28),
+  report_types     text[] not null default '{}',
+  updated_by       uuid references profiles(id),
+  updated_at       timestamptz not null default now()
+);
+
+-- 0017: historial compartido de corridas automaticas -- pensado para
+-- reutilizarse tambien con los backups reales (Fase 7), de ahi `kind`.
+create table scheduled_job_runs (
+  id               uuid primary key default gen_random_uuid(),
+  organization_id  uuid not null references organizations(id),
+  kind             text not null check (kind in ('report_email', 'backup')),
+  status           text not null check (status in ('success', 'error')),
+  detail           jsonb,
+  duration_ms      int,
+  created_at       timestamptz not null default now()
+);
+
+create index ix_scheduled_job_runs_org on scheduled_job_runs (organization_id, kind, created_at desc);
+
+-- 0018: backup real -- el dump en si es UNICO para toda la base (ver
+-- .github/workflows/backup.yml), esta tabla es solo donde cada organizacion
+-- elige "contarme" en ese backup compartido segun su propia frecuencia.
+create table backup_schedules (
+  organization_id  uuid primary key references organizations(id),
+  enabled          boolean not null default false,
+  frequency        text not null default 'daily' check (frequency in ('daily', 'weekly', 'monthly')),
+  day_of_week      int check (day_of_week between 0 and 6),
+  day_of_month     int check (day_of_month between 1 and 28),
+  retention_count  int not null default 7 check (retention_count between 1 and 60),
+  updated_by       uuid references profiles(id),
+  updated_at       timestamptz not null default now()
+);
+
 -- Indices
 create index ix_individuals_org_status on individuals (organization_id, status);
 create index ix_pointers_leader on pointers (leader_id) where is_removed = false;

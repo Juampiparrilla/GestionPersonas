@@ -17,7 +17,19 @@ const inputClassName =
 // El padre (CollapsibleCreatePointer) limpia este formulario: le pasa un
 // `key` que cambia en cada alta exitosa, forzando un remontado completo con
 // los campos vacios (mismo patron que CreateLeaderForm).
-export function CreatePointerForm({ onCreated }: { onCreated: () => void }) {
+//
+// `leaderId` es opcional: solo lo pasa la carga asistida
+// (features/carga-asistida), cuando un Administrador de Organización crea
+// el puntero para un dirigente que no es él mismo. Viaja como input oculto
+// -- createPointerAction lo usa en vez de session.leaderId solo cuando
+// session.role === 'superadmin'.
+export function CreatePointerForm({
+  leaderId,
+  onCreated,
+}: {
+  leaderId?: string;
+  onCreated: () => void;
+}) {
   const [state, formAction, pending] = useActionState(createPointerAction, initialState);
 
   useEffect(() => {
@@ -28,6 +40,7 @@ export function CreatePointerForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      {leaderId ? <input type="hidden" name="leaderId" value={leaderId} /> : null}
       <div className="flex flex-col gap-1">
         <label htmlFor="fullName" className="text-sm font-medium text-zinc-700">
           Nombre completo *

@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { getRequestMeta } from "@/lib/request-meta";
 import { roleHomePath } from "@/lib/routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -131,6 +132,9 @@ export async function login(
       };
     }
   }
+
+  const { ip, userAgent } = await getRequestMeta();
+  await supabase.rpc("fn_log_auth_event", { p_action: "LOGIN", p_ip: ip, p_user_agent: userAgent });
 
   redirect(roleHomePath(profile.role));
 }

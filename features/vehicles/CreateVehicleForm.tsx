@@ -14,7 +14,15 @@ const initialState: CreateVehicleState = { error: null, success: false };
 const inputClassName =
   "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
 
-export function CreateVehicleForm({ onCreated }: { onCreated: () => void }) {
+// `leaderId` es opcional: solo lo pasa la carga asistida
+// (features/carga-asistida) -- ver el mismo patrón en CreatePointerForm.
+export function CreateVehicleForm({
+  leaderId,
+  onCreated,
+}: {
+  leaderId?: string;
+  onCreated: () => void;
+}) {
   const [state, formAction, pending] = useActionState(createVehicleAction, initialState);
 
   useEffect(() => {
@@ -25,6 +33,7 @@ export function CreateVehicleForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      {leaderId ? <input type="hidden" name="leaderId" value={leaderId} /> : null}
       <div className="flex flex-col gap-1">
         <label htmlFor="type" className="text-sm font-medium text-zinc-700">
           Tipo de vehículo *

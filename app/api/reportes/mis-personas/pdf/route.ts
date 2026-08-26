@@ -5,6 +5,7 @@ import type { PersonLeaderGroup } from "@/features/people/queries";
 import { getPointerBasics } from "@/features/pointers/queries";
 import { getSessionContext } from "@/lib/session";
 import { buildReportFilename, contentDispositionHeader } from "@/lib/reports/filename";
+import { getOrganizationName } from "@/lib/reports/organizationName";
 import { buildPeopleReportPdf } from "@/lib/reports/peopleReport";
 
 export async function GET(request: NextRequest) {
@@ -14,13 +15,14 @@ export async function GET(request: NextRequest) {
   }
 
   const pointerId = request.nextUrl.searchParams.get("pointerId");
+  const organizationName = await getOrganizationName(session.organizationId!);
 
   if (!pointerId) {
     const pointerGroups = await listMyPeopleGroupedByPointer();
     const groups: PersonLeaderGroup[] = [
       { leaderId: session.leaderId, leaderName: `Dirigente: ${session.fullName}`, pointerGroups },
     ];
-    const buffer = await buildPeopleReportPdf(groups);
+    const buffer = await buildPeopleReportPdf(groups, "combined", organizationName);
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
       pointerGroups: [{ pointerId, pointerName: pointer.fullName, people }],
     },
   ];
-  const buffer = await buildPeopleReportPdf(groups);
+  const buffer = await buildPeopleReportPdf(groups, "combined", organizationName);
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
