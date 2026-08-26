@@ -34,7 +34,45 @@ export const AUDIT_ACTIONS = [
   "INVITATION_SENT",
   "LOGIN",
   "LOGOUT",
+  "REPORT_EMAIL_RECIPIENT_CHANGED",
+  "BACKUP_SCHEDULE_UPDATED",
 ] as const;
+
+// Nombres en criollo para el filtro del <select> -- pensado para que lo
+// entienda alguien sin conocimiento tecnico, no solo quien programó esto.
+// Las frases completas de cada fila (describeAuditEntry, mas abajo) ya
+// eran naturales; esto es solo para la lista de opciones del filtro.
+export const ACTION_FILTER_LABEL: Record<string, string> = {
+  CREATE_LEADER: "Alta de dirigente",
+  UPDATE_LEADER: "Modificación de dirigente",
+  REMOVE_LEADER: "Baja de dirigente",
+  RESTORE_LEADER: "Restauración de dirigente",
+  REASSIGN_LEADER: "Reasignación de dirigente",
+  SET_LEADER_ACCESS_STATUS: "Cambio de acceso de dirigente",
+  LINK_LEADER_PROFILE: "Activación de cuenta de dirigente",
+  CREATE_POINTER: "Alta de puntero",
+  UPDATE_POINTER: "Modificación de puntero",
+  REMOVE_POINTER: "Baja de puntero",
+  RESTORE_POINTER: "Restauración de puntero",
+  REASSIGN_POINTER: "Reasignación de puntero",
+  CREATE_PERSON: "Alta de persona",
+  UPDATE_PERSON: "Modificación de persona",
+  REMOVE_PERSON: "Baja de persona",
+  RESTORE_PERSON: "Restauración de persona",
+  REASSIGN_PERSON: "Reasignación de persona",
+  CREATE_VEHICLE: "Alta de vehículo",
+  UPDATE_VEHICLE: "Modificación de vehículo",
+  REMOVE_VEHICLE: "Baja de vehículo",
+  RESTORE_VEHICLE: "Restauración de vehículo",
+  OPEN_GLOBAL_LOADING: "Activación de carga general",
+  CLOSE_GLOBAL_LOADING: "Desactivación de carga general",
+  ORGANIZATION_CREATED: "Creación de organización",
+  INVITATION_SENT: "Invitación enviada",
+  LOGIN: "Inicio de sesión",
+  LOGOUT: "Cierre de sesión",
+  REPORT_EMAIL_RECIPIENT_CHANGED: "Cambio de correo de reportes",
+  BACKUP_SCHEDULE_UPDATED: "Cambio de configuración de backup",
+};
 
 const ACTION_VERB: Record<string, string> = {
   CREATE_LEADER: "creó al dirigente",
@@ -64,6 +102,8 @@ const ACTION_VERB: Record<string, string> = {
   INVITATION_SENT: "envió una invitación",
   LOGIN: "inició sesión",
   LOGOUT: "cerró sesión",
+  REPORT_EMAIL_RECIPIENT_CHANGED: "cambió el correo destinatario de los reportes",
+  BACKUP_SCHEDULE_UPDATED: "cambió la configuración de backup",
 };
 
 // Frase legible de una fila de auditoria. La regla pedida (seccion 7 del

@@ -5,7 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Spinner } from "@/components/Spinner";
 
 import { fetchAuditLogsAction, type AuditLogRowView } from "./actions";
-import { AUDIT_ACTIONS } from "./labels";
+import { ACTION_FILTER_LABEL, AUDIT_ACTIONS } from "./labels";
 import type { AuditLogFilters } from "./queries";
 
 type Option = { id: string; fullName: string };
@@ -183,7 +183,7 @@ export function AuditLogClient({
             <option value="">Todas</option>
             {AUDIT_ACTIONS.map((value) => (
               <option key={value} value={value}>
-                {value}
+                {ACTION_FILTER_LABEL[value] ?? value}
               </option>
             ))}
           </select>
