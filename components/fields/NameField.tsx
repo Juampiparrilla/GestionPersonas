@@ -26,6 +26,7 @@ export function NameField({
       required={required}
       className={className}
       autoComplete="name"
+      placeholder="APELLIDO, NOMBRE"
       value={value}
       onChange={(event) => setValue(formatNameInput(event.target.value))}
     />

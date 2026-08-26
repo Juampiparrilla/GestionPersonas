@@ -66,7 +66,7 @@ export function PointerRowActions({
           className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
         >
           <UsersRound className="h-4 w-4" aria-hidden="true" />
-          Ver personas
+          Ver / Agregar personas
         </Link>
 
         {canWrite ? (

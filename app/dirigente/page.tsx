@@ -1,8 +1,10 @@
 import { Car, Divide, Lock, TriangleAlert, UserRoundPlus, UsersRound } from "lucide-react";
 import Link from "next/link";
 
+import { AccountSettingsLink } from "@/components/AccountSettingsLink";
 import { StatCard } from "@/components/StatCard";
 import { LogoutButton } from "@/components/LogoutButton";
+import { RoleHelpButton } from "@/components/RoleHelpButton";
 import { listMyPointers } from "@/features/pointers/queries";
 import { listMyVehicles } from "@/features/vehicles/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
@@ -31,7 +33,11 @@ export default async function DirigenteHome() {
       <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
-          <LogoutButton />
+          <div className="flex items-center gap-2">
+            <RoleHelpButton role={session!.role} />
+            <AccountSettingsLink />
+            <LogoutButton />
+          </div>
         </div>
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, CircleCheck, UserRound, UserRoundPlus, UsersRound } from "lucide-react";
+import { Car, CircleCheck, UserRound, UserRoundPlus, UsersRound, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CreatePersonForm } from "@/features/people/CreatePersonForm";
@@ -81,6 +81,7 @@ export function CargaAsistidaClient({
 
   const [formKey, setFormKey] = useState(0);
   const [justCreated, setJustCreated] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(true);
 
   const pointersForLeader = useMemo(() => {
     if (!selectedLeader) return [];
@@ -93,6 +94,7 @@ export function CargaAsistidaClient({
     setSelectedPointer(null);
     setPointerQuery("");
     setJustCreated(null);
+    setFormOpen(true);
   }
 
   function changeLeader() {
@@ -108,6 +110,7 @@ export function CargaAsistidaClient({
     setSelectedPointer(null);
     setPointerQuery("");
     setJustCreated(null);
+    setFormOpen(true);
   }
 
   function handleCreated(message: string) {
@@ -156,6 +159,7 @@ export function CargaAsistidaClient({
               return (
                 <label
                   key={option.value}
+                  onClick={() => selectOperation(option.value)}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
                     operation === option.value ? "border-zinc-900 bg-zinc-50" : "border-zinc-200"
                   }`}
@@ -217,29 +221,48 @@ export function CargaAsistidaClient({
             </p>
           ) : null}
 
-          <div className="rounded-xl border-2 border-zinc-300 bg-white p-4">
-            {operation === "pointer" ? (
-              <CreatePointerForm
-                key={`pointer-${formKey}`}
-                leaderId={selectedLeader.id}
-                onCreated={() => handleCreated("Puntero agregado.")}
-              />
-            ) : null}
-            {operation === "vehicle" ? (
-              <CreateVehicleForm
-                key={`vehicle-${formKey}`}
-                leaderId={selectedLeader.id}
-                onCreated={() => handleCreated("Vehículo agregado.")}
-              />
-            ) : null}
-            {operation === "person" && selectedPointer ? (
-              <CreatePersonForm
-                key={`person-${formKey}-${selectedPointer.id}`}
-                pointerId={selectedPointer.id}
-                onCreated={() => handleCreated("Persona agregada.")}
-              />
-            ) : null}
-          </div>
+          {formOpen && (operation !== "person" || selectedPointer) ? (
+            <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-medium text-zinc-900">
+                  {OPERATIONS.find((option) => option.value === operation)?.label}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormOpen(false);
+                    setJustCreated(null);
+                  }}
+                  aria-label="Cerrar"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              {operation === "pointer" ? (
+                <CreatePointerForm
+                  key={`pointer-${formKey}`}
+                  leaderId={selectedLeader.id}
+                  onCreated={() => handleCreated("Puntero agregado.")}
+                />
+              ) : null}
+              {operation === "vehicle" ? (
+                <CreateVehicleForm
+                  key={`vehicle-${formKey}`}
+                  leaderId={selectedLeader.id}
+                  onCreated={() => handleCreated("Vehículo agregado.")}
+                />
+              ) : null}
+              {operation === "person" && selectedPointer ? (
+                <CreatePersonForm
+                  key={`person-${formKey}-${selectedPointer.id}`}
+                  pointerId={selectedPointer.id}
+                  onCreated={() => handleCreated("Persona agregada.")}
+                />
+              ) : null}
+            </div>
+          ) : null}
         </>
       ) : null}
     </div>

@@ -1,7 +1,9 @@
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 
+import { AccountSettingsLink } from "@/components/AccountSettingsLink";
 import { LogoutButton } from "@/components/LogoutButton";
+import { RoleHelpButton } from "@/components/RoleHelpButton";
 import { OrganizationsClient } from "@/features/organizations/OrganizationsClient";
 import { listOrganizations } from "@/features/organizations/queries";
 import { roleLabel } from "@/lib/roles";
@@ -18,7 +20,11 @@ export default async function PlataformaHome() {
           <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
           <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-2">
+          <RoleHelpButton role={session!.role} />
+          <AccountSettingsLink />
+          <LogoutButton />
+        </div>
       </div>
 
       <Link

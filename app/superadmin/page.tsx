@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AccountSettingsLink } from "@/components/AccountSettingsLink";
 import { LogoutButton } from "@/components/LogoutButton";
+import { RoleHelpButton } from "@/components/RoleHelpButton";
 import { StatCard } from "@/components/StatCard";
 import { getSuperadminStats } from "@/features/leaders/queries";
 import { GlobalLoadingToggle } from "@/features/settings/GlobalLoadingToggle";
@@ -40,7 +42,11 @@ export default async function SuperadminHome() {
           </h1>
           <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
         </div>
-        <LogoutButton />
+        <div className="flex items-center gap-2">
+          <RoleHelpButton role={session!.role} />
+          <AccountSettingsLink />
+          <LogoutButton />
+        </div>
       </div>
 
       <GlobalLoadingToggle loadingEnabled={loadingEnabled} />
