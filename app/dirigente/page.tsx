@@ -8,6 +8,7 @@ import { RoleHelpButton } from "@/components/RoleHelpButton";
 import { listMyPointers } from "@/features/pointers/queries";
 import { listMyVehicles } from "@/features/vehicles/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
+import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function DirigenteHome() {
@@ -32,7 +33,10 @@ export default async function DirigenteHome() {
     return (
       <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+          <div>
+            <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+            <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
+          </div>
           <div className="flex items-center gap-2">
             <RoleHelpButton role={session!.role} />
             <AccountSettingsLink />
@@ -61,8 +65,15 @@ export default async function DirigenteHome() {
   return (
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
-        <LogoutButton />
+        <div>
+          <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
+          <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <RoleHelpButton role={session!.role} />
+          <AccountSettingsLink />
+          <LogoutButton />
+        </div>
       </div>
 
       {punterosSinPersonas.length > 0 ? (

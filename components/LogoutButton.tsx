@@ -7,10 +7,11 @@ export function LogoutButton() {
     <form action={logout}>
       <button
         type="submit"
-        className="flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión"
+        className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-300 text-zinc-600 hover:bg-red-50 hover:text-red-600"
       >
-        <LogOut className="h-4 w-4" aria-hidden="true" />
-        Cerrar sesión
+        <LogOut className="h-5 w-5" aria-hidden="true" />
       </button>
     </form>
   );
