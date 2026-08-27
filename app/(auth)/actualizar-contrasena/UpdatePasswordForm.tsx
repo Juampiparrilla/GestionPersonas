@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { Spinner } from "@/components/Spinner";
 import { PasswordField } from "@/components/fields/PasswordField";
 
 import { updatePassword, type UpdatePasswordState } from "./actions";
@@ -48,9 +49,15 @@ export function UpdatePasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="h-12 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
       >
-        {pending ? "Guardando…" : "Guardar contraseña"}
+        {pending ? (
+          <>
+            <Spinner className="h-4 w-4" /> Guardando…
+          </>
+        ) : (
+          "Guardar contraseña"
+        )}
       </button>
     </form>
   );
