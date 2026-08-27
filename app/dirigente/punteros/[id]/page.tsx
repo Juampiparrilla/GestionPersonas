@@ -44,7 +44,12 @@ export default async function PointerDetailPage({
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref={`/api/reportes/mis-personas/pdf?pointerId=${id}`} showExcel={false} />
+      <ReportDownloadButtons
+        pdfHref={`/api/reportes/mis-personas/pdf?pointerId=${id}`}
+        showExcel={false}
+        disabled={people.length === 0}
+        disabledMessage="Todavía no hay personas registradas en este puntero."
+      />
 
       <PeopleClient people={people} pointerId={id} canWrite={writeStatus.canWrite} />
     </div>

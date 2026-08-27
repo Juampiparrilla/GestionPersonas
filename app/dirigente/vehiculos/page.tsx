@@ -27,7 +27,12 @@ export default async function VehiculosPage() {
         </Link>
       </div>
 
-      <ReportDownloadButtons pdfHref="/api/reportes/mis-vehiculos/pdf" showExcel={false} />
+      <ReportDownloadButtons
+        pdfHref="/api/reportes/mis-vehiculos/pdf"
+        showExcel={false}
+        disabled={vehicles.length === 0}
+        disabledMessage="Cargá al menos un vehículo para generar este reporte."
+      />
 
       <VehiclesClient vehicles={vehicles} canWrite={writeStatus.canWrite} />
     </div>
