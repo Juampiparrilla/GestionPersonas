@@ -20,7 +20,6 @@ export function VehiclesClient({
   const [query, setQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [closeCreateSignal, setCloseCreateSignal] = useState<number>();
-  const [openCreateSignal, setOpenCreateSignal] = useState<number>();
 
   function handleFormOpenChange(open: boolean) {
     setFormOpen(open);
@@ -32,10 +31,6 @@ export function VehiclesClient({
   function handleStartEdit(id: string) {
     setEditingId(id);
     setCloseCreateSignal((value) => (value ?? 0) + 1);
-  }
-
-  function handleRequestCreate() {
-    setOpenCreateSignal((value) => (value ?? 0) + 1);
   }
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -58,7 +53,6 @@ export function VehiclesClient({
         canWrite={canWrite}
         onOpenChange={handleFormOpenChange}
         closeSignal={closeCreateSignal}
-        openSignal={openCreateSignal}
       />
 
       {!formOpen ? (
@@ -81,13 +75,12 @@ export function VehiclesClient({
         emptyMessage={
           normalizedQuery
             ? "No encontramos ningún vehículo con esos datos."
-            : "Todavía no hay vehículos cargados."
+            : "Todavía no hay vehículos cargados. Cargá el primero con el botón de arriba."
         }
         canWrite={canWrite}
         editingId={formOpen ? null : editingId}
         onStartEdit={handleStartEdit}
         onStopEdit={() => setEditingId(null)}
-        onRequestCreate={handleRequestCreate}
       />
     </div>
   );

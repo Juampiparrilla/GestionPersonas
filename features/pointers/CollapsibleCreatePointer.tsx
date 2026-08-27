@@ -17,12 +17,10 @@ export function CollapsibleCreatePointer({
   canWrite,
   onOpenChange,
   closeSignal,
-  openSignal,
 }: {
   canWrite: boolean;
   onOpenChange?: (open: boolean) => void;
   closeSignal?: number;
-  openSignal?: number;
 }) {
   const [pinned, setPinned] = useState(readPinned);
   const [open, setOpen] = useState(readPinned);
@@ -40,17 +38,6 @@ export function CollapsibleCreatePointer({
     setHandledCloseSignal(closeSignal);
     if (closeSignal !== undefined) {
       setOpen(false);
-    }
-  }
-
-  // Mismo patron que closeSignal, pero para abrir el formulario desde
-  // afuera -- lo usa el botón "Agregar" que aparece cuando la lista esta
-  // vacia (ver PointersList), asi no hay que buscar el boton de arriba.
-  const [handledOpenSignal, setHandledOpenSignal] = useState(openSignal);
-  if (openSignal !== handledOpenSignal) {
-    setHandledOpenSignal(openSignal);
-    if (openSignal !== undefined) {
-      setOpen(true);
     }
   }
 
