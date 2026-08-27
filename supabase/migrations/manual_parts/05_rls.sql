@@ -51,12 +51,14 @@ create policy user_permissions_select on user_permissions for select
     or (select role from fn_profile_context()) = 'superadmin'
   );
 
+-- 0020: usa fn_individual_org_matches_caller (security definer, boolean)
+-- en vez de un exists directo contra individuals -- ese exists pasaba por
+-- las policies propias de individuals, y ninguna deja que un 'leader' lea
+-- su PROPIA fila ahi (bug real de 0019: "Mis Punteros"/"Mis Personas" le
+-- aparecian vacios al dirigente aunque si tuviera datos).
 create policy leaders_select on leaders for select
   using (
-    exists (
-      select 1 from individuals i
-      where i.id = leaders.id and i.organization_id = (select organization_id from fn_profile_context())
-    )
+    fn_individual_org_matches_caller(leaders.id)
     and (
       (select role from fn_profile_context()) in ('superadmin', 'reports')
       or leaders.id = (select leader_id from fn_profile_context())
@@ -68,19 +70,16 @@ create policy leaders_select on leaders for select
 -- todavia recuerda su contraseña podria seguir viendo sus datos viejos.
 -- read_only NO activa is_removed, asi que ese modo sigue leyendo normal.
 --
--- 0019: el chequeo de organizacion (exists contra individuals) es
--- obligatorio incluso para la rama superadmin/reports -- pointers no tiene
--- columna organization_id propia, asi que sin este join un superadmin de
--- CUALQUIER organizacion veia los punteros de TODAS (bug real, corregido
--- en 0019 despues de pasar desapercibido en pruebas con una sola
--- organizacion activa a la vez).
+-- El chequeo de organizacion es obligatorio incluso para la rama
+-- superadmin/reports -- pointers no tiene columna organization_id propia,
+-- asi que sin esto un superadmin de CUALQUIER organizacion veia los
+-- punteros de TODAS (bug real, corregido en 0019 -- que a su vez rompio
+-- la visibilidad del propio dirigente por usar un exists directo contra
+-- individuals en vez de fn_individual_org_matches_caller; corregido en
+-- 0020, ver esa funcion mas arriba en 02).
 create policy pointers_select on pointers for select
   using (
-    exists (
-      select 1 from individuals i
-      where i.id = pointers.leader_id
-        and i.organization_id = (select organization_id from fn_profile_context())
-    )
+    fn_individual_org_matches_caller(pointers.leader_id)
     and (
       (select role from fn_profile_context()) in ('superadmin', 'reports')
       or (
@@ -90,17 +89,16 @@ create policy pointers_select on pointers for select
     )
   );
 
--- 0019: mismo bug y misma correccion que pointers_select -- el join contra
--- individuals (via pointers.leader_id) para validar organizacion es
--- obligatorio para TODAS las ramas, no solo la de dirigente.
+-- 0020: mismo criterio que pointers_select -- fn_individual_org_matches_caller
+-- en vez de un join directo contra individuals, para no depender de que
+-- quien pregunta pueda leer esa fila el mismo.
 create policy registered_people_select on registered_people for select
   using (
     exists (
       select 1
       from pointers p
-      join individuals i on i.id = p.leader_id
       where p.id = registered_people.pointer_id
-        and i.organization_id = (select organization_id from fn_profile_context())
+        and fn_individual_org_matches_caller(p.leader_id)
         and (
           (select role from fn_profile_context()) in ('superadmin', 'reports')
           or (

@@ -38,6 +38,13 @@ to authenticated;
 -- una entrada de auditoria llamando a fn_write_audit a mano).
 grant execute on function fn_profile_context() to authenticated;
 
+-- 0020: mismo motivo que fn_profile_context de arriba -- se usa dentro de
+-- las policies de leaders/pointers/registered_people, evaluadas con los
+-- privilegios de quien consulta. Solo devuelve un boolean (nunca el
+-- organization_id crudo, a diferencia de fn_individual_org, que sigue sin
+-- otorgarse), asi que no abre una fuga de informacion nueva.
+grant execute on function fn_individual_org_matches_caller(uuid) to authenticated;
+
 grant execute on function
   fn_check_dni_availability(text),
   fn_admin_locate_dni(text),

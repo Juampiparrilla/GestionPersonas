@@ -69,6 +69,23 @@ returns uuid language sql stable security definer set search_path = public as $$
   select organization_id from individuals where id = p_id;
 $$;
 
+-- 0020: version "boolean" de la de arriba, para usar DENTRO de policies de
+-- RLS (leaders_select/pointers_select/registered_people_select) sin tener
+-- que otorgar fn_individual_org a `authenticated` (esa devuelve el
+-- organization_id crudo, y a proposito nunca se le dio ese grant directo).
+-- Security definer: bypasea las policies de `individuals`, que jamas
+-- dejan que un 'leader' lea su propia fila ahi -- sin esto, el exists
+-- quedaba en FALSE para los datos del propio dirigente (bug real de
+-- 0019, corregido en 0020).
+create or replace function fn_individual_org_matches_caller(p_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from individuals i
+    where i.id = p_id
+      and i.organization_id = (select organization_id from fn_profile_context())
+  );
+$$;
+
 -- Regla de permiso efectivo de escritura para un dirigente:
 --   organizacion.is_active AND carga_global_habilitada AND
 --   dirigente.access_status = 'active' AND no removido
