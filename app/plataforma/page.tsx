@@ -10,8 +10,7 @@ import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function PlataformaHome() {
-  const session = await getSessionContext();
-  const organizations = await listOrganizations();
+  const [session, organizations] = await Promise.all([getSessionContext(), listOrganizations()]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">

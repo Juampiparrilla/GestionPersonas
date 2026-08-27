@@ -19,27 +19,26 @@ export async function listMyPointers(): Promise<PointerListItem[]> {
 
   const supabase = await createClient();
 
-  const [{ data: pointers, error: pointersError }, { data: individuals, error: individualsError }] =
-    await Promise.all([
-      supabase
-        .from("pointers")
-        .select("id")
-        .eq("leader_id", session.leaderId)
-        .eq("is_removed", false),
-      supabase
-        .from("individuals")
-        .select("id, full_name, dni_display, phone, address")
-        .eq("position", "pointer")
-        .eq("status", "active"),
-    ]);
+  const [
+    { data: pointers, error: pointersError },
+    { data: individuals, error: individualsError },
+    { data: peopleRows },
+  ] = await Promise.all([
+    supabase
+      .from("pointers")
+      .select("id")
+      .eq("leader_id", session.leaderId)
+      .eq("is_removed", false),
+    supabase
+      .from("individuals")
+      .select("id, full_name, dni_display, phone, address")
+      .eq("position", "pointer")
+      .eq("status", "active"),
+    supabase.from("registered_people").select("pointer_id").eq("is_removed", false),
+  ]);
 
   if (pointersError) throw new Error(pointersError.message);
   if (individualsError) throw new Error(individualsError.message);
-
-  const { data: peopleRows } = await supabase
-    .from("registered_people")
-    .select("pointer_id")
-    .eq("is_removed", false);
 
   const peopleCountByPointer = new Map<string, number>();
   for (const row of peopleRows ?? []) {
@@ -85,6 +84,7 @@ export async function listAllPointersGroupedByLeader(): Promise<PointerLeaderGro
     { data: leaderIndividuals, error: leadersError },
     { data: pointers, error: pointersError },
     { data: pointerIndividuals, error: individualsError },
+    { data: peopleRows },
   ] = await Promise.all([
     supabase.from("individuals").select("id, full_name").eq("position", "leader").eq("status", "active"),
     supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
@@ -93,16 +93,12 @@ export async function listAllPointersGroupedByLeader(): Promise<PointerLeaderGro
       .select("id, full_name, dni_display, phone, address")
       .eq("position", "pointer")
       .eq("status", "active"),
+    supabase.from("registered_people").select("pointer_id").eq("is_removed", false),
   ]);
 
   if (leadersError) throw new Error(leadersError.message);
   if (pointersError) throw new Error(pointersError.message);
   if (individualsError) throw new Error(individualsError.message);
-
-  const { data: peopleRows } = await supabase
-    .from("registered_people")
-    .select("pointer_id")
-    .eq("is_removed", false);
 
   const peopleCountByPointer = new Map<string, number>();
   for (const row of peopleRows ?? []) {

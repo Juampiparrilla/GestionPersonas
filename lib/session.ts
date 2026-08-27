@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types/domain";
 
@@ -15,7 +17,15 @@ export type SessionContext = {
 // Devuelve null si no hay sesion o si el usuario no tiene un `profiles`
 // asociado (no debe pasar en uso normal, pero se contempla explicitamente
 // en vez de asumir que siempre existe).
-export async function getSessionContext(): Promise<SessionContext | null> {
+//
+// Envuelta en cache() de React: sin esto, cada layout de rol (superadmin,
+// dirigente, plataforma, reportes) la llama para validar el rol, y despues
+// la pagina que envuelve la vuelve a llamar -- duplicando el round-trip a
+// Supabase (auth.getUser() + select de profiles) en CADA navegacion.
+// cache() memoiza por el arbol de render de un mismo request, asi que la
+// segunda llamada (misma funcion, mismos argumentos -- acá ninguno) es
+// gratis, sin tocar ningun call site existente.
+export const getSessionContext = cache(async (): Promise<SessionContext | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,4 +48,4 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     leaderId: profile.leader_id,
     fullName: profile.full_name,
   };
-}
+});

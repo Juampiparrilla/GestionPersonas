@@ -15,8 +15,7 @@ export default async function PointerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await getSessionContext();
-  const pointer = await getPointerBasics(id);
+  const [session, pointer] = await Promise.all([getSessionContext(), getPointerBasics(id)]);
 
   if (!pointer || pointer.leaderId !== session?.leaderId) {
     notFound();

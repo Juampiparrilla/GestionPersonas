@@ -27,23 +27,30 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
 
   const supabase = await createClient();
 
-  const [{ data: leaders, error: leadersError }, { data: individuals, error: individualsError }] =
-    await Promise.all([
-      supabase.from("leaders").select("id, access_status, profile_id").eq("is_removed", false),
-      supabase
-        .from("individuals")
-        .select("id, full_name, dni_display, phone, address")
-        .eq("position", "leader")
-        .eq("status", "active"),
-    ]);
+  // Las 5 consultas son independientes entre si (ninguna necesita el
+  // resultado de otra, solo se cruzan aca en JS despues) -- se agrupan en
+  // un unico Promise.all en vez de 3 rondas sucesivas de ida y vuelta a
+  // Supabase.
+  const [
+    { data: leaders, error: leadersError },
+    { data: individuals, error: individualsError },
+    { data: pointerRows },
+    { data: vehicleRows },
+    { data: peopleRows },
+  ] = await Promise.all([
+    supabase.from("leaders").select("id, access_status, profile_id").eq("is_removed", false),
+    supabase
+      .from("individuals")
+      .select("id, full_name, dni_display, phone, address")
+      .eq("position", "leader")
+      .eq("status", "active"),
+    supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
+    supabase.from("vehicles").select("leader_id").eq("is_removed", false),
+    supabase.from("registered_people").select("pointer_id").eq("is_removed", false),
+  ]);
 
   if (leadersError) throw new Error(leadersError.message);
   if (individualsError) throw new Error(individualsError.message);
-
-  const [{ data: pointerRows }, { data: vehicleRows }] = await Promise.all([
-    supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
-    supabase.from("vehicles").select("leader_id").eq("is_removed", false),
-  ]);
 
   const pointerCountByLeader = new Map<string, number>();
   const leaderIdByPointer = new Map<string, string>();
@@ -58,16 +65,10 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
   }
 
   const personCountByLeader = new Map<string, number>();
-  if (leaderIdByPointer.size > 0) {
-    const { data: peopleRows } = await supabase
-      .from("registered_people")
-      .select("pointer_id")
-      .eq("is_removed", false);
-    for (const row of peopleRows ?? []) {
-      const leaderId = leaderIdByPointer.get(row.pointer_id);
-      if (!leaderId) continue;
-      personCountByLeader.set(leaderId, (personCountByLeader.get(leaderId) ?? 0) + 1);
-    }
+  for (const row of peopleRows ?? []) {
+    const leaderId = leaderIdByPointer.get(row.pointer_id);
+    if (!leaderId) continue;
+    personCountByLeader.set(leaderId, (personCountByLeader.get(leaderId) ?? 0) + 1);
   }
 
   const individualsById = new Map((individuals ?? []).map((row) => [row.id, row]));
