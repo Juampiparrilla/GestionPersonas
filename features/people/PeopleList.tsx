@@ -1,3 +1,5 @@
+import { UserRoundPlus } from "lucide-react";
+
 import { PersonCard } from "./PersonCard";
 import type { PersonListItem } from "./queries";
 
@@ -9,6 +11,7 @@ export function PeopleList({
   editingId,
   onStartEdit,
   onStopEdit,
+  onRequestCreate,
 }: {
   people: PersonListItem[];
   pointerId: string;
@@ -17,12 +20,23 @@ export function PeopleList({
   editingId: string | null;
   onStartEdit: (id: string) => void;
   onStopEdit: () => void;
+  onRequestCreate?: () => void;
 }) {
   if (people.length === 0) {
     return (
-      <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
-        {emptyMessage}
-      </p>
+      <div className="flex flex-col items-center gap-3 rounded-xl border border-zinc-200 bg-white p-6 text-center">
+        <p className="text-zinc-600">{emptyMessage}</p>
+        {canWrite && onRequestCreate ? (
+          <button
+            type="button"
+            onClick={onRequestCreate}
+            className="flex h-11 items-center gap-2 rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white hover:bg-zinc-800"
+          >
+            <UserRoundPlus className="h-4 w-4" aria-hidden="true" />
+            Agregar persona
+          </button>
+        ) : null}
+      </div>
     );
   }
 

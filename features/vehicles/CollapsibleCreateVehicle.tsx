@@ -17,10 +17,12 @@ export function CollapsibleCreateVehicle({
   canWrite,
   onOpenChange,
   closeSignal,
+  openSignal,
 }: {
   canWrite: boolean;
   onOpenChange?: (open: boolean) => void;
   closeSignal?: number;
+  openSignal?: number;
 }) {
   const [pinned, setPinned] = useState(readPinned);
   const [open, setOpen] = useState(readPinned);
@@ -36,6 +38,17 @@ export function CollapsibleCreateVehicle({
     setHandledCloseSignal(closeSignal);
     if (closeSignal !== undefined) {
       setOpen(false);
+    }
+  }
+
+  // Mismo patron que closeSignal, pero para abrir el formulario desde
+  // afuera -- lo usa el boton "Agregar" que aparece cuando la lista esta
+  // vacia (ver VehiclesList).
+  const [handledOpenSignal, setHandledOpenSignal] = useState(openSignal);
+  if (openSignal !== handledOpenSignal) {
+    setHandledOpenSignal(openSignal);
+    if (openSignal !== undefined) {
+      setOpen(true);
     }
   }
 
@@ -71,8 +84,11 @@ export function CollapsibleCreateVehicle({
   return (
     <div className="flex flex-col gap-2">
       {showSuccess ? (
-        <p role="status" className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-          <CircleCheck className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
+        <p
+          role="status"
+          className="flex animate-[toast-in_0.2s_ease-out] items-center gap-2 rounded-lg border-2 border-green-200 bg-green-50 p-4 text-base font-semibold text-green-800 shadow-sm"
+        >
+          <CircleCheck className="h-6 w-6 shrink-0" aria-hidden="true" />
           El vehículo fue agregado exitosamente.
         </p>
       ) : null}
