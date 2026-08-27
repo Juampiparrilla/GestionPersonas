@@ -67,24 +67,47 @@ create policy leaders_select on leaders for select
 -- no solo la escritura (ver migracion 0012) -- si no, alguien removido que
 -- todavia recuerda su contraseña podria seguir viendo sus datos viejos.
 -- read_only NO activa is_removed, asi que ese modo sigue leyendo normal.
+--
+-- 0019: el chequeo de organizacion (exists contra individuals) es
+-- obligatorio incluso para la rama superadmin/reports -- pointers no tiene
+-- columna organization_id propia, asi que sin este join un superadmin de
+-- CUALQUIER organizacion veia los punteros de TODAS (bug real, corregido
+-- en 0019 despues de pasar desapercibido en pruebas con una sola
+-- organizacion activa a la vez).
 create policy pointers_select on pointers for select
   using (
-    (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or (
-      leader_id = (select leader_id from fn_profile_context())
-      and not (select is_leader_removed from fn_profile_context())
+    exists (
+      select 1 from individuals i
+      where i.id = pointers.leader_id
+        and i.organization_id = (select organization_id from fn_profile_context())
+    )
+    and (
+      (select role from fn_profile_context()) in ('superadmin', 'reports')
+      or (
+        leader_id = (select leader_id from fn_profile_context())
+        and not (select is_leader_removed from fn_profile_context())
+      )
     )
   );
 
+-- 0019: mismo bug y misma correccion que pointers_select -- el join contra
+-- individuals (via pointers.leader_id) para validar organizacion es
+-- obligatorio para TODAS las ramas, no solo la de dirigente.
 create policy registered_people_select on registered_people for select
   using (
-    (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or (
-      not (select is_leader_removed from fn_profile_context())
-      and exists (
-        select 1 from pointers p
-        where p.id = registered_people.pointer_id and p.leader_id = (select leader_id from fn_profile_context())
-      )
+    exists (
+      select 1
+      from pointers p
+      join individuals i on i.id = p.leader_id
+      where p.id = registered_people.pointer_id
+        and i.organization_id = (select organization_id from fn_profile_context())
+        and (
+          (select role from fn_profile_context()) in ('superadmin', 'reports')
+          or (
+            not (select is_leader_removed from fn_profile_context())
+            and p.leader_id = (select leader_id from fn_profile_context())
+          )
+        )
     )
   );
 
@@ -97,12 +120,17 @@ create policy individuals_select_admin on individuals for select
     and organization_id = (select organization_id from fn_profile_context())
   );
 
+-- 0019: vehicles SI tiene organization_id propia -- el chequeo directo
+-- (sin join) es obligatorio igual, faltaba antes de 0019.
 create policy vehicles_select on vehicles for select
   using (
-    (select role from fn_profile_context()) in ('superadmin', 'reports')
-    or (
-      leader_id = (select leader_id from fn_profile_context())
-      and not (select is_leader_removed from fn_profile_context())
+    organization_id = (select organization_id from fn_profile_context())
+    and (
+      (select role from fn_profile_context()) in ('superadmin', 'reports')
+      or (
+        leader_id = (select leader_id from fn_profile_context())
+        and not (select is_leader_removed from fn_profile_context())
+      )
     )
   );
 
