@@ -13,12 +13,19 @@ const nextConfig: NextConfig = {
   // navegaciones NO prefeteadas). Eso hacia que, por ejemplo, un dirigente
   // que ya tenia "Mis Punteros" prefeteado siguiera viendo "la carga esta
   // pausada" un rato despues de que el Superadmin le reabriera el acceso,
-  // hasta hacer un refresh manual. staleTimes.static=0 saca ese cache para
-  // paginas dinamicas (todas las de esta app, todas dependen de la sesion).
+  // hasta hacer un refresh manual.
+  //
+  // OJO: Next 16 exige `static >= 30` (0 tira error de validacion en el
+  // build y esta seccion entera queda descartada -- volviendo al default
+  // real de 5 minutos, que es justo el bug que se queria evitar). 30 es el
+  // minimo permitido, igual muy por debajo del default. `dynamic: 0`
+  // restaura el default de no cachear nada para paginas dinamicas (todas
+  // las de esta app dependen de la sesion) -- el valor anterior (30) hacia
+  // exactamente lo contrario de lo buscado.
   experimental: {
     staleTimes: {
-      dynamic: 30,
-      static: 0,
+      dynamic: 0,
+      static: 30,
     },
   },
 };
