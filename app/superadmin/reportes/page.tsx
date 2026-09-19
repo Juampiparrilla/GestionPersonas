@@ -24,7 +24,7 @@ export default async function SuperadminReportesPage() {
   return (
     <Screen
       title="Reportes"
-      backHref="/superadmin"
+      backHref="/superadmin/mas"
       bar={
         <ActionBar>
           <Link href="/superadmin/respaldos" className={btnSecondaryStrong}>

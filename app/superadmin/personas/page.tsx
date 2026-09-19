@@ -10,7 +10,7 @@ export default async function SuperadminPersonasPage() {
   return (
     <Screen
       title="Personas registradas"
-      backHref="/superadmin/reportes"
+      backHref="/superadmin/mas"
       bar={
         <ActionBar>
           <ReportDownloadButtons

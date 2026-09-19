@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Sheet } from "@/components/ui/Sheet";
-import { btnIconLarge, btnSecondary, btnSecondaryStrong } from "@/components/ui/styles";
+import { btnIcon, btnIconLarge, btnSecondary, btnSecondaryStrong } from "@/components/ui/styles";
 
 const LINK_CLASS = `${btnSecondary} !h-[46px] flex-1`;
 const DISABLED_LINK_CLASS =
@@ -39,7 +39,9 @@ export function ReportDownloadButtons({
   // "icon": boton ↓ de 52x52 (va al lado de la accion primaria);
   // "wide": boton de ancho completo "Generar reporte" (pantallas sin accion
   // primaria propia).
-  variant?: "icon" | "wide";
+  // "header": boton de icono de 40px para la cabecera de las pantallas que
+  // muestran la barra de navegacion.
+  variant?: "icon" | "wide" | "header";
   pdfHref: string;
   excelHref?: string;
   showPdfModes?: boolean;
@@ -64,7 +66,9 @@ export function ReportDownloadButtons({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Generar reporte"
-        className={variant === "wide" ? btnSecondaryStrong : btnIconLarge}
+        className={
+          variant === "wide" ? btnSecondaryStrong : variant === "header" ? btnIcon : btnIconLarge
+        }
       >
         <Download className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         {variant === "wide" ? "Generar reporte" : null}

@@ -14,7 +14,7 @@ export default async function SuperadminAuditoriaPage() {
       initialRows={rows}
       initialRange="today"
       leaders={leaders.map((leader) => ({ id: leader.id, fullName: leader.fullName }))}
-      backHref="/superadmin"
+      backHref="/superadmin/mas"
     />
   );
 }

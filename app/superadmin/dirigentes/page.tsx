@@ -10,6 +10,7 @@ export default async function DirigentesPage() {
       leaders={leaders}
       exportSlot={
         <ReportDownloadButtons
+          variant="header"
           pdfHref="/api/reportes/dirigentes/pdf"
           excelHref="/api/reportes/dirigentes/excel"
           showPdfModes

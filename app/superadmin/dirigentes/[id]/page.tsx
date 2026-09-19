@@ -1,36 +1,15 @@
 import { notFound } from "next/navigation";
 
 import { fetchAuditLogsAction } from "@/features/audit/actions";
+import { formatActivityTime } from "@/features/audit/dates";
 import { LeaderDetailClient } from "@/features/leaders/LeaderDetailClient";
 import { listActiveLeaders } from "@/features/leaders/queries";
 import { listAllPeopleGroupedByLeader } from "@/features/people/queries";
 import { listAllPointersGroupedByLeader } from "@/features/pointers/queries";
 import { listAllVehiclesGroupedByLeader } from "@/features/vehicles/queries";
 import { VEHICLE_TYPE_LABEL } from "@/features/vehicles/vehicleTypeLabel";
-import { REPORT_TIME_ZONE } from "@/lib/reports/filename";
 
 const ACTIVITY_LIMIT = 3;
-
-function formatActivityTime(iso: string): string {
-  const date = new Date(iso);
-  const now = new Date();
-  const sameDay =
-    date.toLocaleDateString("es-AR", { timeZone: REPORT_TIME_ZONE }) ===
-    now.toLocaleDateString("es-AR", { timeZone: REPORT_TIME_ZONE });
-
-  return sameDay
-    ? date.toLocaleTimeString("es-AR", {
-        timeZone: REPORT_TIME_ZONE,
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
-    : date.toLocaleDateString("es-AR", {
-        timeZone: REPORT_TIME_ZONE,
-        day: "2-digit",
-        month: "2-digit",
-      });
-}
 
 export default async function LeaderDetailPage({
   params,

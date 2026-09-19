@@ -20,7 +20,11 @@ export function CreateSheet({
   lockedMessage,
   successMessage,
   renderForm,
+  variant = "bar",
 }: {
+  // "bar": boton primario ancho para una <ActionBar>; "header": boton de icono
+  // (+) para la cabecera de las pantallas que muestran la barra de navegacion.
+  variant?: "bar" | "header";
   triggerLabel: string;
   title: string;
   canWrite?: boolean;
@@ -51,6 +55,7 @@ export function CreateSheet({
   const close = useCallback(() => setOpen(false), []);
 
   if (!canWrite) {
+    if (variant === "header") return null;
     return (
       <p className="flex flex-1 items-start gap-2 rounded-[14px] border border-line bg-muted p-3 text-[13px] text-ink-2">
         <Lock className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
@@ -74,10 +79,21 @@ export function CreateSheet({
         </div>
       ) : null}
 
-      <button type="button" onClick={() => setOpen(true)} className={`${btnPrimary} flex-1`}>
-        <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
-        {triggerLabel}
-      </button>
+      {variant === "header" ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={triggerLabel}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-white transition-colors duration-150 ease-out active:bg-accent-press"
+        >
+          <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+        </button>
+      ) : (
+        <button type="button" onClick={() => setOpen(true)} className={`${btnPrimary} flex-1`}>
+          <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          {triggerLabel}
+        </button>
+      )}
 
       <Sheet open={open} onClose={close} title={title}>
         <Fragment key={formKey}>{renderForm(handleCreated)}</Fragment>

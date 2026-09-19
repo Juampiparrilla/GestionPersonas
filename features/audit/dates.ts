@@ -8,6 +8,28 @@ export function argentinaDate(daysAgo = 0): string {
   return date.toLocaleDateString("en-CA", { timeZone: AUDIT_TIME_ZONE });
 }
 
+// Hora (HH:mm) si es de hoy, o dia/mes si es de otro dia -- para las listas
+// de "ultima actividad".
+export function formatActivityTime(iso: string): string {
+  const date = new Date(iso);
+  const sameDay =
+    date.toLocaleDateString("es-AR", { timeZone: AUDIT_TIME_ZONE }) ===
+    new Date().toLocaleDateString("es-AR", { timeZone: AUDIT_TIME_ZONE });
+
+  return sameDay
+    ? date.toLocaleTimeString("es-AR", {
+        timeZone: AUDIT_TIME_ZONE,
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : date.toLocaleDateString("es-AR", {
+        timeZone: AUDIT_TIME_ZONE,
+        day: "2-digit",
+        month: "2-digit",
+      });
+}
+
 // Filtro de fecha de cada rango de la pantalla de auditoria (Hoy · 7 días ·
 // Todo). "Todo" no filtra por fecha.
 export function rangeDates(range: AuditRange): { dateFrom?: string } {

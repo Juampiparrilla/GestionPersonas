@@ -1,5 +1,5 @@
 import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
-import { ActionBar } from "@/components/ui/ActionBar";
+import { AdminBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
 import { AllVehiclesView } from "@/features/vehicles/AllVehiclesView";
 import { listAllVehiclesGroupedByLeader } from "@/features/vehicles/queries";
@@ -10,17 +10,15 @@ export default async function SuperadminVehiculosPage() {
   return (
     <Screen
       title="Vehículos"
-      backHref="/superadmin/reportes"
-      bar={
-        <ActionBar>
-          <ReportDownloadButtons
-            variant="wide"
-            pdfHref="/api/reportes/vehiculos/pdf"
-            excelHref="/api/reportes/vehiculos/excel"
-            showPdfModes
-          />
-        </ActionBar>
+      headerRight={
+        <ReportDownloadButtons
+          variant="header"
+          pdfHref="/api/reportes/vehiculos/pdf"
+          excelHref="/api/reportes/vehiculos/excel"
+          showPdfModes
+        />
       }
+      bar={<AdminBottomNav />}
     >
       <AllVehiclesView groups={groups} />
     </Screen>

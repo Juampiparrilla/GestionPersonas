@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { btnIcon } from "./styles";
 
@@ -35,7 +36,10 @@ export function Sheet({
 
   if (!open) return null;
 
-  return (
+  // Portal a <body>: asi la hoja siempre queda por encima de la barra de
+  // navegacion / accion, sin importar en que contenedor (cabecera fija,
+  // barra inferior) se haya montado el boton que la abre.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40"
       onClick={onClose}
@@ -55,6 +59,7 @@ export function Sheet({
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pt-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

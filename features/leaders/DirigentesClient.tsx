@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 
-import { ActionBar } from "@/components/ui/ActionBar";
 import { Chip, CountChip } from "@/components/ui/Chip";
 import { CreateSheet } from "@/components/ui/CreateSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { EntityRow } from "@/components/ui/EntityRow";
+import { AdminBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
 import { normalizeDni } from "@/utils/dni";
@@ -43,8 +43,19 @@ export function DirigentesClient({
   return (
     <Screen
       title="Dirigentes"
-      backHref="/superadmin"
-      headerRight={<span className="font-mono text-[13px] font-medium text-ink-2">{leaders.length}</span>}
+      headerRight={
+        <div className="flex items-center gap-2">
+          <span className="mr-1 font-mono text-[13px] font-medium text-ink-2">{leaders.length}</span>
+          {exportSlot}
+          <CreateSheet
+            variant="header"
+            triggerLabel="Agregar dirigente"
+            title="Agregar dirigente"
+            successMessage="Dirigente creado. Para darle acceso, abrí su ficha y usá el botón de invitar."
+            renderForm={(onCreated) => <CreateLeaderForm onCreated={onCreated} />}
+          />
+        </div>
+      }
       headerExtra={
         leaders.length > 0 ? (
           <SearchField
@@ -55,19 +66,7 @@ export function DirigentesClient({
           />
         ) : null
       }
-      bar={
-        <ActionBar>
-          <div className="flex items-center gap-3">
-            {exportSlot}
-            <CreateSheet
-              triggerLabel="Agregar dirigente"
-              title="Agregar dirigente"
-              successMessage="Dirigente creado. Para darle acceso, abrí su ficha y usá el botón de invitar."
-              renderForm={(onCreated) => <CreateLeaderForm onCreated={onCreated} />}
-            />
-          </div>
-        </ActionBar>
-      }
+      bar={<AdminBottomNav />}
     >
       {filteredLeaders.length === 0 ? (
         normalizedQuery ? (

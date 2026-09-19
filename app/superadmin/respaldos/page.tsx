@@ -13,7 +13,7 @@ export default async function RespaldosPage() {
   ]);
 
   return (
-    <Screen title="Respaldos y reportes" backHref="/superadmin">
+    <Screen title="Respaldos y reportes" backHref="/superadmin/mas">
       <div className={`${cardClass} p-4`}>
         <h2 className="mb-1 text-[17px] font-semibold text-ink">Reportes por correo</h2>
         <p className="mb-4 text-sm text-ink-2">

@@ -1,17 +1,21 @@
 import { Eyebrow } from "./Eyebrow";
 
-// Resumen simetrico: columnas iguales con la cifra grande centrada y una
-// nota al pie. Es la variante del Inicio del Dirigente (pocas cifras y
-// espacio de sobra); el Administrador usa MetricsCard con cifra "hero".
+// Resumen simetrico: celdas iguales con la cifra grande centrada y una nota
+// al pie. `columns` permite acomodar las celdas en una grilla (ej. 2x2).
+// El Administrador y el Dirigente usan esta tarjeta en su Inicio.
 export function SummaryCard({
   eyebrow,
   cells,
   footnote,
+  columns,
 }: {
   eyebrow: string;
   cells: { label: string; value: number }[];
   footnote?: string;
+  columns?: number;
 }) {
+  const cols = columns ?? cells.length;
+
   return (
     <section className="overflow-hidden rounded-[18px] border border-line bg-surface">
       <div className="px-[18px] pb-3 pt-4">
@@ -19,12 +23,14 @@ export function SummaryCard({
       </div>
       <div
         className="grid border-t border-line-inner"
-        style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       >
         {cells.map((cell, index) => (
           <div
             key={cell.label}
-            className={`flex flex-col items-center gap-1 px-2 py-6 ${index > 0 ? "border-l border-line-inner" : ""}`}
+            className={`flex flex-col items-center gap-1 px-2 py-6 ${
+              index % cols > 0 ? "border-l border-line-inner" : ""
+            } ${index >= cols ? "border-t border-line-inner" : ""}`}
           >
             <span className="text-[34px] font-semibold leading-none tracking-[-0.03em] text-ink">
               {cell.value.toLocaleString("es-AR")}
