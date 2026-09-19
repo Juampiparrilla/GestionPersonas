@@ -1,6 +1,7 @@
 import {
   ClipboardList,
   ClipboardPlus,
+  DatabaseBackup,
   FileText,
   MailCheck,
   Settings,
@@ -43,10 +44,16 @@ export default function SuperadminMasPage() {
             icon: ClipboardList,
           },
           {
-            href: "/superadmin/respaldos",
-            label: "Respaldos y reportes",
-            hint: "Envío por correo y backups",
+            href: "/superadmin/envio-correo",
+            label: "Envío por correo de Reportes",
+            hint: "Reportes automáticos por email",
             icon: MailCheck,
+          },
+          {
+            href: "/superadmin/respaldos",
+            label: "Respaldos",
+            hint: "Copia completa de la base de datos",
+            icon: DatabaseBackup,
           },
         ]}
       />

@@ -60,7 +60,7 @@ export async function setReportEmailScheduleAction(
     return { error: friendlyRpcError(error.message), success: false };
   }
 
-  revalidatePath("/superadmin/respaldos");
+  revalidatePath("/superadmin/envio-correo");
   return { error: null, success: true };
 }
 

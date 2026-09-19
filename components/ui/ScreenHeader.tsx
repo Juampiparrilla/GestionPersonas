@@ -36,7 +36,7 @@ export function ScreenHeader({
         {backHref ? <BackButton href={backHref} /> : null}
         {title ? (
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[21px] font-semibold tracking-[-0.015em] text-ink">
+            <h1 className="text-[21px] font-semibold leading-[1.15] tracking-[-0.015em] text-ink">
               {title}
             </h1>
             {subtitle ? (

@@ -27,7 +27,7 @@ export default async function SuperadminReportesPage() {
       backHref="/superadmin/mas"
       bar={
         <ActionBar>
-          <Link href="/superadmin/respaldos" className={btnSecondaryStrong}>
+          <Link href="/superadmin/envio-correo" className={btnSecondaryStrong}>
             <Mail className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
             Enviar por correo
           </Link>
