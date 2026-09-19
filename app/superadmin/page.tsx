@@ -1,7 +1,3 @@
-import { ClipboardList, FileText, MailCheck, UsersRound } from "lucide-react";
-
-import { AccessTile } from "@/components/ui/AccessTile";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { HomeGreeting } from "@/components/ui/HomeGreeting";
 import { MetricsCard } from "@/components/ui/MetricsCard";
 import { AdminBottomNav } from "@/components/ui/RoleNav";
@@ -49,16 +45,6 @@ export default async function SuperadminHome() {
           { label: "Vehículos", value: stats.vehicles },
         ]}
       />
-
-      <section className="flex flex-col gap-2.5">
-        <Eyebrow>Accesos</Eyebrow>
-        <div className="grid grid-cols-2 gap-2.5">
-          <AccessTile href="/superadmin/dirigentes" label="Dirigentes" icon={UsersRound} />
-          <AccessTile href="/superadmin/reportes" label="Reportes" icon={FileText} />
-          <AccessTile href="/superadmin/auditoria" label="Auditoría" icon={ClipboardList} />
-          <AccessTile href="/superadmin/respaldos" label="Respaldos" icon={MailCheck} />
-        </div>
-      </section>
     </Screen>
   );
 }
