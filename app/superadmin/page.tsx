@@ -1,26 +1,15 @@
-import {
-  BarChart3,
-  Car,
-  ClipboardList,
-  ClipboardPlus,
-  Divide,
-  MailCheck,
-  Sigma,
-  UserRound,
-  UserRoundPlus,
-  UsersRound,
-} from "lucide-react";
-import Link from "next/link";
+import { ClipboardList, FileText, MailCheck, UsersRound } from "lucide-react";
 
-import { AccountSettingsLink } from "@/components/AccountSettingsLink";
-import { LogoutButton } from "@/components/LogoutButton";
-import { RoleHelpButton } from "@/components/RoleHelpButton";
-import { StatCard } from "@/components/StatCard";
+import { AccessTile } from "@/components/ui/AccessTile";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { HomeGreeting } from "@/components/ui/HomeGreeting";
+import { MetricsCard } from "@/components/ui/MetricsCard";
+import { AdminBottomNav } from "@/components/ui/RoleNav";
+import { Screen } from "@/components/ui/Screen";
 import { getSuperadminStats } from "@/features/leaders/queries";
+import { SearchPanel } from "@/features/search/SearchPanel";
 import { GlobalLoadingToggle } from "@/features/settings/GlobalLoadingToggle";
 import { getLoadingEnabled } from "@/features/settings/queries";
-import { SearchPanel } from "@/features/search/SearchPanel";
-import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function SuperadminHome() {
@@ -31,83 +20,45 @@ export default async function SuperadminHome() {
   ]);
 
   const totalPersonas = stats.leaders + stats.pointers + stats.people;
-  const promedioPersonasPorPuntero = stats.pointers > 0 ? Math.round(stats.people / stats.pointers) : 0;
+  const promedioPersonasPorPuntero =
+    stats.pointers > 0 ? Math.round(stats.people / stats.pointers) : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900">
-            Bienvenido, {session?.fullName}
-          </h1>
-          <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <RoleHelpButton role={session!.role} />
-          <AccountSettingsLink />
-          <LogoutButton />
-        </div>
-      </div>
+    <Screen bar={<AdminBottomNav />}>
+      <HomeGreeting fullName={session!.fullName} role={session!.role} />
 
       <GlobalLoadingToggle loadingEnabled={loadingEnabled} />
 
       <SearchPanel />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Dirigentes" value={stats.leaders} icon={UserRound} />
-        <StatCard label="Punteros" value={stats.pointers} icon={UserRoundPlus} />
-        <StatCard label="Personas registradas" value={stats.people} icon={UsersRound} />
-        <StatCard label="Vehículos" value={stats.vehicles} icon={Car} />
-        <StatCard
-          label="Total de personas"
-          value={totalPersonas}
-          icon={Sigma}
-          hint="Dirigentes + punteros + personas"
-        />
-        <StatCard
-          label="Promedio de personas por puntero"
-          value={promedioPersonasPorPuntero}
-          icon={Divide}
-        />
-      </div>
+      <MetricsCard
+        eyebrow="Total cargado"
+        total={totalPersonas}
+        note={
+          <>
+            {promedioPersonasPorPuntero.toLocaleString("es-AR")}{" "}
+            {promedioPersonasPorPuntero === 1 ? "persona" : "personas"}
+            <br />
+            por puntero
+          </>
+        }
+        cells={[
+          { label: "Dirigentes", value: stats.leaders },
+          { label: "Punteros", value: stats.pointers },
+          { label: "Personas", value: stats.people },
+          { label: "Vehículos", value: stats.vehicles },
+        ]}
+      />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Link
-          href="/superadmin/dirigentes"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <UserRoundPlus className="h-5 w-5" aria-hidden="true" />
-          Dirigentes
-        </Link>
-        <Link
-          href="/superadmin/carga-asistida"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <ClipboardPlus className="h-5 w-5" aria-hidden="true" />
-          Carga asistida
-        </Link>
-        <Link
-          href="/superadmin/reportes"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <BarChart3 className="h-5 w-5" aria-hidden="true" />
-          Reportes
-        </Link>
-        <Link
-          href="/superadmin/auditoria"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <ClipboardList className="h-5 w-5" aria-hidden="true" />
-          Auditoría
-        </Link>
-        <Link
-          href="/superadmin/respaldos"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <MailCheck className="h-5 w-5" aria-hidden="true" />
-          Respaldos y reportes
-        </Link>
-      </div>
-    </div>
+      <section className="flex flex-col gap-2.5">
+        <Eyebrow>Accesos</Eyebrow>
+        <div className="grid grid-cols-2 gap-2.5">
+          <AccessTile href="/superadmin/dirigentes" label="Dirigentes" icon={UsersRound} />
+          <AccessTile href="/superadmin/reportes" label="Reportes" icon={FileText} />
+          <AccessTile href="/superadmin/auditoria" label="Auditoría" icon={ClipboardList} />
+          <AccessTile href="/superadmin/respaldos" label="Respaldos" icon={MailCheck} />
+        </div>
+      </section>
+    </Screen>
   );
 }

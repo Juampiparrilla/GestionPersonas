@@ -4,7 +4,7 @@ import type { PersonListItem } from "./queries";
 export function PeopleList({
   people,
   pointerId,
-  emptyMessage = "Todavía no hay personas registradas en este puntero. Cargá la primera con el botón de arriba.",
+  empty,
   canWrite,
   editingId,
   onStartEdit,
@@ -12,27 +12,22 @@ export function PeopleList({
 }: {
   people: PersonListItem[];
   pointerId: string;
-  emptyMessage?: string;
+  empty: React.ReactNode;
   canWrite: boolean;
   editingId: string | null;
   onStartEdit: (id: string) => void;
   onStopEdit: () => void;
 }) {
   if (people.length === 0) {
-    return (
-      <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
-        {emptyMessage}
-      </p>
-    );
+    return <>{empty}</>;
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {people.map((person, index) => (
+    <div className="flex flex-col gap-[9px]">
+      {people.map((person) => (
         <PersonCard
           key={person.id}
           person={person}
-          index={index}
           pointerId={pointerId}
           canWrite={canWrite}
           isEditing={editingId === person.id}

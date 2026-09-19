@@ -1,57 +1,79 @@
-import { ArrowLeft, Car, FileSliders, UserRound, UsersRound } from "lucide-react";
+import { ChevronRight, Mail, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
-export default function SuperadminReportesPage() {
-  return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">Reportes</h1>
-        <Link
-          href="/superadmin"
-          className="flex items-center gap-1 text-sm text-zinc-600 underline underline-offset-2"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Volver
-        </Link>
-      </div>
+import { ActionBar } from "@/components/ui/ActionBar";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Screen } from "@/components/ui/Screen";
+import { btnSecondaryStrong, cardClass } from "@/components/ui/styles";
+import { getSuperadminStats } from "@/features/leaders/queries";
 
-      <div className="flex flex-col gap-3">
-        <Link
-          href="/superadmin/dirigentes"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <UserRound className="h-5 w-5" aria-hidden="true" />
-          Dirigentes
-        </Link>
-        <Link
-          href="/superadmin/punteros"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <UsersRound className="h-5 w-5" aria-hidden="true" />
-          Punteros
-        </Link>
-        <Link
-          href="/superadmin/personas"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <UsersRound className="h-5 w-5" aria-hidden="true" />
-          Personas
-        </Link>
-        <Link
-          href="/superadmin/vehiculos"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <Car className="h-5 w-5" aria-hidden="true" />
-          Vehículos
-        </Link>
+function recordsLabel(count: number): string {
+  return `${count.toLocaleString("es-AR")} ${count === 1 ? "registro" : "registros"}`;
+}
+
+export default async function SuperadminReportesPage() {
+  const stats = await getSuperadminStats();
+
+  const categories = [
+    { href: "/superadmin/dirigentes", label: "Dirigentes", initial: "D", count: stats.leaders },
+    { href: "/superadmin/punteros", label: "Punteros", initial: "P", count: stats.pointers },
+    { href: "/superadmin/personas", label: "Personas", initial: "Pe", count: stats.people },
+    { href: "/superadmin/vehiculos", label: "Vehículos", initial: "V", count: stats.vehicles },
+  ];
+
+  return (
+    <Screen
+      title="Reportes"
+      backHref="/superadmin"
+      bar={
+        <ActionBar>
+          <Link href="/superadmin/respaldos" className={btnSecondaryStrong}>
+            <Mail className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+            Enviar por correo
+          </Link>
+        </ActionBar>
+      }
+    >
+      <section className="flex flex-col gap-2.5">
+        <Eyebrow>Por categoría</Eyebrow>
+        <div className={`${cardClass} overflow-hidden`}>
+          {categories.map((category, index) => (
+            <Link
+              key={category.href}
+              href={category.href}
+              className={`flex items-center gap-[13px] px-4 py-[15px] transition-colors duration-150 ease-out active:bg-muted ${
+                index > 0 ? "border-t border-line-inner" : ""
+              }`}
+            >
+              <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-muted font-mono text-sm font-semibold text-ink-label">
+                {category.initial}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-base font-semibold text-ink">{category.label}</span>
+                <span className="text-[13px] text-ink-2">{recordsLabel(category.count)}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-ink-ph" aria-hidden="true" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2.5">
+        <Eyebrow>A medida</Eyebrow>
         <Link
           href="/superadmin/reportes/personalizado"
-          className="flex h-14 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white text-base font-semibold text-zinc-900 transition-colors hover:bg-zinc-100"
+          className="flex items-center gap-[13px] rounded-[18px] border border-dashed border-line-dashed bg-surface p-4 transition-colors duration-150 ease-out active:bg-muted"
         >
-          <FileSliders className="h-5 w-5" aria-hidden="true" />
-          Reporte personalizado
+          <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-muted text-ink-label">
+            <SlidersHorizontal className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-base font-semibold text-ink">Reporte personalizado</span>
+            <span className="text-[13px] text-ink-2">Elegí campos, filtros y formato de salida.</span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-ink-ph" aria-hidden="true" />
         </Link>
-      </div>
-    </div>
+      </section>
+    </Screen>
   );
 }

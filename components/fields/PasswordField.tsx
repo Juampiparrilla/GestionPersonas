@@ -1,6 +1,5 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 export function PasswordField({
@@ -25,20 +24,16 @@ export function PasswordField({
         name={name}
         required={required}
         autoComplete={autoComplete}
-        className={`${className ?? ""} pr-11`}
+        className={`${className ?? ""} pr-16`}
         type={visible ? "text" : "password"}
       />
       <button
         type="button"
         onClick={() => setVisible((value) => !value)}
         aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-zinc-500 hover:text-zinc-800"
+        className="absolute inset-y-0 right-0 flex w-16 items-center justify-center text-[12px] font-semibold uppercase tracking-wide text-ink-2"
       >
-        {visible ? (
-          <EyeOff className="h-5 w-5" aria-hidden="true" />
-        ) : (
-          <Eye className="h-5 w-5" aria-hidden="true" />
-        )}
+        {visible ? "Ocultar" : "Ver"}
       </button>
     </div>
   );

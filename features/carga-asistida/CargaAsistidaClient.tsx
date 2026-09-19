@@ -1,8 +1,13 @@
 "use client";
 
-import { Car, CircleCheck, UserRound, UserRoundPlus, UsersRound, X } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { Avatar } from "@/components/ui/Avatar";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Screen } from "@/components/ui/Screen";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { hintClass, inputClass, labelClass, linkActionClass } from "@/components/ui/styles";
 import { CreatePersonForm } from "@/features/people/CreatePersonForm";
 import { CreatePointerForm } from "@/features/pointers/CreatePointerForm";
 import { CreateVehicleForm } from "@/features/vehicles/CreateVehicleForm";
@@ -13,10 +18,10 @@ type LeaderOption = { id: string; fullName: string };
 type PointerOption = { id: string; fullName: string };
 type LeaderPointerGroup = { leaderId: string; leaderName: string; pointers: PointerOption[] };
 
-const OPERATIONS: { value: Operation; label: string; icon: typeof UserRoundPlus }[] = [
-  { value: "pointer", label: "Agregar puntero", icon: UserRoundPlus },
-  { value: "person", label: "Agregar persona", icon: UsersRound },
-  { value: "vehicle", label: "Agregar vehículo", icon: Car },
+const OPERATIONS: { value: Operation; label: string }[] = [
+  { value: "pointer", label: "Puntero" },
+  { value: "person", label: "Persona" },
+  { value: "vehicle", label: "Vehículo" },
 ];
 
 function Autocomplete<T extends { id: string; fullName: string }>({
@@ -25,12 +30,14 @@ function Autocomplete<T extends { id: string; fullName: string }>({
   onSelect,
   options,
   placeholder,
+  label,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
   onSelect: (option: T) => void;
   options: T[];
   placeholder: string;
+  label: string;
 }) {
   const matches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -45,17 +52,21 @@ function Autocomplete<T extends { id: string; fullName: string }>({
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={placeholder}
-        className="h-12 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+        aria-label={label}
+        className={inputClass}
       />
       {matches.length > 0 ? (
-        <div className="flex flex-col gap-1 rounded-lg border border-zinc-200 p-1">
-          {matches.map((option) => (
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+          {matches.map((option, index) => (
             <button
               key={option.id}
               type="button"
               onClick={() => onSelect(option)}
-              className="rounded-md px-3 py-2 text-left text-sm font-medium text-zinc-900 hover:bg-zinc-100"
+              className={`flex min-h-[48px] w-full items-center gap-3 px-3.5 py-2 text-left text-[15px] font-semibold text-ink active:bg-muted ${
+                index > 0 ? "border-t border-line-inner" : ""
+              }`}
             >
+              <Avatar name={option.fullName} size="sm" />
               {option.fullName}
             </button>
           ))}
@@ -65,23 +76,53 @@ function Autocomplete<T extends { id: string; fullName: string }>({
   );
 }
 
+function SelectedCard({
+  eyebrow,
+  name,
+  onChange,
+}: {
+  eyebrow: string;
+  name: string;
+  onChange: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-[13px] border border-line-input bg-surface px-3 py-[9px]">
+      <Avatar name={name} size="sm" />
+      <div className="min-w-0 flex-1">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-ink-3">
+          {eyebrow}
+        </p>
+        <p className="truncate text-[15px] font-semibold text-ink">{name}</p>
+      </div>
+      <button type="button" onClick={onChange} className={`${linkActionClass} min-h-[44px] px-1`}>
+        Cambiar
+      </button>
+    </div>
+  );
+}
+
 export function CargaAsistidaClient({
   leaders,
   pointerGroups,
+  initialLeaderId,
+  initialOperation,
 }: {
   leaders: LeaderOption[];
   pointerGroups: LeaderPointerGroup[];
+  initialLeaderId?: string;
+  initialOperation?: Operation;
 }) {
   const [leaderQuery, setLeaderQuery] = useState("");
-  const [selectedLeader, setSelectedLeader] = useState<LeaderOption | null>(null);
-  const [operation, setOperation] = useState<Operation>("pointer");
+  const [selectedLeader, setSelectedLeader] = useState<LeaderOption | null>(
+    () => leaders.find((leader) => leader.id === initialLeaderId) ?? null
+  );
+  const [operation, setOperation] = useState<Operation>(initialOperation ?? "pointer");
 
   const [pointerQuery, setPointerQuery] = useState("");
   const [selectedPointer, setSelectedPointer] = useState<PointerOption | null>(null);
 
   const [formKey, setFormKey] = useState(0);
   const [justCreated, setJustCreated] = useState<string | null>(null);
-  const [formOpen, setFormOpen] = useState(true);
 
   const pointersForLeader = useMemo(() => {
     if (!selectedLeader) return [];
@@ -94,7 +135,6 @@ export function CargaAsistidaClient({
     setSelectedPointer(null);
     setPointerQuery("");
     setJustCreated(null);
-    setFormOpen(true);
   }
 
   function changeLeader() {
@@ -110,7 +150,6 @@ export function CargaAsistidaClient({
     setSelectedPointer(null);
     setPointerQuery("");
     setJustCreated(null);
-    setFormOpen(true);
   }
 
   function handleCreated(message: string) {
@@ -122,83 +161,60 @@ export function CargaAsistidaClient({
     }
   }
 
+  const showForm = Boolean(selectedLeader) && (operation !== "person" || Boolean(selectedPointer));
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <p className="flex items-center gap-2 text-sm font-medium text-zinc-700">
-          <UserRound className="h-4 w-4 text-zinc-500" aria-hidden="true" />
-          Dirigente
-        </p>
-        {selectedLeader ? (
-          <div className="flex items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2">
-            <p className="text-sm font-medium text-zinc-900">{selectedLeader.fullName}</p>
-            <button
-              type="button"
-              onClick={changeLeader}
-              className="text-xs font-medium text-zinc-600 underline underline-offset-2"
-            >
-              Cambiar
-            </button>
-          </div>
-        ) : (
+    <Screen
+      title="Carga asistida"
+      backHref="/superadmin"
+      flush={showForm}
+      headerExtra={
+        <div className="flex flex-col gap-3">
+          <p className="text-[13px] text-ink-2">Queda registrado en la auditoría con tu nombre.</p>
+          {selectedLeader ? (
+            <SelectedCard eyebrow="Dirigente" name={selectedLeader.fullName} onChange={changeLeader} />
+          ) : null}
+        </div>
+      }
+    >
+      {!selectedLeader ? (
+        <div className="flex flex-col gap-1.5">
+          <p className={labelClass}>Dirigente</p>
           <Autocomplete
             query={leaderQuery}
             onQueryChange={setLeaderQuery}
             onSelect={selectLeader}
             options={leaders}
             placeholder="Buscar dirigente por nombre"
+            label="Buscar dirigente por nombre"
           />
-        )}
-      </div>
-
-      {selectedLeader ? (
+          <p className={hintClass}>Elegí a quién le vas a cargar el dato.</p>
+        </div>
+      ) : (
         <>
-          <div className="flex flex-col gap-2">
-            {OPERATIONS.map((option) => {
-              const Icon = option.icon;
-              return (
-                <label
-                  key={option.value}
-                  onClick={() => selectOperation(option.value)}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${
-                    operation === option.value ? "border-zinc-900 bg-zinc-50" : "border-zinc-200"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="operation"
-                    checked={operation === option.value}
-                    onChange={() => selectOperation(option.value)}
-                    className="h-4 w-4"
-                  />
-                  <Icon className="h-4 w-4 text-zinc-500" aria-hidden="true" />
-                  <span className="text-sm font-medium text-zinc-900">{option.label}</span>
-                </label>
-              );
-            })}
-          </div>
+          <SegmentedControl
+            label="Qué querés cargar"
+            options={OPERATIONS}
+            value={operation}
+            onChange={selectOperation}
+          />
 
           {operation === "person" ? (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-zinc-700">Puntero</p>
+            <div className="flex flex-col gap-1.5">
+              <Eyebrow>Puntero</Eyebrow>
               {pointersForLeader.length === 0 ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-ink-2">
                   Este dirigente todavía no tiene punteros cargados. Agregá uno primero.
                 </p>
               ) : selectedPointer ? (
-                <div className="flex items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2">
-                  <p className="text-sm font-medium text-zinc-900">{selectedPointer.fullName}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPointer(null);
-                      setPointerQuery("");
-                    }}
-                    className="text-xs font-medium text-zinc-600 underline underline-offset-2"
-                  >
-                    Cambiar
-                  </button>
-                </div>
+                <SelectedCard
+                  eyebrow="Puntero"
+                  name={selectedPointer.fullName}
+                  onChange={() => {
+                    setSelectedPointer(null);
+                    setPointerQuery("");
+                  }}
+                />
               ) : (
                 <Autocomplete
                   query={pointerQuery}
@@ -209,41 +225,29 @@ export function CargaAsistidaClient({
                   }}
                   options={pointersForLeader}
                   placeholder="Buscar puntero por nombre"
+                  label="Buscar puntero por nombre"
                 />
               )}
             </div>
           ) : null}
 
           {justCreated ? (
-            <p className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
-              <CircleCheck className="h-4 w-4" aria-hidden="true" />
+            <p
+              role="status"
+              className="flex animate-[toast-in_0.2s_ease-out] items-center gap-2 rounded-2xl border border-ok-border bg-ok-bg p-3.5 text-[15px] font-semibold text-ok-ink"
+            >
+              <CircleCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
               {justCreated}
             </p>
           ) : null}
 
-          {formOpen && (operation !== "person" || selectedPointer) ? (
-            <div className="flex flex-col gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-medium text-zinc-900">
-                  {OPERATIONS.find((option) => option.value === operation)?.label}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormOpen(false);
-                    setJustCreated(null);
-                  }}
-                  aria-label="Cerrar"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
-                >
-                  <X className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </div>
-
+          {showForm ? (
+            <>
               {operation === "pointer" ? (
                 <CreatePointerForm
                   key={`pointer-${formKey}`}
                   leaderId={selectedLeader.id}
+                  showAgain={false}
                   onCreated={() => handleCreated("Puntero agregado.")}
                 />
               ) : null}
@@ -251,6 +255,7 @@ export function CargaAsistidaClient({
                 <CreateVehicleForm
                   key={`vehicle-${formKey}`}
                   leaderId={selectedLeader.id}
+                  showAgain={false}
                   onCreated={() => handleCreated("Vehículo agregado.")}
                 />
               ) : null}
@@ -258,13 +263,14 @@ export function CargaAsistidaClient({
                 <CreatePersonForm
                   key={`person-${formKey}-${selectedPointer.id}`}
                   pointerId={selectedPointer.id}
+                  showAgain={false}
                   onCreated={() => handleCreated("Persona agregada.")}
                 />
               ) : null}
-            </div>
+            </>
           ) : null}
         </>
-      ) : null}
-    </div>
+      )}
+    </Screen>
   );
 }

@@ -1,13 +1,15 @@
 "use client";
 
-import { ChevronDown, FileSpreadsheet, FileText, Files, X } from "lucide-react";
-import { useState } from "react";
+import { Download, FileSpreadsheet, FileText, Files } from "lucide-react";
+import { useCallback, useState } from "react";
 
-const SECTION_LABEL_CLASS = "text-xs font-medium uppercase tracking-wide text-zinc-500";
-const LINK_CLASS =
-  "flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Sheet } from "@/components/ui/Sheet";
+import { btnIconLarge, btnSecondary, btnSecondaryStrong } from "@/components/ui/styles";
+
+const LINK_CLASS = `${btnSecondary} !h-[46px] flex-1`;
 const DISABLED_LINK_CLASS =
-  "flex h-10 flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm font-medium text-zinc-400";
+  "flex h-[46px] flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-[15px] border border-line bg-muted text-base font-semibold text-disabled-ink";
 
 function DisabledReportLink({ message }: { message?: string }) {
   return (
@@ -16,11 +18,13 @@ function DisabledReportLink({ message }: { message?: string }) {
         <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
         PDF
       </span>
-      {message ? <p className="text-xs text-zinc-500">{message}</p> : null}
+      {message ? <p className="text-xs text-ink-2">{message}</p> : null}
     </div>
   );
 }
 
+// Boton de icono ↓ (52x52) para la barra de accion + hoja con las opciones de
+// reporte (PDF / Excel). Antes era un panel desplegable arriba de la lista.
 export function ReportDownloadButtons({
   pdfHref,
   excelHref,
@@ -30,7 +34,12 @@ export function ReportDownloadButtons({
   secondary,
   disabled = false,
   disabledMessage,
+  variant = "icon",
 }: {
+  // "icon": boton ↓ de 52x52 (va al lado de la accion primaria);
+  // "wide": boton de ancho completo "Generar reporte" (pantallas sin accion
+  // primaria propia).
+  variant?: "icon" | "wide";
   pdfHref: string;
   excelHref?: string;
   showPdfModes?: boolean;
@@ -46,92 +55,52 @@ export function ReportDownloadButtons({
   disabled?: boolean;
   disabledMessage?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
-
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        className="flex w-full items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 text-left"
-      >
-        <p className="flex items-center gap-2 font-medium text-zinc-900">
-          <FileText className="h-5 w-5 text-zinc-500" aria-hidden="true" />
-          Generar reporte
-        </p>
-        <ChevronDown className="h-5 w-5 text-zinc-400" aria-hidden="true" />
-      </button>
-    );
-  }
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
 
   return (
-    <div className="rounded-xl border-2 border-zinc-300 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <p className="flex items-center gap-2 font-medium text-zinc-900">
-          <FileText className="h-5 w-5 text-zinc-500" aria-hidden="true" />
-          Generar reporte
-        </p>
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          aria-label="Cerrar"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
-        >
-          <X className="h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Generar reporte"
+        className={variant === "wide" ? btnSecondaryStrong : btnIconLarge}
+      >
+        <Download className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+        {variant === "wide" ? "Generar reporte" : null}
+      </button>
 
-      <div className="mt-3 flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
-          {primaryLabel ? <p className={SECTION_LABEL_CLASS}>{primaryLabel}</p> : null}
-          {disabled ? (
-            <DisabledReportLink message={disabledMessage} />
-          ) : showPdfModes ? (
-            <>
-              <a href={`${pdfHref}?mode=combined`} className={LINK_CLASS}>
-                <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
-                PDF - Sin saltos de línea
-              </a>
-              <a href={`${pdfHref}?mode=separated`} className={LINK_CLASS}>
-                <Files className="h-4 w-4 shrink-0" aria-hidden="true" />
-                PDF - Con saltos de línea
-              </a>
-              {showExcel && excelHref ? (
-                <a href={excelHref} className={LINK_CLASS}>
-                  <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  Excel
-                </a>
-              ) : null}
-            </>
-          ) : (
-            <div className="flex gap-2">
-              <a href={pdfHref} className={LINK_CLASS}>
-                <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
-                PDF
-              </a>
-              {showExcel && excelHref ? (
-                <a href={excelHref} className={LINK_CLASS}>
-                  <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  Excel
-                </a>
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        {secondary ? (
+      <Sheet open={open} onClose={close} title="Generar reporte">
+        <div className="flex flex-col gap-5 pb-8">
           <div className="flex flex-col gap-2">
-            <p className={SECTION_LABEL_CLASS}>{secondary.label}</p>
-            {secondary.disabled ? (
-              <DisabledReportLink message={secondary.disabledMessage} />
+            {primaryLabel ? <Eyebrow>{primaryLabel}</Eyebrow> : null}
+            {disabled ? (
+              <DisabledReportLink message={disabledMessage} />
+            ) : showPdfModes ? (
+              <>
+                <a href={`${pdfHref}?mode=combined`} className={LINK_CLASS}>
+                  <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  PDF - Sin saltos de línea
+                </a>
+                <a href={`${pdfHref}?mode=separated`} className={LINK_CLASS}>
+                  <Files className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  PDF - Con saltos de línea
+                </a>
+                {showExcel && excelHref ? (
+                  <a href={excelHref} className={LINK_CLASS}>
+                    <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Excel
+                  </a>
+                ) : null}
+              </>
             ) : (
               <div className="flex gap-2">
-                <a href={secondary.pdfHref} className={LINK_CLASS}>
+                <a href={pdfHref} className={LINK_CLASS}>
                   <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
                   PDF
                 </a>
-                {showExcel && secondary.excelHref ? (
-                  <a href={secondary.excelHref} className={LINK_CLASS}>
+                {showExcel && excelHref ? (
+                  <a href={excelHref} className={LINK_CLASS}>
                     <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
                     Excel
                   </a>
@@ -139,8 +108,30 @@ export function ReportDownloadButtons({
               </div>
             )}
           </div>
-        ) : null}
-      </div>
-    </div>
+
+          {secondary ? (
+            <div className="flex flex-col gap-2">
+              <Eyebrow>{secondary.label}</Eyebrow>
+              {secondary.disabled ? (
+                <DisabledReportLink message={secondary.disabledMessage} />
+              ) : (
+                <div className="flex gap-2">
+                  <a href={secondary.pdfHref} className={LINK_CLASS}>
+                    <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    PDF
+                  </a>
+                  {showExcel && secondary.excelHref ? (
+                    <a href={secondary.excelHref} className={LINK_CLASS}>
+                      <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Excel
+                    </a>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </Sheet>
+    </>
   );
 }

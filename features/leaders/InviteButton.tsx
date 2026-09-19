@@ -46,7 +46,7 @@ export function InviteButton({
 
   if (accepted) {
     return (
-      <span className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-200 px-3 text-sm text-zinc-400">
+      <span className="flex h-11 items-center gap-1.5 rounded-xl border border-line px-3.5 text-sm text-ink-ph">
         <CircleCheck className="h-4 w-4" aria-hidden="true" />
         Ya inició sesión
       </span>
@@ -60,7 +60,7 @@ export function InviteButton({
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => setPending(null)}
-        className="flex h-10 items-center gap-1.5 rounded-lg bg-green-600 px-3 text-sm font-medium text-white hover:bg-green-700"
+        className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
       >
         <Send className="h-4 w-4" aria-hidden="true" />
         Enviar por WhatsApp
@@ -74,12 +74,12 @@ export function InviteButton({
         <button
           type="button"
           onClick={() => handleCopy(pending.shareMessage)}
-          className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
         >
           <Copy className="h-4 w-4" aria-hidden="true" />
           {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
         </button>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-ink-2">
           No hay teléfono cargado, así que no se puede abrir WhatsApp directo. Copiá el mensaje y
           pegalo donde prefieras.
         </p>
@@ -93,7 +93,7 @@ export function InviteButton({
         type="button"
         onClick={handleGenerate}
         disabled={isPending}
-        className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+        className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
       >
         {isPending ? (
           <>
@@ -110,7 +110,7 @@ export function InviteButton({
         )}
       </button>
       {error ? (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-err-text">
           {error}
         </p>
       ) : null}

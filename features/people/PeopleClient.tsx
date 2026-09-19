@@ -1,39 +1,35 @@
 "use client";
 
-import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ActionBar } from "@/components/ui/ActionBar";
+import { CreateSheet } from "@/components/ui/CreateSheet";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Screen } from "@/components/ui/Screen";
+import { SearchField } from "@/components/ui/SearchField";
 import { normalizeDni } from "@/utils/dni";
 
-import { CollapsibleCreatePerson } from "./CollapsibleCreatePerson";
+import { CreatePersonForm } from "./CreatePersonForm";
 import { PeopleList } from "./PeopleList";
 import type { PersonListItem } from "./queries";
 
 export function PeopleClient({
   people,
   pointerId,
+  pointerName,
+  pointerDni,
   canWrite,
+  exportSlot,
 }: {
   people: PersonListItem[];
   pointerId: string;
+  pointerName: string;
+  pointerDni: string;
   canWrite: boolean;
+  exportSlot: React.ReactNode;
 }) {
-  const [formOpen, setFormOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [closeCreateSignal, setCloseCreateSignal] = useState<number>();
-
-  function handleFormOpenChange(open: boolean) {
-    setFormOpen(open);
-    if (open) {
-      setEditingId(null);
-    }
-  }
-
-  function handleStartEdit(id: string) {
-    setEditingId(id);
-    setCloseCreateSignal((value) => (value ?? 0) + 1);
-  }
 
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedDniQuery = normalizeDni(query);
@@ -48,42 +44,56 @@ export function PeopleClient({
   }, [people, normalizedQuery, normalizedDniQuery]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <CollapsibleCreatePerson
-        pointerId={pointerId}
-        canWrite={canWrite}
-        onOpenChange={handleFormOpenChange}
-        closeSignal={closeCreateSignal}
-      />
-
-      {!formOpen && people.length > 0 ? (
-        <div className="relative">
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
-            <Search className="h-4 w-4" aria-hidden="true" />
-          </span>
-          <input
-            type="text"
+    <Screen
+      title={pointerName}
+      subtitle={`DNI ${pointerDni} · ${people.length} ${people.length === 1 ? "persona" : "personas"}`}
+      backHref="/dirigente/punteros"
+      headerExtra={
+        people.length > 0 ? (
+          <SearchField
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nombre o DNI"
-            className="h-12 w-full rounded-lg border border-zinc-300 pl-10 pr-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
+            onChange={setQuery}
+            placeholder="Nombre o DNI"
+            label="Buscar personas"
           />
-        </div>
-      ) : null}
-
+        ) : null
+      }
+      bar={
+        <ActionBar>
+          <div className="flex items-center gap-3">
+            {exportSlot}
+            <CreateSheet
+              triggerLabel="Agregar persona"
+              title="Agregar persona"
+              canWrite={canWrite}
+              successMessage="Persona agregada correctamente."
+              renderForm={(onCreated) => (
+                <CreatePersonForm pointerId={pointerId} onCreated={onCreated} />
+              )}
+            />
+          </div>
+        </ActionBar>
+      }
+    >
       <PeopleList
-        people={formOpen ? people : filteredPeople}
+        people={filteredPeople}
         pointerId={pointerId}
-        emptyMessage={
-          normalizedQuery
-            ? "No encontramos ninguna persona con ese nombre o DNI."
-            : "Todavía no hay personas registradas en este puntero. Cargá la primera con el botón de arriba."
+        empty={
+          normalizedQuery ? (
+            <EmptyState variant="search" title={`Sin resultados para “${query.trim()}”`}>
+              No encontramos ninguna persona con ese nombre o DNI.
+            </EmptyState>
+          ) : (
+            <EmptyState variant="blank" title="Todavía no hay personas">
+              Cargá la primera con el botón de abajo.
+            </EmptyState>
+          )
         }
         canWrite={canWrite}
-        editingId={formOpen ? null : editingId}
-        onStartEdit={handleStartEdit}
+        editingId={editingId}
+        onStartEdit={setEditingId}
         onStopEdit={() => setEditingId(null)}
       />
-    </div>
+    </Screen>
   );
 }

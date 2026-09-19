@@ -54,8 +54,10 @@ export async function listAuditLogs(filters: AuditLogFilters, limit = 200): Prom
   if (filters.vehicleId) query = query.eq("entity_type", "vehicle").eq("entity_id", filters.vehicleId);
   if (filters.actorProfileId) query = query.eq("actor_profile_id", filters.actorProfileId);
   if (filters.action) query = query.eq("action", filters.action);
-  if (filters.dateFrom) query = query.gte("created_at", `${filters.dateFrom}T00:00:00`);
-  if (filters.dateTo) query = query.lte("created_at", `${filters.dateTo}T23:59:59`);
+  // Las fechas son dias en hora de Argentina (UTC-3, sin horario de verano):
+  // sin el offset explicito, "hoy" arrancaria a las 21:00 de ayer.
+  if (filters.dateFrom) query = query.gte("created_at", `${filters.dateFrom}T00:00:00-03:00`);
+  if (filters.dateTo) query = query.lte("created_at", `${filters.dateTo}T23:59:59-03:00`);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);

@@ -1,12 +1,14 @@
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex flex-col items-center gap-4 text-center">
-      <h1 className="text-2xl font-semibold text-zinc-900">¿No podés entrar?</h1>
-      <p className="max-w-sm text-zinc-600">
+    <div className="flex flex-col gap-3">
+      <h1 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+        ¿No podés entrar?
+      </h1>
+      <p className="text-[15px] text-ink-2">
         Pedile a la persona que administra el sistema en tu organización que te reenvíe el
         acceso.
       </p>
-      <a href="/login" className="text-sm text-zinc-600 underline underline-offset-2">
+      <a href="/login" className="inline-flex min-h-[44px] items-center text-sm font-medium text-link">
         Volver
       </a>
     </div>

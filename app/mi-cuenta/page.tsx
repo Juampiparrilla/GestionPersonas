@@ -1,8 +1,8 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { UpdatePasswordForm } from "@/app/(auth)/actualizar-contrasena/UpdatePasswordForm";
+import { Screen } from "@/components/ui/Screen";
+import { cardClass } from "@/components/ui/styles";
 import { roleHomePath } from "@/lib/routes";
 import { getSessionContext } from "@/lib/session";
 
@@ -16,23 +16,12 @@ export default async function MiCuentaPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">Mi cuenta</h1>
-        <Link
-          href={roleHomePath(session.role)}
-          className="flex items-center gap-1 text-sm text-zinc-600 underline underline-offset-2"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Volver
-        </Link>
-      </div>
-
-      <div className="rounded-xl border-2 border-zinc-300 bg-white p-4">
-        <h2 className="mb-1 text-lg font-semibold text-zinc-900">Cambiar contraseña</h2>
-        <p className="mb-4 text-sm text-zinc-600">Elegí una contraseña nueva para tu cuenta.</p>
+    <Screen title="Mi cuenta" backHref={roleHomePath(session.role)}>
+      <div className={`${cardClass} p-4`}>
+        <h2 className="mb-1 text-[17px] font-semibold text-ink">Cambiar contraseña</h2>
+        <p className="mb-4 text-sm text-ink-2">Elegí una contraseña nueva para tu cuenta.</p>
         <UpdatePasswordForm />
       </div>
-    </div>
+    </Screen>
   );
 }

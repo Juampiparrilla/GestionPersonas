@@ -1,6 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-
 import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
 import { PointersClient } from "@/features/pointers/PointersClient";
 import { listMyPointers } from "@/features/pointers/queries";
@@ -15,33 +12,24 @@ export default async function PunterosPage() {
   ]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900">Mis Punteros</h1>
-        <Link
-          href="/dirigente"
-          className="flex items-center gap-1 text-sm text-zinc-600 underline underline-offset-2"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Volver
-        </Link>
-      </div>
-
-      <ReportDownloadButtons
-        pdfHref="/api/reportes/mis-punteros/pdf"
-        showExcel={false}
-        primaryLabel="Punteros"
-        disabled={pointers.length === 0}
-        disabledMessage="Cargá al menos un puntero para generar este reporte."
-        secondary={{
-          label: "Personas registradas",
-          pdfHref: "/api/reportes/mis-personas/pdf",
-          disabled: pointers.every((pointer) => pointer.peopleCount === 0),
-          disabledMessage: "Todavía no hay personas registradas para generar este reporte.",
-        }}
-      />
-
-      <PointersClient pointers={pointers} canWrite={writeStatus.canWrite} />
-    </div>
+    <PointersClient
+      pointers={pointers}
+      canWrite={writeStatus.canWrite}
+      exportSlot={
+        <ReportDownloadButtons
+          pdfHref="/api/reportes/mis-punteros/pdf"
+          showExcel={false}
+          primaryLabel="Punteros"
+          disabled={pointers.length === 0}
+          disabledMessage="Cargá al menos un puntero para generar este reporte."
+          secondary={{
+            label: "Personas registradas",
+            pdfHref: "/api/reportes/mis-personas/pdf",
+            disabled: pointers.every((pointer) => pointer.peopleCount === 0),
+            disabledMessage: "Todavía no hay personas registradas para generar este reporte.",
+          }}
+        />
+      }
+    />
   );
 }

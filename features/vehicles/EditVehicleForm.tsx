@@ -10,7 +10,7 @@ import type { VehicleType } from "@/types/domain";
 
 import { updateVehicleAction } from "./actions";
 
-const inputClassName = "h-11 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900";
+const inputClassName = "h-12 w-full rounded-[14px] border border-line-input bg-surface px-3.5 text-base text-ink focus:border-[1.5px] focus:border-ink focus:outline-none";
 
 export function EditVehicleForm({
   vehicleId,
@@ -65,10 +65,10 @@ export function EditVehicleForm({
   return (
     <form
       action={handleSubmit}
-      className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+      className="flex flex-col gap-3.5"
     >
       <div className="flex flex-col gap-1">
-        <label htmlFor={`edit-vehicle-type-${vehicleId}`} className="text-sm font-medium text-zinc-700">
+        <label htmlFor={`edit-vehicle-type-${vehicleId}`} className="text-[13px] font-semibold text-ink-label">
           Tipo de vehículo
         </label>
         <select
@@ -85,7 +85,7 @@ export function EditVehicleForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor={`edit-vehicle-plate-${vehicleId}`} className="text-sm font-medium text-zinc-700">
+        <label htmlFor={`edit-vehicle-plate-${vehicleId}`} className="text-[13px] font-semibold text-ink-label">
           Patente
         </label>
         <PlateField
@@ -99,7 +99,7 @@ export function EditVehicleForm({
       <div className="flex flex-col gap-1">
         <label
           htmlFor={`edit-vehicle-driver-name-${vehicleId}`}
-          className="text-sm font-medium text-zinc-700"
+          className="text-[13px] font-semibold text-ink-label"
         >
           Nombre del conductor
         </label>
@@ -114,7 +114,7 @@ export function EditVehicleForm({
       <div className="flex flex-col gap-1">
         <label
           htmlFor={`edit-vehicle-driver-dni-${vehicleId}`}
-          className="text-sm font-medium text-zinc-700"
+          className="text-[13px] font-semibold text-ink-label"
         >
           DNI del conductor
         </label>
@@ -129,7 +129,7 @@ export function EditVehicleForm({
       <div className="flex flex-col gap-1">
         <label
           htmlFor={`edit-vehicle-driver-phone-${vehicleId}`}
-          className="text-sm font-medium text-zinc-700"
+          className="text-[13px] font-semibold text-ink-label"
         >
           Teléfono
         </label>
@@ -142,7 +142,7 @@ export function EditVehicleForm({
       </div>
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-err-text">
           {error}
         </p>
       ) : null}
@@ -151,14 +151,14 @@ export function EditVehicleForm({
         <button
           type="button"
           onClick={onDone}
-          className="h-10 flex-1 rounded-lg border border-zinc-300 text-sm font-medium text-zinc-700"
+          className="h-12 flex-1 rounded-[14px] border border-line-input bg-surface text-sm font-semibold text-ink-label active:bg-muted"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="h-10 flex-1 rounded-lg bg-zinc-900 text-sm font-semibold text-white disabled:opacity-60"
+          className="h-12 flex-1 rounded-[14px] bg-accent text-sm font-semibold text-white active:bg-accent-press disabled:bg-disabled-bg disabled:text-disabled-ink"
         >
           {isPending ? "Guardando…" : "Guardar"}
         </button>

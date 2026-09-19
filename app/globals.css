@@ -1,28 +1,57 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* Rediseño móvil (handoff "Carga de votantes"). Los valores salen de la guía
+   de diseño: no aclarar los grises de texto, ya están ajustados a contraste
+   >= 4.5:1 para lectura bajo sol. La app es solo modo claro. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-app: #f6f6f4;
+  --color-surface: #ffffff;
+  --color-bar: #fdfdfc;
+  --color-muted: #f1f1ee;
+  --color-track: #ececea;
+  --color-ink: #17171a;
+  --color-ink-label: #42424a;
+  --color-ink-2: #5c5c63;
+  --color-ink-3: #67676e;
+  --color-ink-ph: #78787f;
+  --color-line: #e2e2de;
+  --color-line-input: #dcdcd7;
+  --color-line-inner: #eeeeea;
+  --color-line-dashed: #cfcfca;
+  --color-line-head: #e6e6e2;
+  --color-accent: oklch(0.56 0.14 254);
+  --color-accent-press: oklch(0.52 0.14 254);
+  --color-link: #2b4bb5;
+  --color-ok-bg: #eaf5ee;
+  --color-ok-border: #c9e4d3;
+  --color-ok-ink: #1f4a31;
+  --color-ok-dot: oklch(0.58 0.12 155);
+  --color-warn-bg: #fdf5e9;
+  --color-warn-border: #ecd9b8;
+  --color-warn-ink: #5c451f;
+  --color-warn-dot: oklch(0.68 0.13 70);
+  --color-err-bg: #fdecec;
+  --color-err-border: #f0c6c6;
+  --color-err-ink: #6b2020;
+  --color-err-line: oklch(0.55 0.15 25);
+  --color-err-text: #8c2f2f;
+  --color-disabled-bg: #d6d6d1;
+  --color-disabled-ink: #8a8a90;
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --shadow-fab: 0 8px 18px -8px rgba(30, 50, 140, 0.6);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #f6f6f4;
+  color: #17171a;
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+}
+
+/* Foco visible con anillo de 2px en el acento (navegación por teclado). */
+:focus-visible {
+  outline: 2px solid oklch(0.56 0.14 254);
+  outline-offset: 2px;
 }
 
 /* Mensajes de "listo" (agregar puntero/persona/vehículo, carga asistida)
@@ -36,5 +65,39 @@ body {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* Las hojas inferiores (formularios de alta, reportes) suben desde abajo. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Skeletons de carga con la geometría real de la pantalla (sin spinners
+   centrados de pantalla completa). */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

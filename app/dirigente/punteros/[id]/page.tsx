@@ -1,5 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ReportDownloadButtons } from "@/components/ReportDownloadButtons";
@@ -27,31 +25,20 @@ export default async function PointerDetailPage({
   ]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900">{pointer.fullName}</h1>
-          <p className="text-sm text-zinc-600">
-            DNI {pointer.dni} · {people.length} personas
-          </p>
-        </div>
-        <Link
-          href="/dirigente/punteros"
-          className="flex items-center gap-1 text-sm text-zinc-600 underline underline-offset-2"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Volver
-        </Link>
-      </div>
-
-      <ReportDownloadButtons
-        pdfHref={`/api/reportes/mis-personas/pdf?pointerId=${id}`}
-        showExcel={false}
-        disabled={people.length === 0}
-        disabledMessage="Todavía no hay personas registradas en este puntero."
-      />
-
-      <PeopleClient people={people} pointerId={id} canWrite={writeStatus.canWrite} />
-    </div>
+    <PeopleClient
+      people={people}
+      pointerId={id}
+      pointerName={pointer.fullName}
+      pointerDni={pointer.dni}
+      canWrite={writeStatus.canWrite}
+      exportSlot={
+        <ReportDownloadButtons
+          pdfHref={`/api/reportes/mis-personas/pdf?pointerId=${id}`}
+          showExcel={false}
+          disabled={people.length === 0}
+          disabledMessage="Todavía no hay personas registradas en este puntero."
+        />
+      }
+    />
   );
 }

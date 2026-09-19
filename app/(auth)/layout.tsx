@@ -1,9 +1,9 @@
+// Login y demas pantallas de acceso: columna centrada verticalmente sobre el
+// fondo de la app, sin tarjeta ni barra inferior.
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-6 py-12">
-      <div className="flex w-full max-w-sm flex-col items-center gap-8 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm shadow-zinc-200/60">
-        {children}
-      </div>
+    <div className="mx-auto flex w-full max-w-[448px] flex-1 flex-col justify-center gap-[30px] bg-app px-[26px] pb-10 pt-10">
+      {children}
     </div>
   );
 }

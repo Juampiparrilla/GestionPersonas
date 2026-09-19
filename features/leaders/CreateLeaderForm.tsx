@@ -1,82 +1,48 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 
-import { Spinner } from "@/components/Spinner";
 import { AddressField } from "@/components/fields/AddressField";
 import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
+import { Field, FormError, FormFooter, useCreatedIntent } from "@/components/ui/FormParts";
+import { inputClass, inputMonoClass } from "@/components/ui/styles";
 
 import { createLeaderAction, type CreateLeaderState } from "./actions";
 
 const initialState: CreateLeaderState = { error: null, success: false };
-const inputClassName =
-  "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
 
-// El padre (CollapsibleCreateLeader) es quien limpia este formulario: le
-// pasa un `key` que cambia cada vez que hay un alta exitosa, forzando un
-// remontado completo (los campos son controlados por sus propios
-// componentes, un form.reset() nativo no alcanzaria). Este componente solo
-// avisa "se creo" via onCreated, nunca se reinicia a si mismo.
-export function CreateLeaderForm({ onCreated }: { onCreated: () => void }) {
+// El padre (CreateSheet) es quien limpia este formulario: le pasa un `key`
+// que cambia cada vez que hay un alta exitosa, forzando un remontado
+// completo (los campos son controlados por sus propios componentes, un
+// form.reset() nativo no alcanzaria). Este componente solo avisa "se creo"
+// via onCreated, nunca se reinicia a si mismo.
+export function CreateLeaderForm({ onCreated }: { onCreated: (again: boolean) => void }) {
   const [state, formAction, pending] = useActionState(createLeaderAction, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      onCreated();
-    }
-  }, [state, onCreated]);
+  const setIntent = useCreatedIntent(state, onCreated);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="fullName" className="text-sm font-medium text-zinc-700">
-          Nombre completo *
-        </label>
-        <NameField id="fullName" name="fullName" required className={inputClassName} />
-      </div>
+    <form action={formAction} className="flex flex-1 flex-col gap-[14px]">
+      <FormError message={state.error} />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="dni" className="text-sm font-medium text-zinc-700">
-          DNI *
-        </label>
-        <DniField id="dni" name="dni" required className={inputClassName} />
-      </div>
+      <Field id="fullName" label="Nombre completo" required hint="Apellido primero, después el nombre.">
+        <NameField id="fullName" name="fullName" required className={inputClass} />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="phone" className="text-sm font-medium text-zinc-700">
-          Teléfono (opcional)
-        </label>
-        <PhoneField id="phone" name="phone" className={inputClassName} />
-      </div>
+      <Field id="dni" label="DNI" required>
+        <DniField id="dni" name="dni" required className={inputMonoClass} />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="address" className="text-sm font-medium text-zinc-700">
-          Dirección (opcional)
-        </label>
-        <AddressField id="address" name="address" className={inputClassName} />
-      </div>
+      <Field id="phone" label="Teléfono">
+        <PhoneField id="phone" name="phone" className={inputMonoClass} />
+      </Field>
 
-      {state.error ? (
-        <p role="alert" className="text-sm text-red-600">
-          {state.error}
-        </p>
-      ) : null}
+      <Field id="address" label="Dirección">
+        <AddressField id="address" name="address" className={inputClass} />
+      </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
-      >
-        {pending ? (
-          <>
-            <Spinner className="h-4 w-4" /> Guardando…
-          </>
-        ) : (
-          "Guardar dirigente"
-        )}
-      </button>
+      <FormFooter pending={pending} label="Guardar dirigente" onIntent={setIntent} />
     </form>
   );
 }

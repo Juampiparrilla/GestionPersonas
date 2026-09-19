@@ -1,14 +1,14 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+
+import { EntityRow } from "@/components/ui/EntityRow";
 
 import { PersonRowActions } from "./PersonRowActions";
 import type { PersonListItem } from "./queries";
 
 export function PersonCard({
   person,
-  index,
   pointerId,
   canWrite,
   isEditing,
@@ -16,7 +16,6 @@ export function PersonCard({
   onStopEdit,
 }: {
   person: PersonListItem;
-  index: number;
   pointerId: string;
   canWrite: boolean;
   isEditing: boolean;
@@ -24,53 +23,31 @@ export function PersonCard({
   onStopEdit: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const meta = `DNI ${person.dni}${person.phone ? ` · ${person.phone}` : ""}`;
 
-  const header = (
-    <div>
-      <p className="font-medium text-zinc-900">
-        {index + 1}. {person.fullName}
-      </p>
-      <p className="text-sm text-zinc-600">
-        DNI {person.dni}
-        {person.phone ? ` · ${person.phone}` : ""}
-      </p>
-    </div>
-  );
-
+  // Sin permiso de escritura no hay acciones: la fila es solo lectura.
   if (!canWrite) {
-    return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4">{header}</div>
-    );
+    return <EntityRow name={person.fullName} meta={meta} />;
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4">
-      <button
-        type="button"
-        onClick={() => setExpanded((value) => !value)}
-        className="flex items-center justify-between text-left"
-      >
-        {header}
-        {expanded ? (
-          <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
-        ) : (
-          <ChevronDown className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
-        )}
-      </button>
-
-      {expanded ? (
-        <PersonRowActions
-          personId={person.id}
-          pointerId={pointerId}
-          fullName={person.fullName}
-          phone={person.phone}
-          address={person.address}
-          canWrite={canWrite}
-          isEditing={isEditing}
-          onStartEdit={onStartEdit}
-          onStopEdit={onStopEdit}
-        />
-      ) : null}
-    </div>
+    <EntityRow
+      name={person.fullName}
+      meta={meta}
+      expanded={expanded}
+      onToggle={() => setExpanded((value) => !value)}
+    >
+      <PersonRowActions
+        personId={person.id}
+        pointerId={pointerId}
+        fullName={person.fullName}
+        phone={person.phone}
+        address={person.address}
+        canWrite={canWrite}
+        isEditing={isEditing}
+        onStartEdit={onStartEdit}
+        onStopEdit={onStopEdit}
+      />
+    </EntityRow>
   );
 }

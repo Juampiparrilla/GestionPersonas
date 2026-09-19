@@ -61,10 +61,10 @@ function Autocomplete<T extends { id: string }>({
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={placeholder}
-        className="h-12 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+        className="h-12 w-full rounded-[14px] border border-line-input bg-surface px-3.5 text-base text-ink focus:border-[1.5px] focus:border-ink focus:outline-none"
       />
       {matches.length > 0 ? (
-        <div className="flex flex-col gap-1 rounded-lg border border-zinc-200 p-1">
+        <div className="flex flex-col gap-1 rounded-lg border border-line p-1">
           {matches.map((option) => {
             const { title, subtitle } = renderOption(option);
             return (
@@ -72,10 +72,10 @@ function Autocomplete<T extends { id: string }>({
                 key={option.id}
                 type="button"
                 onClick={() => onSelect(option)}
-                className="flex flex-col items-start rounded-md px-3 py-2 text-left hover:bg-zinc-100"
+                className="flex flex-col items-start rounded-md px-3 py-2 text-left active:bg-muted"
               >
-                <span className="text-sm font-medium text-zinc-900">{title}</span>
-                {subtitle ? <span className="text-xs text-zinc-500">{subtitle}</span> : null}
+                <span className="text-sm font-medium text-ink">{title}</span>
+                {subtitle ? <span className="text-xs text-ink-2">{subtitle}</span> : null}
               </button>
             );
           })}
@@ -124,7 +124,7 @@ export function CustomReportForm({
           <label
             key={option.value}
             className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-              reportType === option.value ? "border-zinc-900 bg-zinc-50" : "border-zinc-200"
+              reportType === option.value ? "border-ink bg-muted" : "border-line"
             }`}
           >
             <input
@@ -135,8 +135,8 @@ export function CustomReportForm({
               className="mt-1 h-4 w-4"
             />
             <span>
-              <span className="block text-sm font-medium text-zinc-900">{option.label}</span>
-              <span className="block text-xs text-zinc-500">{option.description}</span>
+              <span className="block text-sm font-medium text-ink">{option.label}</span>
+              <span className="block text-xs text-ink-2">{option.description}</span>
             </span>
           </label>
         ))}
@@ -144,15 +144,15 @@ export function CustomReportForm({
 
       {needsPointer ? (
         <div className="flex flex-col gap-2">
-          <p className="flex items-center gap-2 text-sm font-medium text-zinc-700">
-            <UserRound className="h-4 w-4 text-zinc-500" aria-hidden="true" />
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-ink-label">
+            <UserRound className="h-4 w-4 text-ink-2" aria-hidden="true" />
             Puntero
           </p>
           {selectedPointer ? (
-            <div className="flex items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg border border-line-input bg-muted px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-zinc-900">{selectedPointer.fullName}</p>
-                <p className="text-xs text-zinc-500">Dirigente: {selectedPointer.leaderName}</p>
+                <p className="text-sm font-medium text-ink">{selectedPointer.fullName}</p>
+                <p className="text-xs text-ink-2">Dirigente: {selectedPointer.leaderName}</p>
               </div>
               <button
                 type="button"
@@ -160,7 +160,7 @@ export function CustomReportForm({
                   setSelectedPointer(null);
                   setPointerQuery("");
                 }}
-                className="text-xs font-medium text-zinc-600 underline underline-offset-2"
+                className="text-xs font-medium text-ink-2 underline underline-offset-2"
               >
                 Cambiar
               </button>
@@ -181,24 +181,24 @@ export function CustomReportForm({
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <p className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-ink-label">
             {reportType === "vehiculos" ? (
-              <Car className="h-4 w-4 text-zinc-500" aria-hidden="true" />
+              <Car className="h-4 w-4 text-ink-2" aria-hidden="true" />
             ) : (
-              <UserRound className="h-4 w-4 text-zinc-500" aria-hidden="true" />
+              <UserRound className="h-4 w-4 text-ink-2" aria-hidden="true" />
             )}
             Dirigente
           </p>
           {selectedLeader ? (
-            <div className="flex items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2">
-              <p className="text-sm font-medium text-zinc-900">{selectedLeader.fullName}</p>
+            <div className="flex items-center justify-between rounded-lg border border-line-input bg-muted px-3 py-2">
+              <p className="text-sm font-medium text-ink">{selectedLeader.fullName}</p>
               <button
                 type="button"
                 onClick={() => {
                   setSelectedLeader(null);
                   setLeaderQuery("");
                 }}
-                className="text-xs font-medium text-zinc-600 underline underline-offset-2"
+                className="text-xs font-medium text-ink-2 underline underline-offset-2"
               >
                 Cambiar
               </button>
@@ -222,7 +222,7 @@ export function CustomReportForm({
       {href ? (
         <a
           href={href}
-          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+          className="flex h-[52px] items-center justify-center gap-2 rounded-[15px] bg-accent text-base font-semibold text-white transition-colors active:bg-accent-press"
         >
           <FileText className="h-5 w-5" aria-hidden="true" />
           Generar PDF
@@ -231,7 +231,7 @@ export function CustomReportForm({
         <button
           type="button"
           disabled
-          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-300 text-base font-semibold text-white"
+          className="flex h-[52px] items-center justify-center gap-2 rounded-[15px] bg-disabled-bg text-base font-semibold text-disabled-ink"
         >
           <FileText className="h-5 w-5" aria-hidden="true" />
           Generar PDF

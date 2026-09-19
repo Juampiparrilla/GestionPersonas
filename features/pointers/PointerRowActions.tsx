@@ -60,10 +60,10 @@ export function PointerRowActions({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
+      <div className="flex flex-wrap items-center gap-2">
         <Link
           href={`/dirigente/punteros/${pointerId}`}
-          className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
         >
           <UsersRound className="h-4 w-4" aria-hidden="true" />
           Ver / Agregar personas
@@ -74,7 +74,7 @@ export function PointerRowActions({
             type="button"
             onClick={onStartEdit}
             disabled={isPending}
-            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
           >
             <Pencil className="h-4 w-4" aria-hidden="true" />
             Editar
@@ -86,7 +86,7 @@ export function PointerRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending}
-            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Quitar
@@ -95,8 +95,8 @@ export function PointerRowActions({
       </div>
 
       {confirmingRemove ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
-          <p className="text-red-800">
+        <div className="flex flex-col gap-2 rounded-2xl border border-err-border bg-err-bg p-3.5 text-sm">
+          <p className="text-err-ink">
             {peopleCount > 0
               ? `Este puntero tiene ${peopleCount} personas registradas. Si lo quitás, dejará de aparecer y esas personas van a quedar disponibles para ser registradas nuevamente.`
               : "¿Querés quitar a este puntero?"}
@@ -106,7 +106,7 @@ export function PointerRowActions({
               type="button"
               onClick={() => setConfirmingRemove(false)}
               disabled={isPending}
-              className="h-9 flex-1 rounded-lg border border-zinc-300 text-sm font-medium text-zinc-700 disabled:opacity-60"
+              className="h-11 flex-1 rounded-xl border border-line-input bg-surface text-sm font-semibold text-ink-label disabled:opacity-60"
             >
               Volver
             </button>
@@ -114,7 +114,7 @@ export function PointerRowActions({
               type="button"
               onClick={confirmRemove}
               disabled={isPending}
-              className="flex h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 text-sm font-medium text-white disabled:opacity-60"
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-err-line text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? (
                 <>
@@ -129,7 +129,7 @@ export function PointerRowActions({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-err-text">
           {error}
         </p>
       ) : null}

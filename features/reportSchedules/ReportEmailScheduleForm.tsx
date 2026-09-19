@@ -14,7 +14,7 @@ const DAY_OF_WEEK_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves"
 
 const initialState: ReportEmailScheduleState = { error: null, success: false };
 const inputClassName =
-  "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
+  "h-12 w-full rounded-[14px] border border-line-input bg-surface px-3.5 text-base text-ink focus:border-[1.5px] focus:border-ink focus:outline-none";
 
 export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: ReportEmailSchedule }) {
   const [state, formAction, pending] = useActionState(setReportEmailScheduleAction, initialState);
@@ -43,7 +43,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+      <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-label">
         <input
           type="checkbox"
           name="enabled"
@@ -55,7 +55,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
       </label>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="recipientEmail" className="text-sm font-medium text-zinc-700">
+        <label htmlFor="recipientEmail" className="text-[13px] font-semibold text-ink-label">
           Correo destinatario
         </label>
         <input
@@ -69,10 +69,10 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-zinc-700">Reportes a incluir</label>
+        <label className="text-[13px] font-semibold text-ink-label">Reportes a incluir</label>
         <div className="flex flex-wrap gap-3">
           {REPORT_TYPES.map((type) => (
-            <label key={type} className="flex items-center gap-1.5 text-sm text-zinc-700">
+            <label key={type} className="flex items-center gap-1.5 text-sm text-ink-label">
               <input
                 type="checkbox"
                 name="reportTypes"
@@ -88,7 +88,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="frequency" className="text-sm font-medium text-zinc-700">
+        <label htmlFor="frequency" className="text-[13px] font-semibold text-ink-label">
           Frecuencia
         </label>
         <select
@@ -106,7 +106,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
 
       {frequency === "weekly" ? (
         <div className="flex flex-col gap-1">
-          <label htmlFor="dayOfWeek" className="text-sm font-medium text-zinc-700">
+          <label htmlFor="dayOfWeek" className="text-[13px] font-semibold text-ink-label">
             Día de la semana
           </label>
           <select
@@ -127,7 +127,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
 
       {frequency === "monthly" ? (
         <div className="flex flex-col gap-1">
-          <label htmlFor="dayOfMonth" className="text-sm font-medium text-zinc-700">
+          <label htmlFor="dayOfMonth" className="text-[13px] font-semibold text-ink-label">
             Día del mes (1 a 28)
           </label>
           <input
@@ -143,13 +143,13 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
         </div>
       ) : null}
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ink-2">
         El envío automático corre una vez al día (horario aproximado 03:00 hs, Argentina) — con el plan actual de
         Vercel no se puede elegir una hora exacta.
       </p>
 
       {state.error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-err-text">
           {state.error}
         </p>
       ) : null}
@@ -159,7 +159,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
         <button
           type="submit"
           disabled={pending}
-          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+          className="flex h-[52px] items-center justify-center gap-2 rounded-[15px] bg-accent px-6 text-base font-semibold text-white transition-colors active:bg-accent-press disabled:bg-disabled-bg disabled:text-disabled-ink"
         >
           {pending ? <Spinner className="h-4 w-4" /> : null}
           Guardar configuración
@@ -168,7 +168,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
           type="button"
           onClick={handleSendTest}
           disabled={isTestPending}
-          className="flex h-12 items-center justify-center gap-2 rounded-lg border border-zinc-300 px-6 text-base font-semibold text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+          className="flex h-[52px] items-center justify-center gap-2 rounded-[15px] border border-line-input bg-surface px-6 text-base font-semibold text-ink-label active:bg-muted disabled:opacity-60"
         >
           {isTestPending ? <Spinner className="h-4 w-4" /> : <Send className="h-4 w-4" aria-hidden="true" />}
           Enviar prueba
@@ -176,7 +176,7 @@ export function ReportEmailScheduleForm({ initialSchedule }: { initialSchedule: 
       </div>
 
       {testResult ? (
-        <p className={testResult.startsWith("¡Enviado") ? "text-sm text-green-700" : "text-sm text-red-600"}>
+        <p className={testResult.startsWith("¡Enviado") ? "text-sm text-green-700" : "text-sm text-err-text"}>
           {testResult}
         </p>
       ) : null}

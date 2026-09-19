@@ -3,29 +3,25 @@ import type { VehicleListItem } from "./queries";
 
 export function VehiclesList({
   vehicles,
-  emptyMessage = "Todavía no hay vehículos cargados. Cargá el primero con el botón de arriba.",
+  empty,
   canWrite,
   editingId,
   onStartEdit,
   onStopEdit,
 }: {
   vehicles: VehicleListItem[];
-  emptyMessage?: string;
+  empty: React.ReactNode;
   canWrite: boolean;
   editingId: string | null;
   onStartEdit: (id: string) => void;
   onStopEdit: () => void;
 }) {
   if (vehicles.length === 0) {
-    return (
-      <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
-        {emptyMessage}
-      </p>
-    );
+    return <>{empty}</>;
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-[9px]">
       {vehicles.map((vehicle) => (
         <VehicleCard
           key={vehicle.id}

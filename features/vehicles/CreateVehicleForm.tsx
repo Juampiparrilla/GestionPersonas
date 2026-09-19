@@ -1,44 +1,39 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 
-import { Spinner } from "@/components/Spinner";
 import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
 import { PlateField } from "@/components/fields/PlateField";
+import { Field, FormError, FormFooter, useCreatedIntent } from "@/components/ui/FormParts";
+import { inputClass, inputMonoClass } from "@/components/ui/styles";
 
 import { createVehicleAction, type CreateVehicleState } from "./actions";
 
 const initialState: CreateVehicleState = { error: null, success: false };
-const inputClassName =
-  "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
 
 // `leaderId` es opcional: solo lo pasa la carga asistida
 // (features/carga-asistida) -- ver el mismo patrón en CreatePointerForm.
 export function CreateVehicleForm({
   leaderId,
   onCreated,
+  showAgain = true,
 }: {
   leaderId?: string;
-  onCreated: () => void;
+  onCreated: (again: boolean) => void;
+  showAgain?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(createVehicleAction, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      onCreated();
-    }
-  }, [state, onCreated]);
+  const setIntent = useCreatedIntent(state, onCreated);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-1 flex-col gap-[14px]">
+      <FormError message={state.error} />
       {leaderId ? <input type="hidden" name="leaderId" value={leaderId} /> : null}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="type" className="text-sm font-medium text-zinc-700">
-          Tipo de vehículo *
-        </label>
-        <select id="type" name="type" required defaultValue="" className={inputClassName}>
+
+      <Field id="type" label="Tipo de vehículo" required>
+        <select id="type" name="type" required defaultValue="" className={inputClass}>
           <option value="" disabled>
             Elegí un tipo
           </option>
@@ -47,55 +42,35 @@ export function CreateVehicleForm({
           <option value="traffic">Traffic</option>
           <option value="colectivo">Colectivo</option>
         </select>
-      </div>
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="plate" className="text-sm font-medium text-zinc-700">
-          Patente *
-        </label>
-        <PlateField id="plate" name="plate" required className={inputClassName} />
-      </div>
+      <Field id="plate" label="Patente" required>
+        <PlateField id="plate" name="plate" required className={inputMonoClass} />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="driverFullName" className="text-sm font-medium text-zinc-700">
-          Nombre del conductor *
-        </label>
-        <NameField id="driverFullName" name="driverFullName" required className={inputClassName} />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor="driverDni" className="text-sm font-medium text-zinc-700">
-          DNI del conductor *
-        </label>
-        <DniField id="driverDni" name="driverDni" required className={inputClassName} />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor="driverPhone" className="text-sm font-medium text-zinc-700">
-          Teléfono (opcional)
-        </label>
-        <PhoneField id="driverPhone" name="driverPhone" className={inputClassName} />
-      </div>
-
-      {state.error ? (
-        <p role="alert" className="text-sm text-red-600">
-          {state.error}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+      <Field
+        id="driverFullName"
+        label="Nombre del conductor"
+        required
+        hint="Apellido primero, después el nombre."
       >
-        {pending ? (
-          <>
-            <Spinner className="h-4 w-4" /> Guardando…
-          </>
-        ) : (
-          "Agregar vehículo"
-        )}
-      </button>
+        <NameField id="driverFullName" name="driverFullName" required className={inputClass} />
+      </Field>
+
+      <Field id="driverDni" label="DNI del conductor" required>
+        <DniField id="driverDni" name="driverDni" required className={inputMonoClass} />
+      </Field>
+
+      <Field id="driverPhone" label="Teléfono del conductor">
+        <PhoneField id="driverPhone" name="driverPhone" className={inputMonoClass} />
+      </Field>
+
+      <FormFooter
+        pending={pending}
+        label="Guardar vehículo"
+        showAgain={showAgain}
+        onIntent={setIntent}
+      />
     </form>
   );
 }

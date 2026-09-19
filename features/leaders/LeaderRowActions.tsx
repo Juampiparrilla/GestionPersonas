@@ -24,8 +24,8 @@ const STATUS_ICON: Record<LeaderAccessStatus, typeof CircleCheck> = {
 
 const STATUS_ICON_COLOR: Record<LeaderAccessStatus, string> = {
   active: "text-green-600",
-  read_only: "text-zinc-400",
-  inactive: "text-red-600",
+  read_only: "text-ink-ph",
+  inactive: "text-err-text",
 };
 
 export function LeaderRowActions({
@@ -40,6 +40,7 @@ export function LeaderRowActions({
   isEditing,
   onStartEdit,
   onStopEdit,
+  onRemoved,
 }: {
   leaderId: string;
   fullName: string;
@@ -52,6 +53,8 @@ export function LeaderRowActions({
   isEditing: boolean;
   onStartEdit: () => void;
   onStopEdit: () => void;
+  // Se llama despues de quitar al dirigente (la ficha de detalle vuelve a la lista).
+  onRemoved?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isStatusPending, startStatusTransition] = useTransition();
@@ -74,6 +77,7 @@ export function LeaderRowActions({
         setError(result.error);
       } else {
         setConfirmingRemove(false);
+        onRemoved?.();
       }
     });
   }
@@ -92,7 +96,7 @@ export function LeaderRowActions({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="relative">
           {(() => {
             const StatusIcon = STATUS_ICON[accessStatus];
@@ -107,14 +111,14 @@ export function LeaderRowActions({
             value={accessStatus}
             disabled={isPending || isStatusPending}
             onChange={(event) => changeStatus(event.target.value as LeaderAccessStatus)}
-            className="h-10 w-full rounded-lg border border-zinc-300 py-2 pl-8 pr-2 text-sm text-zinc-900 disabled:opacity-60"
+            className="h-11 w-full rounded-xl border border-line-input bg-surface py-2 pl-8 pr-2 text-sm text-ink disabled:opacity-60"
           >
             <option value="active">{STATUS_LABEL.active}</option>
             <option value="read_only">{STATUS_LABEL.read_only}</option>
             <option value="inactive">{STATUS_LABEL.inactive}</option>
           </select>
           {isStatusPending ? (
-            <span className="pointer-events-none absolute inset-y-0 right-8 flex items-center text-zinc-500">
+            <span className="pointer-events-none absolute inset-y-0 right-8 flex items-center text-ink-2">
               <Spinner className="h-4 w-4" />
             </span>
           ) : null}
@@ -128,7 +132,7 @@ export function LeaderRowActions({
           type="button"
           onClick={onStartEdit}
           disabled={isPending || isStatusPending}
-          className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+          className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
         >
           <Pencil className="h-4 w-4" aria-hidden="true" />
           Editar
@@ -139,7 +143,7 @@ export function LeaderRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending || isStatusPending}
-            className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+            className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Quitar
@@ -148,8 +152,8 @@ export function LeaderRowActions({
       </div>
 
       {confirmingRemove ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
-          <p className="text-red-800">
+        <div className="flex flex-col gap-2 rounded-2xl border border-err-border bg-err-bg p-3.5 text-sm">
+          <p className="text-err-ink">
             {pointerCount > 0
               ? `Este dirigente tiene ${pointerCount} punteros. Si lo quitás, dejará de aparecer y sus punteros van a quedar disponibles para ser registrados nuevamente.`
               : "¿Querés quitar a este dirigente?"}
@@ -159,7 +163,7 @@ export function LeaderRowActions({
               type="button"
               onClick={() => setConfirmingRemove(false)}
               disabled={isPending}
-              className="h-9 flex-1 rounded-lg border border-zinc-300 text-sm font-medium text-zinc-700 disabled:opacity-60"
+              className="h-11 flex-1 rounded-xl border border-line-input bg-surface text-sm font-semibold text-ink-label disabled:opacity-60"
             >
               Volver
             </button>
@@ -167,7 +171,7 @@ export function LeaderRowActions({
               type="button"
               onClick={confirmRemove}
               disabled={isPending}
-              className="flex h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 text-sm font-medium text-white disabled:opacity-60"
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-err-line text-sm font-semibold text-white disabled:opacity-60"
             >
               {isPending ? (
                 <>
@@ -182,7 +186,7 @@ export function LeaderRowActions({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-err-text">
           {error}
         </p>
       ) : null}

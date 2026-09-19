@@ -1,34 +1,32 @@
 "use client";
 
-import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ActionBar } from "@/components/ui/ActionBar";
+import { Chip, CountChip } from "@/components/ui/Chip";
+import { CreateSheet } from "@/components/ui/CreateSheet";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { EntityRow } from "@/components/ui/EntityRow";
+import { Screen } from "@/components/ui/Screen";
+import { SearchField } from "@/components/ui/SearchField";
 import { normalizeDni } from "@/utils/dni";
 
-import { CollapsibleCreateLeader } from "./CollapsibleCreateLeader";
-import { LeadersList } from "./LeadersList";
+import { CreateLeaderForm } from "./CreateLeaderForm";
 import type { LeaderListItem } from "./queries";
 
-export function DirigentesClient({ leaders }: { leaders: LeaderListItem[] }) {
-  const [formOpen, setFormOpen] = useState(false);
+const ACCESS_CHIP: Partial<Record<LeaderListItem["accessStatus"], string>> = {
+  read_only: "solo lectura",
+  inactive: "inactivo",
+};
+
+export function DirigentesClient({
+  leaders,
+  exportSlot,
+}: {
+  leaders: LeaderListItem[];
+  exportSlot: React.ReactNode;
+}) {
   const [query, setQuery] = useState("");
-  // Nunca se crea y se edita al mismo tiempo: abrir el formulario de alta
-  // cierra cualquier edicion en curso, y empezar a editar cierra el
-  // formulario de alta (via closeCreateSignal).
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [closeCreateSignal, setCloseCreateSignal] = useState<number>();
-
-  function handleFormOpenChange(open: boolean) {
-    setFormOpen(open);
-    if (open) {
-      setEditingId(null);
-    }
-  }
-
-  function handleStartEdit(id: string) {
-    setEditingId(id);
-    setCloseCreateSignal((value) => (value ?? 0) + 1);
-  }
 
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedDniQuery = normalizeDni(query);
@@ -43,35 +41,67 @@ export function DirigentesClient({ leaders }: { leaders: LeaderListItem[] }) {
   }, [leaders, normalizedQuery, normalizedDniQuery]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <CollapsibleCreateLeader onOpenChange={handleFormOpenChange} closeSignal={closeCreateSignal} />
-
-      {!formOpen ? (
-        <div className="relative">
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
-            <Search className="h-4 w-4" aria-hidden="true" />
-          </span>
-          <input
-            type="text"
+    <Screen
+      title="Dirigentes"
+      backHref="/superadmin"
+      headerRight={<span className="font-mono text-[13px] font-medium text-ink-2">{leaders.length}</span>}
+      headerExtra={
+        leaders.length > 0 ? (
+          <SearchField
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nombre o DNI"
-            className="h-12 w-full rounded-lg border border-zinc-300 pl-10 pr-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none"
+            onChange={setQuery}
+            placeholder="Nombre o DNI"
+            label="Buscar dirigentes"
           />
+        ) : null
+      }
+      bar={
+        <ActionBar>
+          <div className="flex items-center gap-3">
+            {exportSlot}
+            <CreateSheet
+              triggerLabel="Agregar dirigente"
+              title="Agregar dirigente"
+              successMessage="Dirigente creado. Para darle acceso, abrí su ficha y usá el botón de invitar."
+              renderForm={(onCreated) => <CreateLeaderForm onCreated={onCreated} />}
+            />
+          </div>
+        </ActionBar>
+      }
+    >
+      {filteredLeaders.length === 0 ? (
+        normalizedQuery ? (
+          <EmptyState variant="search" title={`Sin resultados para “${query.trim()}”`}>
+            No encontramos ningún dirigente con ese nombre o DNI.
+          </EmptyState>
+        ) : (
+          <EmptyState variant="blank" title="Todavía no hay dirigentes">
+            Empezá por cargar un dirigente; después vas a poder sumarle punteros, personas y
+            vehículos.
+          </EmptyState>
+        )
+      ) : (
+        <div className="flex flex-col gap-[9px]">
+          {filteredLeaders.map((leader) => (
+            <EntityRow
+              key={leader.id}
+              href={`/superadmin/dirigentes/${leader.id}`}
+              name={leader.fullName}
+              meta={`DNI ${leader.dni}${leader.phone ? ` · ${leader.phone}` : ""}`}
+              chips={
+                <>
+                  <CountChip count={leader.pointerCount} singular="puntero" plural="punteros" />
+                  <CountChip count={leader.personCount} singular="persona" plural="personas" />
+                  <CountChip count={leader.vehicleCount} singular="vehículo" plural="vehículos" />
+                  {ACCESS_CHIP[leader.accessStatus] ? (
+                    <Chip empty>{ACCESS_CHIP[leader.accessStatus]}</Chip>
+                  ) : null}
+                </>
+              }
+            />
+          ))}
         </div>
-      ) : null}
-
-      <LeadersList
-        leaders={formOpen ? leaders : filteredLeaders}
-        emptyMessage={
-          normalizedQuery
-            ? "No encontramos ningún dirigente con ese nombre o DNI."
-            : "Todavía no hay dirigentes cargados."
-        }
-        editingId={formOpen ? null : editingId}
-        onStartEdit={handleStartEdit}
-        onStopEdit={() => setEditingId(null)}
-      />
-    </div>
+      )}
+    </Screen>
   );
 }

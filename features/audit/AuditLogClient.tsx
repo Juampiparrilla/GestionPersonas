@@ -1,14 +1,46 @@
 "use client";
 
+import { SlidersHorizontal } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 
 import { Spinner } from "@/components/Spinner";
+import { Avatar } from "@/components/ui/Avatar";
+import { FilterChip } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Screen } from "@/components/ui/Screen";
+import {
+  btnPrimary,
+  btnSecondary,
+  cardClass,
+  inputClass,
+  labelClass,
+  linkActionClass,
+} from "@/components/ui/styles";
 
 import { fetchAuditLogsAction, type AuditLogRowView } from "./actions";
+import { AUDIT_TIME_ZONE, rangeDates, type AuditRange } from "./dates";
 import { ACTION_FILTER_LABEL, AUDIT_ACTIONS } from "./labels";
 import type { AuditLogFilters } from "./queries";
 
 type Option = { id: string; fullName: string };
+type Range = AuditRange;
+
+function formatTime(iso: string, range: Range): string {
+  const date = new Date(iso);
+  if (range === "today") {
+    return date.toLocaleTimeString("es-AR", {
+      timeZone: AUDIT_TIME_ZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+  return date.toLocaleDateString("es-AR", {
+    timeZone: AUDIT_TIME_ZONE,
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
 
 function Autocomplete({
   query,
@@ -30,23 +62,26 @@ function Autocomplete({
   }, [query, options]);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <input
         type="text"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={placeholder}
-        className="h-10 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+        className={inputClass}
       />
       {matches.length > 0 ? (
-        <div className="flex flex-col gap-1 rounded-lg border border-zinc-200 p-1">
-          {matches.map((option) => (
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+          {matches.map((option, index) => (
             <button
               key={option.id}
               type="button"
               onClick={() => onSelect(option)}
-              className="rounded-md px-3 py-1.5 text-left text-sm text-zinc-900 hover:bg-zinc-100"
+              className={`flex min-h-[48px] w-full items-center gap-3 px-3.5 py-2 text-left text-[15px] font-semibold text-ink active:bg-muted ${
+                index > 0 ? "border-t border-line-inner" : ""
+              }`}
             >
+              <Avatar name={option.fullName} size="sm" />
               {option.fullName}
             </button>
           ))}
@@ -56,24 +91,37 @@ function Autocomplete({
   );
 }
 
-const inputClassName =
-  "h-10 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none";
+function SelectedOption({ name, onClear }: { name: string; onClear: () => void }) {
+  return (
+    <div className="flex h-[54px] items-center justify-between rounded-[14px] border border-line-input bg-surface px-4">
+      <span className="truncate text-base text-ink">{name}</span>
+      <button type="button" onClick={onClear} className={`${linkActionClass} min-h-[44px] px-1`}>
+        Quitar
+      </button>
+    </div>
+  );
+}
 
 export function AuditLogClient({
   initialRows,
   leaders,
   organizations,
+  backHref,
+  initialRange = "today",
 }: {
   initialRows: AuditLogRowView[];
   leaders?: Option[];
   organizations?: Option[];
+  backHref: string;
+  // Rango con el que el servidor ya trajo `initialRows`.
+  initialRange?: AuditRange;
 }) {
   const [rows, setRows] = useState(initialRows);
   const [isPending, startTransition] = useTransition();
 
+  const [range, setRange] = useState<Range>(initialRange);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [action, setAction] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
 
   const [leaderQuery, setLeaderQuery] = useState("");
   const [selectedLeader, setSelectedLeader] = useState<Option | null>(null);
@@ -81,14 +129,17 @@ export function AuditLogClient({
   const [orgQuery, setOrgQuery] = useState("");
   const [selectedOrg, setSelectedOrg] = useState<Option | null>(null);
 
-  function applyFilters(overrides: Partial<AuditLogFilters> = {}) {
+  function fetchRows(next: {
+    range: Range;
+    action: string;
+    leader: Option | null;
+    org: Option | null;
+  }) {
     const filters: AuditLogFilters = {
-      action: action || undefined,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-      leaderId: selectedLeader?.id,
-      organizationId: selectedOrg?.id,
-      ...overrides,
+      ...rangeDates(next.range),
+      action: next.action || undefined,
+      leaderId: next.leader?.id,
+      organizationId: next.org?.id,
     };
     startTransition(async () => {
       const result = await fetchAuditLogsAction(filters);
@@ -96,156 +147,171 @@ export function AuditLogClient({
     });
   }
 
+  function changeRange(next: Range) {
+    setRange(next);
+    fetchRows({ range: next, action, leader: selectedLeader, org: selectedOrg });
+  }
+
+  function applyFilters() {
+    fetchRows({ range, action, leader: selectedLeader, org: selectedOrg });
+  }
+
   function clearFilters() {
     setAction("");
-    setDateFrom("");
-    setDateTo("");
     setSelectedLeader(null);
     setLeaderQuery("");
     setSelectedOrg(null);
     setOrgQuery("");
-    startTransition(async () => {
-      const result = await fetchAuditLogsAction({});
-      setRows(result);
-    });
+    fetchRows({ range, action: "", leader: null, org: null });
   }
 
+  const hasFilters = Boolean(action || selectedLeader || selectedOrg);
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-3 rounded-xl border-2 border-zinc-300 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
-        {organizations ? (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500">Organización</label>
-            {selectedOrg ? (
-              <div className="flex h-10 items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3">
-                <span className="truncate text-sm text-zinc-900">{selectedOrg.fullName}</span>
-                <button
-                  type="button"
-                  onClick={() => {
+    <Screen
+      title="Auditoría"
+      backHref={backHref}
+      headerExtra={
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterChip active={range === "today"} onClick={() => changeRange("today")}>
+            Hoy
+          </FilterChip>
+          <FilterChip active={range === "week"} onClick={() => changeRange("week")}>
+            7 días
+          </FilterChip>
+          <FilterChip active={range === "all"} onClick={() => changeRange("all")}>
+            Todo
+          </FilterChip>
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((value) => !value)}
+            aria-expanded={filtersOpen}
+            className={`ml-auto flex min-h-[44px] items-center gap-1.5 rounded-[9px] border px-3 text-[13px] font-medium ${
+              hasFilters || filtersOpen
+                ? "border-ink text-ink"
+                : "border-line-input bg-surface text-ink-label"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+            Filtros
+          </button>
+        </div>
+      }
+    >
+      {filtersOpen ? (
+        <section className={`${cardClass} flex flex-col gap-3.5 p-4`}>
+          {organizations ? (
+            <div className="flex flex-col gap-1.5">
+              <p className={labelClass}>Organización</p>
+              {selectedOrg ? (
+                <SelectedOption
+                  name={selectedOrg.fullName}
+                  onClear={() => {
                     setSelectedOrg(null);
                     setOrgQuery("");
                   }}
-                  className="text-xs font-medium text-zinc-600 underline underline-offset-2"
-                >
-                  Quitar
-                </button>
-              </div>
-            ) : (
-              <Autocomplete
-                query={orgQuery}
-                onQueryChange={setOrgQuery}
-                onSelect={(option) => {
-                  setSelectedOrg(option);
-                  setOrgQuery(option.fullName);
-                }}
-                options={organizations}
-                placeholder="Todas las organizaciones"
-              />
-            )}
-          </div>
-        ) : null}
+                />
+              ) : (
+                <Autocomplete
+                  query={orgQuery}
+                  onQueryChange={setOrgQuery}
+                  onSelect={(option) => {
+                    setSelectedOrg(option);
+                    setOrgQuery(option.fullName);
+                  }}
+                  options={organizations}
+                  placeholder="Todas las organizaciones"
+                />
+              )}
+            </div>
+          ) : null}
 
-        {leaders ? (
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500">Dirigente</label>
-            {selectedLeader ? (
-              <div className="flex h-10 items-center justify-between rounded-lg border border-zinc-300 bg-zinc-50 px-3">
-                <span className="truncate text-sm text-zinc-900">{selectedLeader.fullName}</span>
-                <button
-                  type="button"
-                  onClick={() => {
+          {leaders ? (
+            <div className="flex flex-col gap-1.5">
+              <p className={labelClass}>Dirigente</p>
+              {selectedLeader ? (
+                <SelectedOption
+                  name={selectedLeader.fullName}
+                  onClear={() => {
                     setSelectedLeader(null);
                     setLeaderQuery("");
                   }}
-                  className="text-xs font-medium text-zinc-600 underline underline-offset-2"
-                >
-                  Quitar
-                </button>
-              </div>
-            ) : (
-              <Autocomplete
-                query={leaderQuery}
-                onQueryChange={setLeaderQuery}
-                onSelect={(option) => {
-                  setSelectedLeader(option);
-                  setLeaderQuery(option.fullName);
-                }}
-                options={leaders}
-                placeholder="Todos los dirigentes"
-              />
-            )}
+                />
+              ) : (
+                <Autocomplete
+                  query={leaderQuery}
+                  onQueryChange={setLeaderQuery}
+                  onSelect={(option) => {
+                    setSelectedLeader(option);
+                    setLeaderQuery(option.fullName);
+                  }}
+                  options={leaders}
+                  placeholder="Todos los dirigentes"
+                />
+              )}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="audit-action" className={labelClass}>
+              Acción
+            </label>
+            <select
+              id="audit-action"
+              value={action}
+              onChange={(event) => setAction(event.target.value)}
+              className={inputClass}
+            >
+              <option value="">Todas</option>
+              {AUDIT_ACTIONS.map((value) => (
+                <option key={value} value={value}>
+                  {ACTION_FILTER_LABEL[value] ?? value}
+                </option>
+              ))}
+            </select>
           </div>
-        ) : null}
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-500">Acción</label>
-          <select value={action} onChange={(event) => setAction(event.target.value)} className={inputClassName}>
-            <option value="">Todas</option>
-            {AUDIT_ACTIONS.map((value) => (
-              <option key={value} value={value}>
-                {ACTION_FILTER_LABEL[value] ?? value}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-500">Desde / hasta</label>
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(event) => setDateFrom(event.target.value)}
-              className={inputClassName}
-            />
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(event) => setDateTo(event.target.value)}
-              className={inputClassName}
-            />
+          <div className="flex gap-2.5">
+            <button type="button" onClick={clearFilters} disabled={isPending} className={btnSecondary}>
+              Limpiar
+            </button>
+            <button type="button" onClick={applyFilters} disabled={isPending} className={btnPrimary}>
+              {isPending ? <Spinner className="h-4 w-4" /> : null}
+              Filtrar
+            </button>
           </div>
-        </div>
+        </section>
+      ) : null}
 
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-4">
-          <button
-            type="button"
-            onClick={() => applyFilters()}
-            disabled={isPending}
-            className="flex h-10 items-center gap-2 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white disabled:opacity-60"
-          >
-            {isPending ? <Spinner className="h-4 w-4" /> : null}
-            Filtrar
-          </button>
-          <button
-            type="button"
-            onClick={clearFilters}
-            disabled={isPending}
-            className="flex h-10 items-center rounded-lg border border-zinc-300 px-4 text-sm font-medium text-zinc-700 disabled:opacity-60"
-          >
-            Limpiar
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
+      <div
+        className={`flex flex-col gap-2.5 transition-opacity duration-150 ${isPending ? "opacity-60" : ""}`}
+        aria-busy={isPending}
+      >
         {rows.length === 0 ? (
-          <p className="rounded-xl border-2 border-zinc-200 bg-white p-4 text-sm text-zinc-500">
+          <EmptyState variant="search" title="Sin actividad">
             No hay actividad para estos filtros.
-          </p>
+          </EmptyState>
         ) : (
           rows.map((row) => (
-            <div key={row.id} className="rounded-xl border-2 border-zinc-200 bg-white p-3">
-              <p className="text-sm text-zinc-900">{row.description}</p>
-              <p className="mt-1 text-xs text-zinc-400">
-                {new Date(row.createdAt).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}
-                {row.organizationName ? ` · ${row.organizationName}` : ""}
-                {row.ipAddress ? ` · ${row.ipAddress}` : ""}
-              </p>
+            <div key={row.id} className={`${cardClass} flex gap-3 rounded-2xl p-3.5`}>
+              <span className="w-[44px] shrink-0 pt-0.5 font-mono text-[12px] font-medium text-ink-3">
+                {formatTime(row.createdAt, range)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-semibold text-ink">
+                  {ACTION_FILTER_LABEL[row.action] ?? row.action}
+                </p>
+                <p className="text-[13px] text-ink-2">{row.description}</p>
+                {row.organizationName || row.ipAddress ? (
+                  <p className="mt-0.5 text-[12px] text-ink-3">
+                    {[row.organizationName, row.ipAddress].filter(Boolean).join(" · ")}
+                  </p>
+                ) : null}
+              </div>
             </div>
           ))
         )}
       </div>
-    </div>
+    </Screen>
   );
 }

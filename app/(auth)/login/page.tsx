@@ -1,4 +1,3 @@
-import { UsersRound } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { roleHomePath } from "@/lib/routes";
@@ -14,13 +13,19 @@ export default async function LoginPage() {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-3 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900">
-          <UsersRound className="h-6 w-6 text-white" aria-hidden="true" />
+      <div className="flex flex-col gap-5">
+        {/* Marcador del logo: reemplazar por el logo real de la organizacion
+            manteniendo la caja de 56x56 y el radio de 16. */}
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink">
+          <span className="font-mono text-[22px] font-semibold text-app">GP</span>
         </div>
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-zinc-900">Gestión de Personas</h1>
-          <p className="text-zinc-600">Iniciá sesión para continuar.</p>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+            Gestión de
+            <br />
+            Personas
+          </h1>
+          <p className="text-[15px] text-ink-2">Iniciá sesión para continuar.</p>
         </div>
       </div>
       <LoginForm />

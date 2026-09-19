@@ -1,14 +1,14 @@
-import { Car, Divide, Lock, TriangleAlert, UserRoundPlus, UsersRound } from "lucide-react";
-import Link from "next/link";
+import { Car, UsersRound } from "lucide-react";
 
-import { AccountSettingsLink } from "@/components/AccountSettingsLink";
-import { StatCard } from "@/components/StatCard";
-import { LogoutButton } from "@/components/LogoutButton";
-import { RoleHelpButton } from "@/components/RoleHelpButton";
+import { AccessTile } from "@/components/ui/AccessTile";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { HomeGreeting } from "@/components/ui/HomeGreeting";
+import { MetricsCard } from "@/components/ui/MetricsCard";
+import { LeaderBottomNav } from "@/components/ui/RoleNav";
+import { Screen } from "@/components/ui/Screen";
 import { listMyPointers } from "@/features/pointers/queries";
 import { listMyVehicles } from "@/features/vehicles/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
-import { roleLabel } from "@/lib/roles";
 import { getSessionContext } from "@/lib/session";
 
 export default async function DirigenteHome() {
@@ -24,100 +24,75 @@ export default async function DirigenteHome() {
   const promedioPersonasPorPuntero =
     pointers.length > 0 ? Math.round(totalPersonas / pointers.length) : 0;
 
-  if (!writeStatus.canWrite) {
-    const message =
-      writeStatus.reason === "individual_block"
-        ? "Tu acceso para cargar datos está pausado. Podés consultar la información, pero no agregar ni modificar nada. Si creés que es un error, comunicate con el administrador."
-        : "La carga de datos está cerrada por el momento. Podés consultar la información, pero no agregar ni modificar nada.";
-
-    return (
-      <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
-            <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <RoleHelpButton role={session!.role} />
-            <AccountSettingsLink />
-            <LogoutButton />
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="flex items-center gap-2 font-medium text-amber-900">
-            <Lock className="h-5 w-5" aria-hidden="true" />
-            Reporte general
-          </p>
-          <p className="mt-1 text-sm text-amber-800">{message}</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Punteros" value={pointers.length} icon={UserRoundPlus} />
-          <StatCard label="Personas registradas" value={totalPersonas} icon={UsersRound} />
-          <StatCard label="Vehículos" value={vehicles.length} icon={Car} />
-          <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} icon={Divide} />
-        </div>
-      </div>
-    );
-  }
+  const pausedMessage =
+    writeStatus.reason === "individual_block"
+      ? "Tu acceso para cargar datos está pausado. Podés consultar la información, pero no agregar ni modificar nada. Si creés que es un error, comunicate con el administrador."
+      : "La carga de datos está cerrada por el momento. Podés consultar la información, pero no agregar ni modificar nada.";
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-zinc-50 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Bienvenido, {session?.fullName}</h1>
-          <p className="text-sm text-zinc-500">{roleLabel(session!.role)}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <RoleHelpButton role={session!.role} />
-          <AccountSettingsLink />
-          <LogoutButton />
-        </div>
-      </div>
+    <Screen bar={<LeaderBottomNav />}>
+      <HomeGreeting fullName={session!.fullName} role={session!.role} />
 
-      {punterosSinPersonas.length > 0 ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="flex items-center gap-2 font-medium text-amber-900">
-            <TriangleAlert className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Tenés {punterosSinPersonas.length}{" "}
-            {punterosSinPersonas.length === 1
-              ? "puntero sin personas registradas"
-              : "punteros sin personas registradas"}
-          </p>
-          <p className="mt-1 text-sm text-amber-800">
-            {punterosSinPersonas
-              .slice(0, 3)
-              .map((pointer) => pointer.fullName)
-              .join(", ")}
-            {punterosSinPersonas.length > 3 ? ` y ${punterosSinPersonas.length - 3} más` : ""}
-          </p>
+      {writeStatus.canWrite ? (
+        <div className="flex items-center gap-3 rounded-xl border border-ok-border bg-ok-bg px-3.5 py-[11px]">
+          <span className="h-2 w-2 shrink-0 rounded-full bg-ok-dot" aria-hidden="true" />
+          <p className="text-sm font-semibold text-ok-ink">Carga habilitada</p>
+        </div>
+      ) : (
+        <div className="flex items-start gap-3 rounded-2xl border border-warn-border bg-warn-bg p-3.5">
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-warn-dot" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-semibold text-warn-ink">Carga cerrada</p>
+            <p className="text-[13px] text-warn-ink">{pausedMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {writeStatus.canWrite && punterosSinPersonas.length > 0 ? (
+        <div className="flex items-start gap-3 rounded-2xl border border-warn-border bg-warn-bg p-3.5">
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-warn-dot" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-semibold text-warn-ink">
+              Tenés {punterosSinPersonas.length}{" "}
+              {punterosSinPersonas.length === 1
+                ? "puntero sin personas registradas"
+                : "punteros sin personas registradas"}
+            </p>
+            <p className="text-[13px] text-warn-ink">
+              {punterosSinPersonas
+                .slice(0, 3)
+                .map((pointer) => pointer.fullName)
+                .join(", ")}
+              {punterosSinPersonas.length > 3 ? ` y ${punterosSinPersonas.length - 3} más` : ""}
+            </p>
+          </div>
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Punteros" value={pointers.length} icon={UserRoundPlus} />
-        <StatCard label="Personas registradas" value={totalPersonas} icon={UsersRound} />
-        <StatCard label="Vehículos" value={vehicles.length} icon={Car} />
-        <StatCard label="Promedio de personas por puntero" value={promedioPersonasPorPuntero} icon={Divide} />
-      </div>
+      <MetricsCard
+        eyebrow="Personas registradas"
+        total={totalPersonas}
+        note={
+          <>
+            {promedioPersonasPorPuntero.toLocaleString("es-AR")}{" "}
+            {promedioPersonasPorPuntero === 1 ? "persona" : "personas"}
+            <br />
+            por puntero
+          </>
+        }
+        cells={[
+          { label: "Punteros", value: pointers.length },
+          { label: "Vehículos", value: vehicles.length },
+        ]}
+      />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Link
-          href="/dirigente/punteros"
-          className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <UserRoundPlus className="h-5 w-5" aria-hidden="true" />
-          PUNTEROS
-        </Link>
-        <Link
-          href="/dirigente/vehiculos"
-          className="flex h-16 items-center justify-center gap-2 rounded-xl bg-zinc-900 text-lg font-semibold text-white transition-colors hover:bg-zinc-800"
-        >
-          <Car className="h-5 w-5" aria-hidden="true" />
-          VEHÍCULOS
-        </Link>
-      </div>
-    </div>
+      <section className="flex flex-col gap-2.5">
+        <Eyebrow>Accesos</Eyebrow>
+        <div className="grid grid-cols-2 gap-2.5">
+          <AccessTile href="/dirigente/punteros" label="Punteros" icon={UsersRound} />
+          <AccessTile href="/dirigente/vehiculos" label="Vehículos" icon={Car} />
+        </div>
+      </section>
+    </Screen>
   );
 }

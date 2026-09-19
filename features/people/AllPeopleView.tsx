@@ -1,111 +1,68 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { pluralize } from "@/components/ui/Chip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { GroupCard, GroupRow } from "@/components/ui/GroupCard";
 
-import type { PersonLeaderGroup, PersonPointerGroup } from "./queries";
+import type { PersonLeaderGroup } from "./queries";
 
-function PointerGroupCard({ group, index }: { group: PersonPointerGroup; index: number }) {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <div className="rounded-lg border border-zinc-200 p-3">
-      <button
-        type="button"
-        onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center justify-between text-left"
-      >
-        <p className="font-medium text-zinc-900">
-          {index + 1}. {group.pointerName}
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-600">{group.people.length} personas</span>
-          {expanded ? (
-            <ChevronUp className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
-          )}
-        </div>
-      </button>
-
-      {expanded ? (
-        group.people.length === 0 ? (
-          <p className="mt-2 text-sm text-zinc-600">Este puntero todavía no tiene personas registradas.</p>
-        ) : (
-          <div className="mt-2 flex flex-col gap-2">
-            {group.people.map((person, personIndex) => (
-              <div key={person.id} className="rounded-lg border border-zinc-100 bg-zinc-50 p-2">
-                <p className="text-sm font-medium text-zinc-900">
-                  {personIndex + 1}. {person.fullName}
-                </p>
-                <p className="text-xs text-zinc-600">
-                  DNI {person.dni}
-                  {person.phone ? ` · ${person.phone}` : ""}
-                </p>
-              </div>
-            ))}
-          </div>
-        )
-      ) : null}
-    </div>
-  );
-}
-
-function LeaderGroupCard({ group, index }: { group: PersonLeaderGroup; index: number }) {
-  const [expanded, setExpanded] = useState(false);
-  const totalPeople = group.pointerGroups.reduce((sum, pointerGroup) => sum + pointerGroup.people.length, 0);
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <button
-        type="button"
-        onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center justify-between text-left"
-      >
-        <p className="font-bold text-zinc-900">
-          {index + 1}. {group.leaderName}
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-600">
-            {group.pointerGroups.length} punteros · {totalPeople} personas
-          </span>
-          {expanded ? (
-            <ChevronUp className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden="true" />
-          )}
-        </div>
-      </button>
-
-      {expanded ? (
-        group.pointerGroups.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-600">Este dirigente todavía no tiene punteros.</p>
-        ) : (
-          <div className="mt-3 flex flex-col gap-2">
-            {group.pointerGroups.map((pointerGroup, pointerIndex) => (
-              <PointerGroupCard key={pointerGroup.pointerId} group={pointerGroup} index={pointerIndex} />
-            ))}
-          </div>
-        )
-      ) : null}
-    </div>
-  );
-}
-
+// Dirigente > sus punteros > las personas de cada puntero. Las personas se
+// muestran bajo el nombre de su puntero.
 export function AllPeopleView({ groups }: { groups: PersonLeaderGroup[] }) {
   if (groups.length === 0) {
     return (
-      <p className="rounded-xl border border-zinc-200 bg-white p-4 text-center text-zinc-600">
-        Todavía no hay dirigentes cargados.
-      </p>
+      <EmptyState variant="blank" title="Todavía no hay dirigentes">
+        Cargá un dirigente para empezar.
+      </EmptyState>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {groups.map((group, index) => (
-        <LeaderGroupCard key={group.leaderId} group={group} index={index} />
-      ))}
+    <div className="flex flex-col gap-[9px]">
+      {groups.map((group) => {
+        const totalPeople = group.pointerGroups.reduce(
+          (sum, pointerGroup) => sum + pointerGroup.people.length,
+          0
+        );
+        return (
+          <GroupCard
+            key={group.leaderId}
+            name={group.leaderName}
+            summary={
+              totalPeople === 0
+                ? "sin personas"
+                : `${pluralize(group.pointerGroups.length, "puntero", "punteros")} · ${pluralize(
+                    totalPeople,
+                    "persona",
+                    "personas"
+                  )}`
+            }
+            isEmpty={group.pointerGroups.length === 0}
+            emptyMessage="Este dirigente todavía no tiene punteros."
+          >
+            {group.pointerGroups.map((pointerGroup) => (
+              <div key={pointerGroup.pointerId} className="flex flex-col gap-1.5">
+                <p className="text-[13px] font-semibold text-ink-label">
+                  {pointerGroup.pointerName} · {pluralize(pointerGroup.people.length, "persona", "personas")}
+                </p>
+                {pointerGroup.people.length === 0 ? (
+                  <p className="text-[13px] text-ink-2">
+                    Este puntero todavía no tiene personas registradas.
+                  </p>
+                ) : (
+                  pointerGroup.people.map((person) => (
+                    <GroupRow
+                      key={person.id}
+                      title={person.fullName}
+                      meta={`DNI ${person.dni}${person.phone ? ` · ${person.phone}` : ""}`}
+                    />
+                  ))
+                )}
+              </div>
+            ))}
+          </GroupCard>
+        );
+      })}
     </div>
   );
 }
