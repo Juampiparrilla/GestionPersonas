@@ -15,6 +15,9 @@ export function SummaryCard({
   columns?: number;
 }) {
   const cols = columns ?? cells.length;
+  // Con varias filas de celdas (grilla 2x2) se compacta para que la pantalla
+  // no pase de largo.
+  const dense = cols < cells.length;
 
   return (
     <section className="overflow-hidden rounded-[18px] border border-line bg-surface">
@@ -28,11 +31,13 @@ export function SummaryCard({
         {cells.map((cell, index) => (
           <div
             key={cell.label}
-            className={`flex flex-col items-center gap-1 px-2 py-6 ${
+            className={`flex flex-col items-center gap-1 px-2 ${dense ? "py-3" : "py-6"} ${
               index % cols > 0 ? "border-l border-line-inner" : ""
             } ${index >= cols ? "border-t border-line-inner" : ""}`}
           >
-            <span className="text-[34px] font-semibold leading-none tracking-[-0.03em] text-ink">
+            <span
+              className={`${dense ? "text-[28px]" : "text-[34px]"} font-semibold leading-none tracking-[-0.03em] text-ink`}
+            >
               {cell.value.toLocaleString("es-AR")}
             </span>
             <span className="text-[13px] text-ink-2">{cell.label}</span>
