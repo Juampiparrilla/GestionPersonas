@@ -14,16 +14,16 @@ export default async function LoginPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-5">
-        <Logo />
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3.5">
+          <Logo />
           <h1 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             Gestión de
             <br />
             Personas
           </h1>
-          <p className="text-[15px] text-ink-2">Iniciá sesión para continuar.</p>
         </div>
+        <p className="text-[15px] text-ink-2">Iniciá sesión para continuar.</p>
       </div>
       <LoginForm />
     </>
