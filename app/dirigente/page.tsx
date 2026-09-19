@@ -1,7 +1,7 @@
 import { HomeGreeting } from "@/components/ui/HomeGreeting";
-import { MetricsCard } from "@/components/ui/MetricsCard";
 import { LeaderBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
+import { SummaryCard } from "@/components/ui/SummaryCard";
 import { listMyPointers } from "@/features/pointers/queries";
 import { listMyVehicles } from "@/features/vehicles/queries";
 import { getLeaderWriteStatus } from "@/lib/leader-write-status";
@@ -65,21 +65,16 @@ export default async function DirigenteHome() {
         </div>
       ) : null}
 
-      <MetricsCard
-        eyebrow="Personas registradas"
-        total={totalPersonas}
-        note={
-          <>
-            {promedioPersonasPorPuntero.toLocaleString("es-AR")}{" "}
-            {promedioPersonasPorPuntero === 1 ? "persona" : "personas"}
-            <br />
-            por puntero
-          </>
-        }
+      <SummaryCard
+        eyebrow="Tu carga"
         cells={[
           { label: "Punteros", value: pointers.length },
+          { label: "Personas", value: totalPersonas },
           { label: "Vehículos", value: vehicles.length },
         ]}
+        footnote={`Promedio: ${promedioPersonasPorPuntero.toLocaleString("es-AR")} ${
+          promedioPersonasPorPuntero === 1 ? "persona" : "personas"
+        } por puntero`}
       />
     </Screen>
   );
