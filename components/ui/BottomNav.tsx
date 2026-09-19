@@ -52,7 +52,7 @@ export function BottomNav({
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[448px] border-t border-line-head bg-bar px-5 pb-[max(26px,env(safe-area-inset-bottom))] pt-3"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[448px] border-t border-line-head bg-bar px-3 pb-[max(26px,env(safe-area-inset-bottom))] pt-3"
     >
       <ul className="flex items-end">
         {left.map(renderItem)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, House, Menu, UserRoundCheck, UsersRound } from "lucide-react";
+import { Car, House, Menu, UserRound, UserRoundCheck, UsersRound } from "lucide-react";
 
 import { BottomNav } from "./BottomNav";
 
@@ -15,6 +15,7 @@ export function AdminBottomNav() {
         { href: "/superadmin", label: "Inicio", icon: House },
         { href: "/superadmin/dirigentes", label: "Dirigentes", icon: UsersRound },
         { href: "/superadmin/punteros", label: "Punteros", icon: UserRoundCheck },
+        { href: "/superadmin/personas", label: "Personas", icon: UserRound },
         { href: "/superadmin/vehiculos", label: "Vehículos", icon: Car },
         { href: "/superadmin/mas", label: "Más", icon: Menu },
       ]}
