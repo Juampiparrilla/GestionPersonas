@@ -1,7 +1,3 @@
-import { Car, UsersRound } from "lucide-react";
-
-import { AccessTile } from "@/components/ui/AccessTile";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { HomeGreeting } from "@/components/ui/HomeGreeting";
 import { MetricsCard } from "@/components/ui/MetricsCard";
 import { LeaderBottomNav } from "@/components/ui/RoleNav";
@@ -85,14 +81,6 @@ export default async function DirigenteHome() {
           { label: "Vehículos", value: vehicles.length },
         ]}
       />
-
-      <section className="flex flex-col gap-2.5">
-        <Eyebrow>Accesos</Eyebrow>
-        <div className="grid grid-cols-2 gap-2.5">
-          <AccessTile href="/dirigente/punteros" label="Punteros" icon={UsersRound} />
-          <AccessTile href="/dirigente/vehiculos" label="Vehículos" icon={Car} />
-        </div>
-      </section>
     </Screen>
   );
 }
