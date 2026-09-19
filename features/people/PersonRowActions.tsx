@@ -66,7 +66,7 @@ export function PersonRowActions({
           type="button"
           onClick={onStartEdit}
           disabled={isPending}
-          className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
+          className="flex h-11 min-w-fit whitespace-nowrap flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-input bg-surface px-2 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
         >
           <Pencil className="h-4 w-4" aria-hidden="true" />
           Editar
@@ -77,7 +77,7 @@ export function PersonRowActions({
             type="button"
             onClick={() => setConfirmingRemove(true)}
             disabled={isPending}
-            className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
+            className="flex h-11 min-w-fit whitespace-nowrap flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-input bg-surface px-2 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Quitar
