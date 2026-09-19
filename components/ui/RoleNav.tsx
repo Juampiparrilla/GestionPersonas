@@ -1,6 +1,8 @@
 "use client";
 
-import { Car, House, Menu, UserRound, UserRoundCheck, UsersRound } from "lucide-react";
+import { Building2, ClipboardList, House, Menu } from "lucide-react";
+
+import { ENTITY_ICON } from "./entityIcons";
 
 import { BottomNav } from "./BottomNav";
 
@@ -13,10 +15,10 @@ export function AdminBottomNav() {
     <BottomNav
       items={[
         { href: "/superadmin", label: "Inicio", icon: House },
-        { href: "/superadmin/dirigentes", label: "Dirigentes", icon: UsersRound },
-        { href: "/superadmin/punteros", label: "Punteros", icon: UserRoundCheck },
-        { href: "/superadmin/personas", label: "Personas", icon: UserRound },
-        { href: "/superadmin/vehiculos", label: "Vehículos", icon: Car },
+        { href: "/superadmin/dirigentes", label: "Dirigentes", icon: ENTITY_ICON.leader },
+        { href: "/superadmin/punteros", label: "Punteros", icon: ENTITY_ICON.pointer },
+        { href: "/superadmin/personas", label: "Personas", icon: ENTITY_ICON.person },
+        { href: "/superadmin/vehiculos", label: "Vehículos", icon: ENTITY_ICON.vehicle },
         { href: "/superadmin/mas", label: "Más", icon: Menu },
       ]}
     />
@@ -28,9 +30,21 @@ export function LeaderBottomNav() {
     <BottomNav
       items={[
         { href: "/dirigente", label: "Inicio", icon: House },
-        { href: "/dirigente/punteros", label: "Punteros", icon: UsersRound },
-        { href: "/dirigente/vehiculos", label: "Vehículos", icon: Car },
+        { href: "/dirigente/punteros", label: "Punteros", icon: ENTITY_ICON.pointer },
+        { href: "/dirigente/vehiculos", label: "Vehículos", icon: ENTITY_ICON.vehicle },
         { href: "/dirigente/mas", label: "Más", icon: Menu },
+      ]}
+    />
+  );
+}
+
+export function PlatformBottomNav() {
+  return (
+    <BottomNav
+      items={[
+        { href: "/plataforma", label: "Organizaciones", icon: Building2 },
+        { href: "/plataforma/auditoria", label: "Auditoría", icon: ClipboardList },
+        { href: "/plataforma/mas", label: "Más", icon: Menu },
       ]}
     />
   );

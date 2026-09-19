@@ -6,7 +6,10 @@ import { getRequestMeta } from "@/lib/request-meta";
 import { getSessionContext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { VehicleType } from "@/types/domain";
+import { collectFieldErrors, rpcFieldErrors, type FieldErrors } from "@/utils/form-errors";
+import { normalizePhone } from "@/utils/phone";
 import { friendlyRpcError } from "@/utils/rpc-errors";
+import { validateDni, validateFullName, validatePhone, validatePlate } from "@/utils/validation";
 
 const VEHICLE_TYPES: VehicleType[] = ["auto", "moto", "traffic", "colectivo"];
 
@@ -14,7 +17,7 @@ function isVehicleType(value: string): value is VehicleType {
   return (VEHICLE_TYPES as string[]).includes(value);
 }
 
-export type CreateVehicleState = { error: string | null; success: boolean };
+export type CreateVehicleState = { error: string | null; success: boolean; fieldErrors?: FieldErrors };
 
 export async function createVehicleAction(
   _prevState: CreateVehicleState,
@@ -29,14 +32,15 @@ export async function createVehicleAction(
   // Administrador de Organización (ver features/carga-asistida).
   const targetLeaderId = String(formData.get("leaderId") ?? "").trim();
 
-  if (!isVehicleType(type)) {
-    return { error: "Elegí un tipo de vehículo.", success: false };
-  }
-  if (!plate || !driverFullName || !driverDni) {
-    return {
-      error: "Completá la patente, el nombre y el DNI del conductor.",
-      success: false,
-    };
+  const fieldErrors = collectFieldErrors({
+    type: isVehicleType(type) ? null : "Elegí un tipo de vehículo.",
+    plate: validatePlate(plate),
+    driverFullName: validateFullName(driverFullName),
+    driverDni: validateDni(driverDni),
+    driverPhone: validatePhone(driverPhone),
+  });
+  if (fieldErrors || !isVehicleType(type)) {
+    return { error: null, success: false, fieldErrors: fieldErrors ?? {} };
   }
 
   const session = await getSessionContext();
@@ -64,12 +68,16 @@ export async function createVehicleAction(
     p_plate: plate,
     p_driver_full_name: driverFullName,
     p_driver_dni: driverDni,
-    p_driver_phone: driverPhone || null,
+    p_driver_phone: normalizePhone(driverPhone),
     p_ip: ip,
     p_user_agent: userAgent,
   });
 
   if (error) {
+    const rpcErrors = rpcFieldErrors(error.message);
+    if (rpcErrors) {
+      return { error: null, success: false, fieldErrors: rpcErrors };
+    }
     return { error: friendlyRpcError(error.message), success: false };
   }
 
@@ -88,6 +96,11 @@ export async function updateVehicleAction(
   driverDni: string,
   driverPhone: string | null
 ): Promise<ActionResult> {
+  const phoneError = driverPhone ? validatePhone(driverPhone) : null;
+  if (phoneError) {
+    return { error: phoneError };
+  }
+
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
 
@@ -97,7 +110,7 @@ export async function updateVehicleAction(
     p_plate: plate,
     p_driver_full_name: driverFullName,
     p_driver_dni: driverDni,
-    p_driver_phone: driverPhone,
+    p_driver_phone: driverPhone ? normalizePhone(driverPhone) : null,
     p_ip: ip,
     p_user_agent: userAgent,
   });

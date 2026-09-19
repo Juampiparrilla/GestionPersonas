@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { GroupCard, GroupRow } from "@/components/ui/GroupCard";
 
 import type { PersonLeaderGroup } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 // Dirigente > sus punteros > las personas de cada puntero. Las personas se
 // muestran bajo el nombre de su puntero.
@@ -54,7 +55,7 @@ export function AllPeopleView({ groups }: { groups: PersonLeaderGroup[] }) {
                     <GroupRow
                       key={person.id}
                       title={person.fullName}
-                      meta={`DNI ${person.dni}${person.phone ? ` · ${person.phone}` : ""}`}
+                      meta={`DNI ${person.dni}${person.phone ? ` · ${formatPhoneDisplay(person.phone)}` : ""}`}
                     />
                   ))
                 )}

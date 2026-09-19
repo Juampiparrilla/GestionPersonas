@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/styles";
 
 import { fetchAuditLogsAction, type AuditLogRowView } from "./actions";
-import { AUDIT_TIME_ZONE, rangeDates, type AuditRange } from "./dates";
+import { AUDIT_TIME_ZONE, formatDayMonth, rangeDates, type AuditRange } from "./dates";
 import { ACTION_FILTER_LABEL, AUDIT_ACTIONS } from "./labels";
 import type { AuditLogFilters } from "./queries";
 
@@ -35,11 +35,7 @@ function formatTime(iso: string, range: Range): string {
       hour12: false,
     });
   }
-  return date.toLocaleDateString("es-AR", {
-    timeZone: AUDIT_TIME_ZONE,
-    day: "2-digit",
-    month: "2-digit",
-  });
+  return formatDayMonth(iso);
 }
 
 function Autocomplete({
@@ -107,12 +103,15 @@ export function AuditLogClient({
   leaders,
   organizations,
   backHref,
+  bar,
   initialRange = "today",
 }: {
   initialRows: AuditLogRowView[];
   leaders?: Option[];
   organizations?: Option[];
-  backHref: string;
+  // Sin backHref la pantalla es una pestaña de la barra de navegacion (`bar`).
+  backHref?: string;
+  bar?: React.ReactNode;
   // Rango con el que el servidor ya trajo `initialRows`.
   initialRange?: AuditRange;
 }) {
@@ -171,6 +170,7 @@ export function AuditLogClient({
     <Screen
       title="Auditoría"
       backHref={backHref}
+      bar={bar}
       headerExtra={
         <div className="flex flex-wrap items-center gap-2">
           <FilterChip active={range === "today"} onClick={() => changeRange("today")}>

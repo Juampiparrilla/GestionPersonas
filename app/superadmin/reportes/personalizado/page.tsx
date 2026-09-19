@@ -16,7 +16,7 @@ export default async function ReportePersonalizadoPage() {
   );
 
   return (
-    <Screen title="Reporte personalizado" backHref="/superadmin/reportes">
+    <Screen title="Reporte personalizado" backHref="/superadmin/mas">
       <div className={`${cardClass} p-4`}>
         <CustomReportForm leaders={leaders.map((leader) => ({ id: leader.id, fullName: leader.fullName }))} pointers={pointers} />
       </div>

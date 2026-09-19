@@ -5,10 +5,13 @@ import { revalidatePath } from "next/cache";
 import { getRequestMeta } from "@/lib/request-meta";
 import { getSessionContext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { isValidDniFormat, normalizeDni } from "@/utils/dni";
+import { normalizeDni } from "@/utils/dni";
+import { collectFieldErrors, rpcFieldErrors, type FieldErrors } from "@/utils/form-errors";
+import { normalizePhone } from "@/utils/phone";
 import { friendlyRpcError } from "@/utils/rpc-errors";
+import { validateDni, validateFullName, validatePhone } from "@/utils/validation";
 
-export type CreatePersonState = { error: string | null; success: boolean };
+export type CreatePersonState = { error: string | null; success: boolean; fieldErrors?: FieldErrors };
 
 export async function createPersonAction(
   pointerId: string,
@@ -20,11 +23,13 @@ export async function createPersonAction(
   const phone = String(formData.get("phone") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
 
-  if (!fullName || !dni) {
-    return { error: "Completá el nombre y el DNI.", success: false };
-  }
-  if (!isValidDniFormat(dni)) {
-    return { error: "El DNI no es válido.", success: false };
+  const fieldErrors = collectFieldErrors({
+    fullName: validateFullName(fullName),
+    dni: validateDni(dni),
+    phone: validatePhone(phone),
+  });
+  if (fieldErrors) {
+    return { error: null, success: false, fieldErrors };
   }
 
   // pointerId ya viene explicito (bind del formulario, ver
@@ -44,13 +49,17 @@ export async function createPersonAction(
     p_pointer_id: pointerId,
     p_dni: normalizeDni(dni),
     p_full_name: fullName,
-    p_phone: phone || null,
+    p_phone: normalizePhone(phone),
     p_address: address || null,
     p_ip: ip,
     p_user_agent: userAgent,
   });
 
   if (error) {
+    const rpcErrors = rpcFieldErrors(error.message);
+    if (rpcErrors) {
+      return { error: null, success: false, fieldErrors: rpcErrors };
+    }
     return { error: friendlyRpcError(error.message), success: false };
   }
 
@@ -68,13 +77,18 @@ export async function updatePersonAction(
   phone: string | null,
   address: string | null
 ): Promise<ActionResult> {
+  const phoneError = phone ? validatePhone(phone) : null;
+  if (phoneError) {
+    return { error: phoneError };
+  }
+
   const supabase = await createClient();
   const { ip, userAgent } = await getRequestMeta();
 
   const { error } = await supabase.rpc("fn_update_person", {
     p_person_id: personId,
     p_full_name: fullName,
-    p_phone: phone,
+    p_phone: phone ? normalizePhone(phone) : null,
     p_address: address,
     p_ip: ip,
     p_user_agent: userAgent,

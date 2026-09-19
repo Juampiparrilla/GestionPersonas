@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Lock, Plus } from "lucide-react";
+import { CircleCheck, Lock, Plus, type LucideIcon } from "lucide-react";
 import { Fragment, useCallback, useEffect, useState } from "react";
 
 import { Sheet } from "./Sheet";
@@ -21,7 +21,10 @@ export function CreateSheet({
   successMessage,
   renderForm,
   variant = "bar",
+  icon: TriggerIcon = Plus,
 }: {
+  // Icono del boton "bar" (el del tipo de registro que se agrega).
+  icon?: LucideIcon;
   // "bar": boton primario ancho para una <ActionBar>; "header": boton de icono
   // (+) para la cabecera de las pantallas que muestran la barra de navegacion.
   variant?: "bar" | "header";
@@ -90,7 +93,7 @@ export function CreateSheet({
         </button>
       ) : (
         <button type="button" onClick={() => setOpen(true)} className={`${btnPrimary} flex-1`}>
-          <Plus className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          <TriggerIcon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
           {triggerLabel}
         </button>
       )}

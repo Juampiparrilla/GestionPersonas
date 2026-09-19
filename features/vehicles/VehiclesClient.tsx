@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { CreateSheet } from "@/components/ui/CreateSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ENTITY_ICON } from "@/components/ui/entityIcons";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
 import { normalizeDni } from "@/utils/dni";
@@ -59,6 +60,7 @@ export function VehiclesClient({
           <div className="flex items-center gap-3">
             {exportSlot}
             <CreateSheet
+              icon={ENTITY_ICON.vehicle}
               triggerLabel="Agregar vehículo"
               title="Agregar vehículo"
               canWrite={canWrite}

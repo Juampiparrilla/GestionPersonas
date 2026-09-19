@@ -2,12 +2,9 @@
 
 import { useActionState } from "react";
 
-import { AddressField } from "@/components/fields/AddressField";
-import { DniField } from "@/components/fields/DniField";
-import { NameField } from "@/components/fields/NameField";
-import { PhoneField } from "@/components/fields/PhoneField";
-import { Field, FormError, FormFooter, useCreatedIntent } from "@/components/ui/FormParts";
-import { inputClass, inputMonoClass } from "@/components/ui/styles";
+import { FormError, FormFooter, useCreatedIntent } from "@/components/ui/FormParts";
+import { PersonFields, usePersonFields } from "@/features/identity/PersonFields";
+import { fieldErrorsSummary } from "@/utils/form-errors";
 
 import { createLeaderAction, type CreateLeaderState } from "./actions";
 
@@ -21,28 +18,20 @@ const initialState: CreateLeaderState = { error: null, success: false };
 export function CreateLeaderForm({ onCreated }: { onCreated: (again: boolean) => void }) {
   const [state, formAction, pending] = useActionState(createLeaderAction, initialState);
   const setIntent = useCreatedIntent(state, onCreated);
+  const fields = usePersonFields(state.fieldErrors);
 
   return (
     <form action={formAction} className="flex flex-1 flex-col gap-[14px]">
-      <FormError message={state.error} />
+      <FormError message={state.error ?? fieldErrorsSummary(state.fieldErrors)} />
 
-      <Field id="fullName" label="Nombre completo" required hint="Apellido primero, después el nombre.">
-        <NameField id="fullName" name="fullName" required className={inputClass} />
-      </Field>
+      <PersonFields f={fields} />
 
-      <Field id="dni" label="DNI" required>
-        <DniField id="dni" name="dni" required className={inputMonoClass} />
-      </Field>
-
-      <Field id="phone" label="Teléfono">
-        <PhoneField id="phone" name="phone" className={inputMonoClass} />
-      </Field>
-
-      <Field id="address" label="Dirección">
-        <AddressField id="address" name="address" className={inputClass} />
-      </Field>
-
-      <FormFooter pending={pending} label="Guardar dirigente" onIntent={setIntent} />
+      <FormFooter
+        pending={pending}
+        disabled={!fields.canSubmit}
+        label="Guardar dirigente"
+        onIntent={setIntent}
+      />
     </form>
   );
 }

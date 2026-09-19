@@ -10,7 +10,7 @@ import { grantOrCreateOrgAdminAction } from "./actions";
 type Pending = { whatsappLink: string | null; shareMessage: string };
 
 const inputClassName =
-  "h-10 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none";
+  "h-12 w-full rounded-[14px] border border-line-input bg-surface px-3.5 text-base text-ink focus:border-[1.5px] focus:border-ink focus:outline-none";
 
 export function OrgAdminInviteButton({
   organizationId,
@@ -55,7 +55,7 @@ export function OrgAdminInviteButton({
 
   if (adminAccepted) {
     return (
-      <span className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-200 px-3 text-sm text-zinc-400">
+      <span className="flex h-11 items-center gap-1.5 rounded-xl border border-line px-3.5 text-sm text-ink-ph">
         <CircleCheck className="h-4 w-4" aria-hidden="true" />
         Ya inició sesión
       </span>
@@ -69,7 +69,7 @@ export function OrgAdminInviteButton({
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => setPending(null)}
-        className="flex h-10 items-center gap-1.5 rounded-lg bg-green-600 px-3 text-sm font-medium text-white hover:bg-green-700"
+        className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
       >
         <Send className="h-4 w-4" aria-hidden="true" />
         Enviar por WhatsApp
@@ -83,12 +83,12 @@ export function OrgAdminInviteButton({
         <button
           type="button"
           onClick={() => handleCopy(pending.shareMessage)}
-          className="flex h-10 items-center gap-1.5 rounded-lg bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
         >
           <Copy className="h-4 w-4" aria-hidden="true" />
           {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
         </button>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-ink-2">
           No hay teléfono cargado, así que no se puede abrir WhatsApp directo. Copiá el mensaje y
           pegalo donde prefieras.
         </p>
@@ -98,7 +98,7 @@ export function OrgAdminInviteButton({
 
   if (!hasAdmin && showCreateForm) {
     return (
-      <div className="flex w-full flex-col gap-2 rounded-lg border border-zinc-200 p-3">
+      <div className="flex w-full flex-col gap-2 rounded-2xl border border-line bg-surface p-3">
         <input
           type="text"
           placeholder="Nombre completo del administrador"
@@ -129,7 +129,7 @@ export function OrgAdminInviteButton({
           className={inputClassName}
         />
         {error ? (
-          <p role="alert" className="text-xs text-red-600">
+          <p role="alert" className="text-xs text-err-text">
             {error}
           </p>
         ) : null}
@@ -138,7 +138,7 @@ export function OrgAdminInviteButton({
             type="button"
             onClick={() => setShowCreateForm(false)}
             disabled={isPending}
-            className="h-9 flex-1 rounded-lg border border-zinc-300 text-sm font-medium text-zinc-700 disabled:opacity-60"
+            className="h-11 flex-1 rounded-xl border border-line-input bg-surface text-sm font-semibold text-ink-label disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -146,7 +146,7 @@ export function OrgAdminInviteButton({
             type="button"
             onClick={handleGenerate}
             disabled={isPending}
-            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-zinc-900 text-sm font-medium text-white disabled:opacity-60"
+            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent text-sm font-semibold text-white disabled:opacity-60"
           >
             {isPending ? <Spinner className="h-4 w-4" /> : <UserRoundPlus className="h-4 w-4" aria-hidden="true" />}
             Crear
@@ -162,7 +162,7 @@ export function OrgAdminInviteButton({
         type="button"
         onClick={() => (hasAdmin ? handleGenerate() : setShowCreateForm(true))}
         disabled={isPending}
-        className="flex h-10 items-center gap-1.5 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60"
+        className="flex h-11 items-center gap-1.5 rounded-xl border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label active:bg-muted disabled:opacity-60"
       >
         {isPending ? (
           <>
@@ -179,7 +179,7 @@ export function OrgAdminInviteButton({
         )}
       </button>
       {error ? (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-err-text">
           {error}
         </p>
       ) : null}

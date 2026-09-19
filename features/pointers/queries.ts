@@ -135,7 +135,14 @@ export async function listAllPointersGroupedByLeader(): Promise<PointerLeaderGro
   return groups.sort((a, b) => a.leaderName.localeCompare(b.leaderName, "es"));
 }
 
-export type PointerBasics = { id: string; fullName: string; dni: string; leaderId: string };
+export type PointerBasics = {
+  id: string;
+  fullName: string;
+  dni: string;
+  leaderId: string;
+  phone: string | null;
+  address: string | null;
+};
 
 // Para la pantalla de detalle: nombre del puntero + confirmar que le
 // pertenece a quien esta mirando (si no le pertenece, RLS ya hace que la
@@ -150,7 +157,11 @@ export async function getPointerBasics(pointerId: string): Promise<PointerBasics
       .eq("id", pointerId)
       .eq("is_removed", false)
       .maybeSingle(),
-    supabase.from("individuals").select("full_name, dni_display").eq("id", pointerId).maybeSingle(),
+    supabase
+      .from("individuals")
+      .select("full_name, dni_display, phone, address")
+      .eq("id", pointerId)
+      .maybeSingle(),
   ]);
 
   if (!pointer || !individual) return null;
@@ -160,5 +171,7 @@ export async function getPointerBasics(pointerId: string): Promise<PointerBasics
     leaderId: pointer.leader_id,
     fullName: individual.full_name,
     dni: individual.dni_display,
+    phone: individual.phone,
+    address: individual.address,
   };
 }

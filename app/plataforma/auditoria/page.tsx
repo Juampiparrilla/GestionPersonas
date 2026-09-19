@@ -1,6 +1,7 @@
 import { fetchAuditLogsAction } from "@/features/audit/actions";
 import { AuditLogClient } from "@/features/audit/AuditLogClient";
 import { rangeDates } from "@/features/audit/dates";
+import { PlatformBottomNav } from "@/components/ui/RoleNav";
 import { listOrganizations } from "@/features/organizations/queries";
 
 export default async function PlataformaAuditoriaPage() {
@@ -14,7 +15,7 @@ export default async function PlataformaAuditoriaPage() {
       initialRows={rows}
       initialRange="today"
       organizations={organizations.map((org) => ({ id: org.id, fullName: org.name }))}
-      backHref="/plataforma"
+      bar={<PlatformBottomNav />}
     />
   );
 }

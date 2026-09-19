@@ -5,6 +5,7 @@ import { GroupCard, GroupRow } from "@/components/ui/GroupCard";
 import { pluralize } from "@/components/ui/Chip";
 
 import type { PointerLeaderGroup } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 export function AllPointersView({ groups }: { groups: PointerLeaderGroup[] }) {
   if (groups.length === 0) {
@@ -33,7 +34,7 @@ export function AllPointersView({ groups }: { groups: PointerLeaderGroup[] }) {
             <GroupRow
               key={pointer.id}
               title={pointer.fullName}
-              meta={`DNI ${pointer.dni}${pointer.phone ? ` · ${pointer.phone}` : ""} · ${pluralize(
+              meta={`DNI ${pointer.dni}${pointer.phone ? ` · ${formatPhoneDisplay(pointer.phone)}` : ""} · ${pluralize(
                 pointer.peopleCount,
                 "persona",
                 "personas"

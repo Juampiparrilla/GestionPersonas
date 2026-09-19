@@ -6,7 +6,7 @@ export const inputClass =
 
 export const inputMonoClass = `${inputClass} font-mono font-medium`;
 
-export const inputErrorClass = "border-[1.5px] border-err-line focus:border-err-line";
+export const inputErrorClass = "!border-[1.5px] !border-err-line focus:!border-err-line";
 
 export const labelClass = "text-[13px] font-semibold text-ink-label";
 

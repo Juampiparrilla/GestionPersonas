@@ -2,9 +2,9 @@ import {
   ClipboardList,
   ClipboardPlus,
   DatabaseBackup,
-  FileText,
   MailCheck,
   Settings,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { LogoutRow, MenuList } from "@/components/ui/MenuList";
@@ -25,10 +25,10 @@ export default function SuperadminMasPage() {
             icon: ClipboardPlus,
           },
           {
-            href: "/superadmin/reportes",
-            label: "Reportes",
-            hint: "PDF y Excel, o a medida",
-            icon: FileText,
+            href: "/superadmin/reportes/personalizado",
+            label: "Reporte personalizado",
+            hint: "Elegí qué incluir y de quién",
+            icon: SlidersHorizontal,
           },
           {
             href: "/superadmin/auditoria",

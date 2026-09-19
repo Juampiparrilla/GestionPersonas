@@ -4,6 +4,7 @@ import type { PointerLeaderGroup } from "@/features/pointers/queries";
 
 import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 const COLUMN_HEADERS = ["Nombre", "DNI", "Teléfono", "Dirección", "Personas"];
 
@@ -43,7 +44,7 @@ export async function buildPointersReportPdf(
           ...group.pointers.map((pointer) => [
             tableCell(pointer.fullName),
             tableCell(pointer.dni),
-            tableCell(pointer.phone ?? "-"),
+            tableCell(formatPhoneDisplay(pointer.phone) || "-"),
             tableCell(pointer.address ?? "-"),
             tableCell(String(pointer.peopleCount)),
           ]),
@@ -85,7 +86,7 @@ export async function buildPointersReportExcel(
       sheet.addRow({
         name: pointer.fullName,
         dni: pointer.dni,
-        phone: pointer.phone ?? "",
+        phone: formatPhoneDisplay(pointer.phone),
         address: pointer.address ?? "",
         people: pointer.peopleCount,
         leader: group.leaderName,

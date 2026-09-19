@@ -6,6 +6,7 @@ import { GroupCard, GroupRow } from "@/components/ui/GroupCard";
 
 import { VEHICLE_TYPE_LABEL } from "./vehicleTypeLabel";
 import type { VehicleLeaderGroup } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 export function AllVehiclesView({ groups }: { groups: VehicleLeaderGroup[] }) {
   if (groups.length === 0) {
@@ -35,7 +36,7 @@ export function AllVehiclesView({ groups }: { groups: VehicleLeaderGroup[] }) {
               key={vehicle.id}
               title={vehicle.plate}
               meta={`${VEHICLE_TYPE_LABEL[vehicle.type]} · ${vehicle.driverFullName} · DNI ${vehicle.driverDni}${
-                vehicle.driverPhone ? ` · ${vehicle.driverPhone}` : ""
+                vehicle.driverPhone ? ` · ${formatPhoneDisplay(vehicle.driverPhone)}` : ""
               }`}
             />
           ))}

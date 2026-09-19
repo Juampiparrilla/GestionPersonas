@@ -13,6 +13,7 @@ import { normalizeDni } from "@/utils/dni";
 
 import { CreateLeaderForm } from "./CreateLeaderForm";
 import type { LeaderListItem } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 const ACCESS_CHIP: Partial<Record<LeaderListItem["accessStatus"], string>> = {
   read_only: "solo lectura",
@@ -86,7 +87,7 @@ export function DirigentesClient({
               key={leader.id}
               href={`/superadmin/dirigentes/${leader.id}`}
               name={leader.fullName}
-              meta={`DNI ${leader.dni}${leader.phone ? ` · ${leader.phone}` : ""}`}
+              meta={`DNI ${leader.dni}${leader.phone ? ` · ${formatPhoneDisplay(leader.phone)}` : ""}`}
               chips={
                 <>
                   <CountChip count={leader.pointerCount} singular="puntero" plural="punteros" />

@@ -27,9 +27,13 @@ export default async function PointerDetailPage({
   return (
     <PeopleClient
       people={people}
-      pointerId={id}
-      pointerName={pointer.fullName}
-      pointerDni={pointer.dni}
+      pointer={{
+        id,
+        fullName: pointer.fullName,
+        dni: pointer.dni,
+        phone: pointer.phone,
+        address: pointer.address,
+      }}
       canWrite={writeStatus.canWrite}
       exportSlot={
         <ReportDownloadButtons

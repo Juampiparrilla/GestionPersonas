@@ -14,6 +14,7 @@ import { btnIcon, btnPrimary, cardClass } from "@/components/ui/styles";
 
 import { LeaderRowActions } from "./LeaderRowActions";
 import type { LeaderListItem } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 type Tab = "pointers" | "people" | "vehicles";
 
@@ -99,7 +100,7 @@ export function LeaderDetailClient({
               </h1>
               <p className="font-mono text-[13px] font-medium text-ink-2">
                 DNI {leader.dni}
-                {leader.phone ? ` · ${leader.phone}` : ""}
+                {leader.phone ? ` · ${formatPhoneDisplay(leader.phone)}` : ""}
               </p>
             </div>
           </div>

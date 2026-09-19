@@ -4,6 +4,7 @@ import type { LeaderListItem } from "@/features/leaders/queries";
 
 import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 const COLUMN_HEADERS = ["DNI", "Teléfono", "Dirección", "Punteros", "Personas", "Vehículos"];
 
@@ -36,7 +37,7 @@ export async function buildLeadersReportPdf(
           COLUMN_HEADERS.map((label) => tableHeaderCell(label)),
           [
             tableCell(leader.dni),
-            tableCell(leader.phone ?? "-"),
+            tableCell(formatPhoneDisplay(leader.phone) || "-"),
             tableCell(leader.address ?? "-"),
             tableCell(String(leader.pointerCount)),
             tableCell(String(leader.personCount)),
@@ -78,7 +79,7 @@ export async function buildLeadersReportExcel(
     sheet.addRow({
       name: `${index + 1}. ${leader.fullName}`,
       dni: leader.dni,
-      phone: leader.phone ?? "",
+      phone: formatPhoneDisplay(leader.phone),
       address: leader.address ?? "",
       pointers: leader.pointerCount,
       people: leader.personCount,

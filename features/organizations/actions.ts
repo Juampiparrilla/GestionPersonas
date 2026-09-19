@@ -7,7 +7,9 @@ import { getRequestMeta } from "@/lib/request-meta";
 import { getSessionContext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { isValidDniFormat, normalizeDni } from "@/utils/dni";
+import { normalizePhone } from "@/utils/phone";
 import { friendlyRpcError } from "@/utils/rpc-errors";
+import { validatePhone } from "@/utils/validation";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,6 +36,10 @@ export async function createOrganizationAction(
   }
   if (adminEmail && !EMAIL_PATTERN.test(adminEmail)) {
     return { error: "El correo del administrador no es válido.", success: false };
+  }
+  const adminPhoneError = validatePhone(adminPhone);
+  if (adminPhoneError) {
+    return { error: adminPhoneError, success: false };
   }
 
   const session = await getSessionContext();
@@ -63,7 +69,7 @@ export async function createOrganizationAction(
   const access = await grantOrgAdminAccess({
     organizationId: organizationId as string,
     fullName: adminFullName,
-    phone: adminPhone || null,
+    phone: normalizePhone(adminPhone),
     email: adminEmail || null,
     dniNormalized: normalizeDni(adminDni),
     dniForMessage: adminDni,
@@ -128,7 +134,7 @@ export async function grantOrCreateOrgAdminAction(
     // de nuevo -- se usa el nombre ya guardado, no lo que haya quedado en
     // el estado del formulario (que ni se muestra en ese caso).
     fullName: existingAdmin ? existingAdmin.full_name : adminFullName,
-    phone: adminPhone,
+    phone: adminPhone ? normalizePhone(adminPhone) : null,
     email: adminEmail || null,
     dniNormalized: existingAdmin ? undefined : normalizeDni(adminDni),
     dniForMessage: existingAdmin ? undefined : adminDni,

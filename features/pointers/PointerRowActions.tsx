@@ -1,8 +1,7 @@
 "use client";
 
-import { Pencil, Trash2, UsersRound } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import Link from "next/link";
 
 import { Spinner } from "@/components/Spinner";
 
@@ -19,6 +18,7 @@ export function PointerRowActions({
   isEditing,
   onStartEdit,
   onStopEdit,
+  onRemoved,
 }: {
   pointerId: string;
   fullName: string;
@@ -29,6 +29,8 @@ export function PointerRowActions({
   isEditing: boolean;
   onStartEdit: () => void;
   onStopEdit: () => void;
+  // Se llama despues de quitar al puntero (la ficha vuelve a la lista).
+  onRemoved?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -42,6 +44,7 @@ export function PointerRowActions({
         setError(result.error);
       } else {
         setConfirmingRemove(false);
+        onRemoved?.();
       }
     });
   }
@@ -61,14 +64,6 @@ export function PointerRowActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <Link
-          href={`/dirigente/punteros/${pointerId}`}
-          className="flex h-11 min-w-fit whitespace-nowrap flex-[1.4] items-center justify-center gap-1.5 rounded-xl bg-accent px-2 text-sm font-semibold text-white active:bg-accent-press"
-        >
-          <UsersRound className="h-4 w-4" aria-hidden="true" />
-          Ver personas
-        </Link>
-
         {canWrite ? (
           <button
             type="button"

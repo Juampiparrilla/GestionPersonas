@@ -5,6 +5,7 @@ import type { VehicleLeaderGroup } from "@/features/vehicles/queries";
 
 import { addEmptyRow, addOrganizationTitleRow, newWorkbook, styleHeaderRow, workbookToBuffer } from "./excelHelpers";
 import { groupHeaderRow, renderPdfBuffer, tableCell, tableHeaderCell, type PdfReportMode } from "./pdfHelpers";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 // Los vehiculos no tienen Direccion (es del conductor, no se carga ese dato).
 const COLUMN_HEADERS = ["Patente", "Tipo", "Conductor", "DNI conductor", "Teléfono conductor"];
@@ -47,7 +48,7 @@ export async function buildVehiclesReportPdf(
             tableCell(VEHICLE_TYPE_LABEL[vehicle.type]),
             tableCell(vehicle.driverFullName),
             tableCell(vehicle.driverDni),
-            tableCell(vehicle.driverPhone ?? "-"),
+            tableCell(formatPhoneDisplay(vehicle.driverPhone) || "-"),
           ]),
         ],
       },
@@ -88,7 +89,7 @@ export async function buildVehiclesReportExcel(
         type: VEHICLE_TYPE_LABEL[vehicle.type],
         driver: vehicle.driverFullName,
         driverDni: vehicle.driverDni,
-        driverPhone: vehicle.driverPhone ?? "",
+        driverPhone: formatPhoneDisplay(vehicle.driverPhone),
         leader: group.leaderName,
       });
     }

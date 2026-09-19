@@ -1,47 +1,18 @@
-"use client";
-
-import { useState } from "react";
-
 import { CountChip } from "@/components/ui/Chip";
 import { EntityRow } from "@/components/ui/EntityRow";
+import { formatPhoneDisplay } from "@/utils/phone";
 
-import { PointerRowActions } from "./PointerRowActions";
 import type { PointerListItem } from "./queries";
 
-export function PointerCard({
-  pointer,
-  canWrite,
-  isEditing,
-  onStartEdit,
-  onStopEdit,
-}: {
-  pointer: PointerListItem;
-  canWrite: boolean;
-  isEditing: boolean;
-  onStartEdit: () => void;
-  onStopEdit: () => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-
+// Un puntero tiene personas colgando: la fila abre su ficha (con la lista de
+// personas y las acciones de editar / quitar), igual que un dirigente.
+export function PointerCard({ pointer }: { pointer: PointerListItem }) {
   return (
     <EntityRow
+      href={`/dirigente/punteros/${pointer.id}`}
       name={pointer.fullName}
-      meta={`DNI ${pointer.dni}${pointer.phone ? ` · ${pointer.phone}` : ""}`}
+      meta={`DNI ${pointer.dni}${pointer.phone ? ` · ${formatPhoneDisplay(pointer.phone)}` : ""}`}
       chips={<CountChip count={pointer.peopleCount} singular="persona" plural="personas" />}
-      expanded={expanded}
-      onToggle={() => setExpanded((value) => !value)}
-    >
-      <PointerRowActions
-        pointerId={pointer.id}
-        fullName={pointer.fullName}
-        phone={pointer.phone}
-        address={pointer.address}
-        peopleCount={pointer.peopleCount}
-        canWrite={canWrite}
-        isEditing={isEditing}
-        onStartEdit={onStartEdit}
-        onStopEdit={onStopEdit}
-      />
-    </EntityRow>
+    />
   );
 }

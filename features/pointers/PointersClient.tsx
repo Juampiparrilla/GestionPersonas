@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { CreateSheet } from "@/components/ui/CreateSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ENTITY_ICON } from "@/components/ui/entityIcons";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
 import { normalizeDni } from "@/utils/dni";
@@ -23,7 +24,6 @@ export function PointersClient({
   exportSlot: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedDniQuery = normalizeDni(query);
@@ -57,6 +57,7 @@ export function PointersClient({
           <div className="flex items-center gap-3">
             {exportSlot}
             <CreateSheet
+              icon={ENTITY_ICON.pointer}
               triggerLabel="Agregar puntero"
               title="Agregar puntero"
               canWrite={canWrite}
@@ -81,10 +82,6 @@ export function PointersClient({
             </EmptyState>
           )
         }
-        canWrite={canWrite}
-        editingId={editingId}
-        onStartEdit={setEditingId}
-        onStopEdit={() => setEditingId(null)}
       />
     </Screen>
   );

@@ -4,31 +4,39 @@ import { useState } from "react";
 
 import { formatDniInput } from "@/utils/dni";
 
+import { fieldClass, type FieldProps } from "./fieldProps";
+
 export function DniField({
   id,
   name,
   required,
   className,
   defaultValue = "",
-}: {
-  id: string;
-  name: string;
-  required?: boolean;
-  className?: string;
-  defaultValue?: string;
-}) {
-  const [value, setValue] = useState(formatDniInput(defaultValue));
+  value,
+  onValueChange,
+  onBlur,
+  invalid,
+  describedBy,
+}: FieldProps) {
+  const [internal, setInternal] = useState(formatDniInput(defaultValue));
 
   return (
     <input
       id={id}
       name={name}
       required={required}
-      className={className}
+      className={fieldClass(className, invalid)}
       inputMode="numeric"
       placeholder="XX.XXX.XXX"
-      value={value}
-      onChange={(event) => setValue(formatDniInput(event.target.value))}
+      aria-invalid={invalid || undefined}
+      aria-describedby={describedBy}
+      value={value ?? internal}
+      onBlur={onBlur}
+      onChange={(event) => {
+        const next = formatDniInput(event.target.value);
+        if (value === undefined) setInternal(next);
+        onValueChange?.(next);
+      }}
     />
   );
 }

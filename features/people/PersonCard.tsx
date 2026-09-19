@@ -6,6 +6,7 @@ import { EntityRow } from "@/components/ui/EntityRow";
 
 import { PersonRowActions } from "./PersonRowActions";
 import type { PersonListItem } from "./queries";
+import { formatPhoneDisplay } from "@/utils/phone";
 
 export function PersonCard({
   person,
@@ -23,7 +24,7 @@ export function PersonCard({
   onStopEdit: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const meta = `DNI ${person.dni}${person.phone ? ` · ${person.phone}` : ""}`;
+  const meta = `DNI ${person.dni}${person.phone ? ` · ${formatPhoneDisplay(person.phone)}` : ""}`;
 
   // Sin permiso de escritura no hay acciones: la fila es solo lectura.
   if (!canWrite) {

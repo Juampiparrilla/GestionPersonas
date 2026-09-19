@@ -1,90 +1,127 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 
-import { Spinner } from "@/components/Spinner";
 import { DniField } from "@/components/fields/DniField";
 import { NameField } from "@/components/fields/NameField";
 import { PhoneField } from "@/components/fields/PhoneField";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Field, FormError, FormFooter, useCreatedIntent } from "@/components/ui/FormParts";
+import { inputClass, inputMonoClass } from "@/components/ui/styles";
+import { useFormFields } from "@/components/ui/useFormFields";
+import { validateDni, validateFullName, validatePhone } from "@/utils/validation";
 
 import { createOrganizationAction, type CreateOrganizationState } from "./actions";
 
 const initialState: CreateOrganizationState = { error: null, success: false };
-const inputClassName =
-  "h-12 rounded-lg border border-zinc-300 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:outline-none";
 
-// El padre (CollapsibleCreateOrganization) limpia este formulario pasandole
-// un `key` que cambia en cada alta exitosa -- mismo patron que
-// CreateLeaderForm.
-export function CreateOrganizationForm({ onCreated }: { onCreated: () => void }) {
+type OrgFieldName = "orgName" | "adminFullName" | "adminDni" | "adminEmail" | "adminPhone";
+
+const FIELD_ORDER: OrgFieldName[] = [
+  "orgName",
+  "adminFullName",
+  "adminDni",
+  "adminEmail",
+  "adminPhone",
+];
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// El padre (CreateSheet) limpia este formulario pasandole un `key` que
+// cambia en cada alta exitosa -- mismo patron que CreateLeaderForm.
+export function CreateOrganizationForm({ onCreated }: { onCreated: (again: boolean) => void }) {
   const [state, formAction, pending] = useActionState(createOrganizationAction, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      onCreated();
-    }
-  }, [state, onCreated]);
+  const setIntent = useCreatedIntent(state, onCreated);
+  const f = useFormFields<OrgFieldName>({
+    initial: { orgName: "", adminFullName: "", adminDni: "", adminEmail: "", adminPhone: "" },
+    validators: {
+      orgName: (value) => (value.trim() ? null : "Falta el nombre de la organización."),
+      adminFullName: validateFullName,
+      adminDni: validateDni,
+      adminEmail: (value) =>
+        !value.trim() || EMAIL_PATTERN.test(value.trim()) ? null : "El correo no es válido.",
+      adminPhone: validatePhone,
+    },
+    serverErrors: undefined,
+    order: FIELD_ORDER,
+  });
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="orgName" className="text-sm font-medium text-zinc-700">
-          Nombre de la organización *
-        </label>
-        <input id="orgName" name="orgName" required className={inputClassName} />
-      </div>
+    <form action={formAction} className="flex flex-1 flex-col gap-[14px]">
+      <FormError message={state.error} />
 
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-        Administrador de la organización
-      </p>
+      <Field id="orgName" label="Nombre de la organización" required error={f.error("orgName")}>
+        <input
+          id="orgName"
+          name="orgName"
+          required
+          className={inputClass}
+          value={f.values.orgName}
+          onChange={(event) => f.setValue("orgName", event.target.value)}
+          onBlur={() => f.blur("orgName")}
+        />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="adminFullName" className="text-sm font-medium text-zinc-700">
-          Nombre completo *
-        </label>
-        <NameField id="adminFullName" name="adminFullName" required className={inputClassName} />
-      </div>
+      <Eyebrow>Administrador de la organización</Eyebrow>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="adminDni" className="text-sm font-medium text-zinc-700">
-          DNI *
-        </label>
-        <DniField id="adminDni" name="adminDni" required className={inputClassName} />
-      </div>
+      <Field id="adminFullName" label="Nombre completo" required error={f.error("adminFullName")}>
+        <NameField
+          id="adminFullName"
+          name="adminFullName"
+          required
+          className={inputClass}
+          value={f.values.adminFullName}
+          onValueChange={(value) => f.setValue("adminFullName", value)}
+          onBlur={() => f.blur("adminFullName")}
+          invalid={Boolean(f.error("adminFullName"))}
+        />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="adminEmail" className="text-sm font-medium text-zinc-700">
-          Correo electrónico (opcional)
-        </label>
-        <input id="adminEmail" name="adminEmail" type="email" className={inputClassName} />
-      </div>
+      <Field id="adminDni" label="DNI" required error={f.error("adminDni")}>
+        <DniField
+          id="adminDni"
+          name="adminDni"
+          required
+          className={inputMonoClass}
+          value={f.values.adminDni}
+          onValueChange={(value) => f.setValue("adminDni", value)}
+          onBlur={() => f.blur("adminDni")}
+          invalid={Boolean(f.error("adminDni"))}
+        />
+      </Field>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="adminPhone" className="text-sm font-medium text-zinc-700">
-          Teléfono (opcional)
-        </label>
-        <PhoneField id="adminPhone" name="adminPhone" className={inputClassName} />
-      </div>
+      <Field id="adminEmail" label="Correo electrónico" error={f.error("adminEmail")}>
+        <input
+          id="adminEmail"
+          name="adminEmail"
+          type="email"
+          className={inputClass}
+          value={f.values.adminEmail}
+          onChange={(event) => f.setValue("adminEmail", event.target.value)}
+          onBlur={() => f.blur("adminEmail")}
+        />
+      </Field>
 
-      {state.error ? (
-        <p role="alert" className="text-sm text-red-600">
-          {state.error}
-        </p>
-      ) : null}
+      <Field id="adminPhone" label="Teléfono" error={f.error("adminPhone")}>
+        <PhoneField
+          id="adminPhone"
+          name="adminPhone"
+          className={inputMonoClass}
+          value={f.values.adminPhone}
+          onValueChange={(value) => f.setValue("adminPhone", value)}
+          onBlur={() => f.blur("adminPhone")}
+          invalid={Boolean(f.error("adminPhone"))}
+        />
+      </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-12 items-center justify-center gap-2 rounded-lg bg-zinc-900 text-base font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
-      >
-        {pending ? (
-          <>
-            <Spinner className="h-4 w-4" /> Creando…
-          </>
-        ) : (
-          "Crear organización"
-        )}
-      </button>
+      <FormFooter
+        pending={pending}
+        pendingLabel="Creando…"
+        disabled={!f.canSubmit}
+        label="Crear organización"
+        showAgain={false}
+        onIntent={setIntent}
+      />
     </form>
   );
 }

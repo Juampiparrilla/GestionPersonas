@@ -4,30 +4,38 @@ import { useState } from "react";
 
 import { formatPlateInput } from "@/utils/plate";
 
+import { fieldClass, type FieldProps } from "./fieldProps";
+
 export function PlateField({
   id,
   name,
   required,
   className,
   defaultValue = "",
-}: {
-  id: string;
-  name: string;
-  required?: boolean;
-  className?: string;
-  defaultValue?: string;
-}) {
-  const [value, setValue] = useState(formatPlateInput(defaultValue));
+  value,
+  onValueChange,
+  onBlur,
+  invalid,
+  describedBy,
+}: FieldProps) {
+  const [internal, setInternal] = useState(formatPlateInput(defaultValue));
 
   return (
     <input
       id={id}
       name={name}
       required={required}
-      className={className}
+      className={fieldClass(className, invalid)}
       placeholder="AB123CD"
-      value={value}
-      onChange={(event) => setValue(formatPlateInput(event.target.value))}
+      aria-invalid={invalid || undefined}
+      aria-describedby={describedBy}
+      value={value ?? internal}
+      onBlur={onBlur}
+      onChange={(event) => {
+        const next = formatPlateInput(event.target.value);
+        if (value === undefined) setInternal(next);
+        onValueChange?.(next);
+      }}
     />
   );
 }

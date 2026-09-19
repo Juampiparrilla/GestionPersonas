@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { Spinner } from "@/components/Spinner";
 
+import { Avatar } from "./Avatar";
 import { btnPrimary, hintClass, labelClass } from "./styles";
 
 export type SubmitIntent = "close" | "again";
@@ -29,18 +31,24 @@ export function useCreatedIntent(
 }
 
 // Campo: label 13/600 a la izquierda y hint "Obligatorio"/"Opcional" a la
-// derecha en la misma linea; hint de ayuda o mensaje de error debajo.
+// derecha en la misma linea; debajo, el mensaje de error del campo (si lo
+// hay) o el hint de ayuda. `tag` es una etiqueta dentro del campo, a la
+// derecha (ej. "DUPLICADO").
 export function Field({
   id,
   label,
   required = false,
   hint,
+  error,
+  tag,
   children,
 }: {
   id: string;
   label: string;
   required?: boolean;
   hint?: string;
+  error?: string | null;
+  tag?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -51,8 +59,21 @@ export function Field({
         </label>
         <span className="text-[11px] text-ink-3">{required ? "Obligatorio" : "Opcional"}</span>
       </div>
-      {children}
-      {hint ? <p className={hintClass}>{hint}</p> : null}
+      <div className="relative">
+        {children}
+        {tag ? (
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-err-text">
+            {tag}
+          </span>
+        ) : null}
+      </div>
+      {error ? (
+        <p id={`${id}-error`} className="text-[12px] text-err-text">
+          {error}
+        </p>
+      ) : hint ? (
+        <p className={hintClass}>{hint}</p>
+      ) : null}
     </div>
   );
 }
@@ -74,26 +95,62 @@ export function FormError({ message }: { message: string | null }) {
   );
 }
 
+// Tarjeta del registro existente cuando el DNI ya esta cargado: el error no
+// solo bloquea, lleva al registro.
+export function ExistingRecordCard({
+  name,
+  kindLabel,
+  loadedOn,
+  href,
+}: {
+  name: string;
+  kindLabel: string;
+  loadedOn: string;
+  href: string | null;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3">
+      <Avatar name={name} size="sm" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-ink">Ya existe: {name}</p>
+        <p className="text-[12px] text-ink-2">
+          {kindLabel} · cargado el {loadedOn}
+        </p>
+      </div>
+      {href ? (
+        <Link href={href} className="flex min-h-[44px] items-center px-1 text-[13px] font-semibold text-link">
+          Ver
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 // Pie del formulario, pegado abajo del area scrolleable (hoja o pantalla):
-// boton primario de 54px + link "Guardar y cargar otro".
+// boton primario de 54px + link "Guardar y cargar otro". Deshabilitado
+// mientras haya errores pendientes o falten campos obligatorios.
 export function FormFooter({
   pending,
   label,
   pendingLabel = "Guardando…",
   showAgain = true,
+  disabled = false,
   onIntent,
 }: {
   pending: boolean;
   label: string;
   pendingLabel?: string;
   showAgain?: boolean;
+  disabled?: boolean;
   onIntent?: (intent: SubmitIntent) => void;
 }) {
+  const blocked = pending || disabled;
+
   return (
     <div className="sticky bottom-0 z-10 -mx-5 mt-auto flex flex-col gap-2 border-t border-line-head bg-bar px-5 pb-[max(26px,env(safe-area-inset-bottom))] pt-3">
       <button
         type="submit"
-        disabled={pending}
+        disabled={blocked}
         onClick={() => onIntent?.("close")}
         className={btnPrimary}
       >
@@ -108,7 +165,7 @@ export function FormFooter({
       {showAgain ? (
         <button
           type="submit"
-          disabled={pending}
+          disabled={blocked}
           onClick={() => onIntent?.("again")}
           className="min-h-[44px] text-[13px] font-medium text-ink-2 disabled:text-disabled-ink"
         >

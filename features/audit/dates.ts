@@ -8,6 +8,19 @@ export function argentinaDate(daysAgo = 0): string {
   return date.toLocaleDateString("en-CA", { timeZone: AUDIT_TIME_ZONE });
 }
 
+// "05/09": dia y mes con dos digitos (toLocaleDateString en es-AR devuelve
+// "5/9", sin el cero).
+export function formatDayMonth(iso: string): string {
+  const parts = new Intl.DateTimeFormat("es-AR", {
+    timeZone: AUDIT_TIME_ZONE,
+    day: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date(iso));
+  const day = parts.find((part) => part.type === "day")?.value ?? "";
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  return `${day.padStart(2, "0")}/${month.padStart(2, "0")}`;
+}
+
 // Hora (HH:mm) si es de hoy, o dia/mes si es de otro dia -- para las listas
 // de "ultima actividad".
 export function formatActivityTime(iso: string): string {
@@ -23,11 +36,7 @@ export function formatActivityTime(iso: string): string {
         minute: "2-digit",
         hour12: false,
       })
-    : date.toLocaleDateString("es-AR", {
-        timeZone: AUDIT_TIME_ZONE,
-        day: "2-digit",
-        month: "2-digit",
-      });
+    : formatDayMonth(iso);
 }
 
 // Filtro de fecha de cada rango de la pantalla de auditoria (Hoy · 7 días ·
