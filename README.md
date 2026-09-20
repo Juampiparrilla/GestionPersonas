@@ -58,8 +58,8 @@ Dirigente → Vehículos
 
 Cada nivel tiene nombre completo, DNI y teléfono/dirección opcionales (los
 vehículos en cambio tienen tipo, patente y datos del conductor). El campo
-de nombre siempre sugiere el formato **"APELLIDO, NOMBRE"** para que los
-listados y reportes queden ordenados de forma uniforme. Alta, edición y
+de nombre siempre sugiere el formato **"APELLIDO NOMBRE"** (sin coma) para
+que los listados y reportes queden ordenados de forma uniforme. Alta, edición y
 baja (soft-delete) para las cuatro entidades, con búsqueda por nombre o DNI
 en las listas del dirigente.
 
@@ -163,12 +163,87 @@ Cualquier usuario logueado puede cambiar su propia contraseña desde
 El ícono "i" en cada panel abre un resumen en lenguaje simple de qué puede
 hacer esa cuenta — pensado para alguien que recién empieza a usar la app.
 
+## Vistas: móvil y escritorio
+
+La app tiene **dos diseños** que se eligen solos según el ancho de la
+pantalla (corte en **1024px**, `lg:` de Tailwind). Son las mismas rutas y
+los mismos datos; cambia cómo se presentan.
+
+| | Móvil (< 1024px) | Escritorio (≥ 1024px) |
+|---|---|---|
+| Navegación | Barra inferior fija | Barra lateral de 236px con contadores |
+| Encabezado | Título de la pantalla + acciones | Barra superior (búsqueda, estado de carga, acciones) |
+| Listados | Tarjetas en una columna de hasta 448px | Tablas con paginación y navegación con teclado |
+| Detalle | Pantalla propia (ficha) | Panel lateral sobre la tabla (`?detalle=<id>`) |
+| Alta / edición | Hoja que sube desde abajo | Panel lateral de 520px (`?cargar=pointer|person|vehicle`) |
+| Carga rápida | Botón "Agregar …" en la barra inferior | Botón "Cargar registro" en la barra lateral |
+
+### Administrador de Organización
+
+- **Móvil**: barra inferior con *Inicio · Dirigentes · Punteros · Personas
+  · Vehículos · Más*. Dentro de "Más" están la carga asistida, el reporte
+  personalizado, la auditoría, el envío por correo y los respaldos.
+- **Escritorio**: barra lateral con Inicio, Dirigentes, Punteros, Personas,
+  Vehículos, Reportes, Auditoría y Respaldos (la carga asistida es el
+  panel de carga, ver abajo). Inicio muestra tarjetas de
+  resumen, cargas por día y actividad reciente. Dirigentes tiene tabla y
+  panel de detalle; la búsqueda global se abre con `⌘K`.
+
+### Dirigente
+
+- **Móvil**: barra inferior con *Inicio · Punteros · Vehículos · Más*.
+  Cada puntero tiene su propia ficha con las personas que registró.
+- **Escritorio**: barra lateral con Inicio, Punteros y Vehículos. Inicio
+  tiene cuatro tarjetas (punteros, personas, vehículos, promedio) y la
+  lista de punteros sin personas. Punteros y Vehículos son tablas con panel
+  lateral; **Personas no tiene pantalla propia**: viven dentro del panel del
+  puntero, con "Agregar persona" que abre la carga con ese puntero ya
+  elegido. La ficha de puntero y "Más" solo existen en móvil (en escritorio
+  redirigen al panel / al Inicio).
+
+### Administrador de Plataforma
+
+Tiene solo el diseño **móvil**: en escritorio se ve la misma columna
+centrada. Todavía no se diseñó una vista de escritorio para este rol.
+
+### Panel de carga de escritorio
+
+Se abre con el botón de la barra lateral, con la tecla `N` o desde
+"Agregar persona" en un puntero. Queda registrado en la auditoría con el
+nombre de quien cargó. `⌘↵` (o `Ctrl+Enter`) guarda y `Esc` cierra.
+
+- **Cargar varios**: el interruptor del pie del formulario ancla el panel.
+  Apagado, al guardar se cierra y aparece un aviso. Encendido, queda
+  abierto con el formulario vacío, el foco en el primer campo y el puntero
+  elegido, para cargar varios registros seguidos.
+- Si la carga está cerrada (global o por bloqueo individual), el botón de
+  la barra lateral queda deshabilitado y explica el motivo.
+
+### Cómo está armado
+
+- `components/desktop/`: armazón de escritorio (`ShellFrame` con la barra
+  superior y el atajo `N`, `SidebarFrame` con la barra lateral, `AdminShell`
+  y `LeaderShell` por rol), `DataTable` / `TableWithPanel` (tablas con
+  panel), y los paneles de carga (`CargaPanel`, `LeaderCargaPanel`).
+- Cada pantalla usa `<Screen shell>`: en escritorio oculta el encabezado y
+  la barra móvil y deja que la página dibuje su propio título y tabla. Lo
+  móvil y lo de escritorio conviven en la misma página con `lg:hidden` /
+  `hidden lg:block`.
+- El estado de los paneles vive en la URL (`?detalle=`, `?cargar=`), así
+  que se pueden compartir, y el botón "atrás" los cierra.
+- `DesktopRedirect` manda a las pantallas que solo existen en móvil a su
+  equivalente de escritorio.
+- Los colores, tipografías (IBM Plex) y medidas comunes están como tokens
+  en `app/globals.css`.
+
 ## Estructura del proyecto
 
 ```
 app/                   rutas (App Router), Server Components y Server Actions
   api/cron/daily/      cron diario de reportes por email
 components/            UI generica reutilizable (LogoutButton, RoleHelpButton, ...)
+  ui/                    piezas del diseno movil y compartidas (Screen, Sheet, formularios)
+  desktop/               armazon y piezas del diseno de escritorio (barra lateral, tablas, paneles)
 features/              componentes + acciones + queries por dominio
   audit/                 auditoria (queries, frases legibles, pantalla)
   backups/                config y disparo del backup real
