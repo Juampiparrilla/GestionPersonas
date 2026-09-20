@@ -8,9 +8,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ENTITY_ICON } from "@/components/ui/entityIcons";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
+import { TopbarActions } from "@/components/desktop/ShellContext";
 import { normalizeDni } from "@/utils/dni";
 
 import { CreateVehicleForm } from "./CreateVehicleForm";
+import { VehiclesDesktop } from "./VehiclesDesktop";
 import { VehiclesList } from "./VehiclesList";
 import type { VehicleListItem } from "./queries";
 
@@ -18,10 +20,12 @@ export function VehiclesClient({
   vehicles,
   canWrite,
   exportSlot,
+  exportDesktopSlot,
 }: {
   vehicles: VehicleListItem[];
   canWrite: boolean;
   exportSlot: React.ReactNode;
+  exportDesktopSlot: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,6 +46,8 @@ export function VehiclesClient({
 
   return (
     <Screen
+      shell
+      desktopContent
       title="Mis Vehículos"
       backHref="/dirigente"
       headerRight={<span className="font-mono text-[13px] font-medium text-ink-2">{vehicles.length}</span>}
@@ -72,6 +78,23 @@ export function VehiclesClient({
         </ActionBar>
       }
     >
+      <TopbarActions>
+        {exportDesktopSlot}
+        <CreateSheet
+          variant="topbar"
+          triggerLabel="Agregar vehículo"
+          title="Agregar vehículo"
+          canWrite={canWrite}
+          successMessage="El vehículo fue agregado exitosamente."
+          renderForm={(onCreated) => <CreateVehicleForm onCreated={onCreated} />}
+        />
+      </TopbarActions>
+
+      <div className="hidden lg:block">
+        <VehiclesDesktop vehicles={vehicles} canWrite={canWrite} />
+      </div>
+
+      <div className="flex flex-col gap-4 lg:hidden">
       <VehiclesList
         vehicles={filteredVehicles}
         empty={
@@ -90,6 +113,7 @@ export function VehiclesClient({
         onStartEdit={setEditingId}
         onStopEdit={() => setEditingId(null)}
       />
+      </div>
     </Screen>
   );
 }

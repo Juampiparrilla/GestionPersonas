@@ -95,41 +95,34 @@ function AccountMenu({ fullName, roleLabel }: { fullName: string; roleLabel: str
   );
 }
 
-// Barra lateral fija de 236px: reemplaza a la barra de navegacion de abajo.
-// La accion primaria ("Cargar registro") pasa al tope.
-export function Sidebar({
-  counts,
+export type SidebarItem = Item;
+
+// Marco de la barra lateral fija de 236px (reemplaza a la barra de navegacion
+// de abajo): logo, accion primaria arriba, grupos de navegacion y la cuenta
+// al pie. Lo usan los dos roles con escritorio (Administrador y Dirigente).
+export function SidebarFrame({
+  homeHref,
+  primary,
+  groups,
   fullName,
   roleLabel,
 }: {
-  counts: SidebarCounts;
+  homeHref: string;
+  primary: { label: string; onClick: () => void; disabled?: boolean; disabledHint?: string };
+  groups: SidebarItem[][];
   fullName: string;
   roleLabel: string;
 }) {
   const pathname = usePathname();
-  const { openCarga } = useShellUrl();
-
-  const entities: Item[] = [
-    { href: "/superadmin", label: "Inicio", icon: House },
-    { href: "/superadmin/dirigentes", label: "Dirigentes", icon: ENTITY_ICON.leader, count: counts.leaders },
-    { href: "/superadmin/punteros", label: "Punteros", icon: ENTITY_ICON.pointer, count: counts.pointers },
-    { href: "/superadmin/personas", label: "Personas", icon: ENTITY_ICON.person, count: counts.people },
-    { href: "/superadmin/vehiculos", label: "Vehículos", icon: ENTITY_ICON.vehicle, count: counts.vehicles },
-  ];
-  const tools: Item[] = [
-    { href: "/superadmin/reportes", label: "Reportes", icon: FileText },
-    { href: "/superadmin/auditoria", label: "Auditoría", icon: ClipboardList },
-    { href: "/superadmin/respaldos", label: "Respaldos", icon: DatabaseBackup },
-  ];
 
   function isActive(href: string): boolean {
-    if (href === "/superadmin") return pathname === href;
+    if (href === homeHref) return pathname === href;
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
   return (
     <aside className="hidden w-[236px] shrink-0 flex-col gap-4 border-r border-line bg-bar px-3.5 py-5 lg:sticky lg:top-0 lg:flex lg:h-dvh">
-      <Link href="/superadmin" className="flex items-center gap-2.5 px-1">
+      <Link href={homeHref} className="flex items-center gap-2.5 px-1">
         <Logo size={34} />
         <span className="text-[15px] font-semibold leading-tight text-ink">
           Gestión de
@@ -140,25 +133,66 @@ export function Sidebar({
 
       <button
         type="button"
-        onClick={() => openCarga("pointer")}
-        className="flex h-10 items-center justify-center gap-2 rounded-[11px] bg-accent text-sm font-semibold text-white transition-colors duration-150 ease-out hover:bg-accent-press"
+        onClick={primary.onClick}
+        disabled={primary.disabled}
+        title={primary.disabled ? primary.disabledHint : undefined}
+        className="flex h-10 items-center justify-center gap-2 rounded-[11px] bg-accent text-sm font-semibold text-white transition-colors duration-150 ease-out hover:bg-accent-press disabled:cursor-not-allowed disabled:bg-disabled-bg disabled:text-disabled-ink"
       >
         <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-        Cargar registro
-        <kbd className="font-mono text-[11px] font-medium opacity-70">N</kbd>
+        {primary.label}
+        {primary.disabled ? null : (
+          <kbd className="font-mono text-[11px] font-medium opacity-70">N</kbd>
+        )}
       </button>
 
       <nav aria-label="Navegación principal" className="flex flex-col gap-0.5">
-        {entities.map((item) => (
-          <NavItem key={item.href} item={item} active={isActive(item.href)} />
-        ))}
-        <div className="mx-2 my-2 border-t border-line" />
-        {tools.map((item) => (
-          <NavItem key={item.href} item={item} active={isActive(item.href)} />
+        {groups.map((group, index) => (
+          <div key={index} className="flex flex-col gap-0.5">
+            {index > 0 ? <div className="mx-2 my-2 border-t border-line" /> : null}
+            {group.map((item) => (
+              <NavItem key={item.href} item={item} active={isActive(item.href)} />
+            ))}
+          </div>
         ))}
       </nav>
 
       <AccountMenu fullName={fullName} roleLabel={roleLabel} />
     </aside>
+  );
+}
+
+// Barra lateral del Administrador de Organizacion.
+export function Sidebar({
+  counts,
+  fullName,
+  roleLabel,
+}: {
+  counts: SidebarCounts;
+  fullName: string;
+  roleLabel: string;
+}) {
+  const { openCarga } = useShellUrl();
+
+  return (
+    <SidebarFrame
+      homeHref="/superadmin"
+      primary={{ label: "Cargar registro", onClick: () => openCarga("pointer") }}
+      fullName={fullName}
+      roleLabel={roleLabel}
+      groups={[
+        [
+          { href: "/superadmin", label: "Inicio", icon: House },
+          { href: "/superadmin/dirigentes", label: "Dirigentes", icon: ENTITY_ICON.leader, count: counts.leaders },
+          { href: "/superadmin/punteros", label: "Punteros", icon: ENTITY_ICON.pointer, count: counts.pointers },
+          { href: "/superadmin/personas", label: "Personas", icon: ENTITY_ICON.person, count: counts.people },
+          { href: "/superadmin/vehiculos", label: "Vehículos", icon: ENTITY_ICON.vehicle, count: counts.vehicles },
+        ],
+        [
+          { href: "/superadmin/reportes", label: "Reportes", icon: FileText },
+          { href: "/superadmin/auditoria", label: "Auditoría", icon: ClipboardList },
+          { href: "/superadmin/respaldos", label: "Respaldos", icon: DatabaseBackup },
+        ],
+      ]}
+    />
   );
 }

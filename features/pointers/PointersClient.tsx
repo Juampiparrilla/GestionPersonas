@@ -8,9 +8,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ENTITY_ICON } from "@/components/ui/entityIcons";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
+import { TopbarActions } from "@/components/desktop/ShellContext";
 import { normalizeDni } from "@/utils/dni";
 
 import { CreatePointerForm } from "./CreatePointerForm";
+import { PointersDesktop } from "./PointersDesktop";
 import { PointersList } from "./PointersList";
 import type { PointerListItem } from "./queries";
 
@@ -18,10 +20,12 @@ export function PointersClient({
   pointers,
   canWrite,
   exportSlot,
+  exportDesktopSlot,
 }: {
   pointers: PointerListItem[];
   canWrite: boolean;
   exportSlot: React.ReactNode;
+  exportDesktopSlot: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
 
@@ -39,6 +43,8 @@ export function PointersClient({
 
   return (
     <Screen
+      shell
+      desktopContent
       title="Mis Punteros"
       backHref="/dirigente"
       headerRight={<span className="font-mono text-[13px] font-medium text-ink-2">{pointers.length}</span>}
@@ -69,6 +75,23 @@ export function PointersClient({
         </ActionBar>
       }
     >
+      <TopbarActions>
+        {exportDesktopSlot}
+        <CreateSheet
+          variant="topbar"
+          triggerLabel="Agregar puntero"
+          title="Agregar puntero"
+          canWrite={canWrite}
+          successMessage="El puntero fue creado exitosamente."
+          renderForm={(onCreated) => <CreatePointerForm onCreated={onCreated} />}
+        />
+      </TopbarActions>
+
+      <div className="hidden lg:block">
+        <PointersDesktop pointers={pointers} canWrite={canWrite} />
+      </div>
+
+      <div className="flex flex-col gap-4 lg:hidden">
       <PointersList
         pointers={filteredPointers}
         empty={
@@ -83,6 +106,7 @@ export function PointersClient({
           )
         }
       />
+      </div>
     </Screen>
   );
 }

@@ -15,6 +15,22 @@ export default async function PunterosPage() {
     <PointersClient
       pointers={pointers}
       canWrite={writeStatus.canWrite}
+      exportDesktopSlot={
+        <ReportDownloadButtons
+          variant="topbar"
+          pdfHref="/api/reportes/mis-punteros/pdf"
+          showExcel={false}
+          primaryLabel="Punteros"
+          disabled={pointers.length === 0}
+          disabledMessage="Cargá al menos un puntero para generar este reporte."
+          secondary={{
+            label: "Personas registradas",
+            pdfHref: "/api/reportes/mis-personas/pdf",
+            disabled: pointers.every((pointer) => pointer.peopleCount === 0),
+            disabledMessage: "Todavía no hay personas registradas para generar este reporte.",
+          }}
+        />
+      }
       exportSlot={
         <ReportDownloadButtons
           pdfHref="/api/reportes/mis-punteros/pdf"

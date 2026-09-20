@@ -26,7 +26,7 @@ export function TopbarActions({ children }: { children: React.ReactNode }) {
 }
 
 // Parametros de la URL que el armazon entiende:
-//   ?cargar=pointer|person|vehicle  (&dirigente=<id>)  -> panel de carga
+//   ?cargar=pointer|person|vehicle  (&dirigente=<id> | &puntero=<id>)  -> panel de carga
 //   ?detalle=<id>                                       -> panel de detalle
 export function useShellUrl() {
   const router = useRouter();
@@ -56,10 +56,12 @@ export function useShellUrl() {
     setParams,
     cargar,
     cargarLeaderId: searchParams.get("dirigente"),
+    cargarPointerId: searchParams.get("puntero"),
     detalleId: searchParams.get("detalle"),
-    openCarga: (type: CargaType = "pointer", leaderId?: string) =>
-      setParams({ cargar: type, dirigente: leaderId ?? null }),
-    closeCarga: () => setParams({ cargar: null, dirigente: null }, { replace: true }),
+    openCarga: (type: CargaType = "pointer", leaderId?: string, pointerId?: string) =>
+      setParams({ cargar: type, dirigente: leaderId ?? null, puntero: pointerId ?? null }),
+    closeCarga: () =>
+      setParams({ cargar: null, dirigente: null, puntero: null }, { replace: true }),
     selectDetalle: (id: string | null) => setParams({ detalle: id }, { replace: true }),
   };
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { DesktopRedirect } from "@/components/desktop/DesktopRedirect";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Avatar } from "@/components/ui/Avatar";
 import { FilterChip } from "@/components/ui/Chip";
@@ -225,6 +226,7 @@ export function LeaderDetailClient({
         </ActionBar>
       }
     >
+      <DesktopRedirect to={`/superadmin/dirigentes?detalle=${leader.id}`} />
       <div className="mx-auto flex w-full max-w-[560px] flex-col gap-4">
         <div className="hidden flex-col gap-4 lg:flex">
           <div className="flex items-center gap-3.5">

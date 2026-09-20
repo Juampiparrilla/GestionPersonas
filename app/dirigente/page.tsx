@@ -1,3 +1,4 @@
+import { LeaderHomeDesktop } from "@/features/dashboard/LeaderHomeDesktop";
 import { HomeGreeting } from "@/components/ui/HomeGreeting";
 import { LeaderBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
@@ -26,7 +27,24 @@ export default async function DirigenteHome() {
       : "La carga de datos está cerrada por el momento. Podés consultar la información, pero no agregar ni modificar nada.";
 
   return (
-    <Screen bar={<LeaderBottomNav />}>
+    <Screen shell bar={<LeaderBottomNav />}>
+      <div className="hidden lg:block">
+        <LeaderHomeDesktop
+          pointers={pointers.length}
+          people={totalPersonas}
+          vehicles={vehicles.length}
+          average={promedioPersonasPorPuntero}
+          withoutPeople={punterosSinPersonas.map((pointer) => ({
+            id: pointer.id,
+            fullName: pointer.fullName,
+            dni: pointer.dni,
+          }))}
+          canWrite={writeStatus.canWrite}
+          pausedMessage={pausedMessage}
+        />
+      </div>
+
+      <div className="flex flex-col gap-4 lg:hidden">
       <HomeGreeting fullName={session!.fullName} role={session!.role} />
 
       {writeStatus.canWrite ? (
@@ -76,6 +94,7 @@ export default async function DirigenteHome() {
           promedioPersonasPorPuntero === 1 ? "persona" : "personas"
         } por puntero`}
       />
+      </div>
     </Screen>
   );
 }

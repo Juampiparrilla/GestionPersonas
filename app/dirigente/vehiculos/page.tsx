@@ -15,6 +15,15 @@ export default async function VehiculosPage() {
     <VehiclesClient
       vehicles={vehicles}
       canWrite={writeStatus.canWrite}
+      exportDesktopSlot={
+        <ReportDownloadButtons
+          variant="topbar"
+          pdfHref="/api/reportes/mis-vehiculos/pdf"
+          showExcel={false}
+          disabled={vehicles.length === 0}
+          disabledMessage="Cargá al menos un vehículo para generar este reporte."
+        />
+      }
       exportSlot={
         <ReportDownloadButtons
           pdfHref="/api/reportes/mis-vehiculos/pdf"

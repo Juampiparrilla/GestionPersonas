@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
+import { DesktopRedirect } from "@/components/desktop/DesktopRedirect";
 import { LogoutRow, MenuList } from "@/components/ui/MenuList";
 import { AdminBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
@@ -16,6 +17,7 @@ import { Screen } from "@/components/ui/Screen";
 export default function SuperadminMasPage() {
   return (
     <Screen shell title="Más" bar={<AdminBottomNav />}>
+      <DesktopRedirect to="/superadmin" />
       <MenuList
         items={[
           {

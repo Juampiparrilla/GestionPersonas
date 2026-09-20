@@ -13,6 +13,7 @@ import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
 import { btnIcon, cardClass } from "@/components/ui/styles";
 import { PointerRowActions } from "@/features/pointers/PointerRowActions";
+import { DesktopRedirect } from "@/components/desktop/DesktopRedirect";
 import { normalizeDni } from "@/utils/dni";
 import { formatPhoneDisplay } from "@/utils/phone";
 
@@ -62,6 +63,7 @@ export function PeopleClient({
 
   return (
     <Screen
+      shell
       backHref="/dirigente/punteros"
       headerRight={
         canWrite ? (
@@ -131,6 +133,8 @@ export function PeopleClient({
         </ActionBar>
       }
     >
+      {/* En escritorio la ficha de un puntero es un panel de la tabla de punteros. */}
+      <DesktopRedirect to={`/dirigente/punteros?detalle=${pointer.id}`} />
       {panel ? (
         <section className={`${cardClass} p-3.5`}>
           <PointerRowActions
