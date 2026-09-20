@@ -1,7 +1,8 @@
 "use client";
 
+import { Pin } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 
 import { Spinner } from "@/components/Spinner";
 
@@ -10,6 +11,46 @@ import { useSheetClose } from "./Sheet";
 import { btnPrimary, hintClass, labelClass } from "./styles";
 
 export type SubmitIntent = "close" | "again";
+
+// Modo "cargar varios" del panel de carga de escritorio: si el panel lo
+// provee, el pie del formulario muestra el interruptor para anclar el panel
+// (queda abierto y con el formulario vacio despues de guardar).
+const KeepOpenContext = createContext<{ value: boolean; onChange: (value: boolean) => void } | null>(null);
+export const KeepOpenProvider = KeepOpenContext.Provider;
+
+// Con el panel anclado el formulario se vacia (se remonta) y el foco se
+// pierde: lo devuelve al primer campo para seguir cargando con el teclado.
+export function focusFirstField() {
+  setTimeout(() => {
+    document
+      .querySelector<HTMLElement>(
+        '[role="dialog"] form :is(input:not([type="hidden"]), select, textarea)'
+      )
+      ?.focus();
+  }, 60);
+}
+
+function KeepOpenToggle() {
+  const keepOpen = useContext(KeepOpenContext);
+  if (!keepOpen) return null;
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={keepOpen.value}
+      onClick={() => keepOpen.onChange(!keepOpen.value)}
+      title="Deja el panel abierto después de guardar, para cargar varios seguidos"
+      className={`hidden h-[46px] items-center gap-2 rounded-[15px] border px-3.5 text-sm font-semibold transition-colors lg:flex ${
+        keepOpen.value
+          ? "border-accent bg-row-selected text-accent"
+          : "border-line-input bg-surface text-ink-2 hover:text-ink"
+      }`}
+    >
+      <Pin className={`h-4 w-4 ${keepOpen.value ? "fill-current" : ""}`} strokeWidth={1.75} aria-hidden="true" />
+      Cargar varios
+    </button>
+  );
+}
 
 // Avisa "se creo" al padre (una vez por alta exitosa) diciendole si se
 // apreto "Guardar y cargar otro" (again = true) o el boton primario.
@@ -185,6 +226,7 @@ export function FormFooter({
           </>
         )}
       </button>
+      <KeepOpenToggle />
       {showAgain ? (
         <button
           type="submit"

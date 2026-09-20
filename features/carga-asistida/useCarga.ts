@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { focusFirstField } from "@/components/ui/FormParts";
+
 import type {
   LeaderOption,
   LeaderPointerGroup,
@@ -17,11 +19,20 @@ export function useCarga({
   pointerGroups,
   initialLeaderId,
   initialOperation,
+  keepOpen,
+  onDone,
+  onSaved,
 }: {
   leaders: LeaderOption[];
   pointerGroups: LeaderPointerGroup[];
   initialLeaderId?: string | null;
   initialOperation?: Operation;
+  // Solo escritorio: con `keepOpen` en false, al guardar se llama a `onDone`
+  // (cierra el panel) en vez de dejar el formulario vacio para otra carga.
+  keepOpen?: boolean;
+  onDone?: (message: string) => void;
+  // Despues de cada alta (para refrescar las listas de punteros).
+  onSaved?: () => void;
 }) {
   const [leaderQuery, setLeaderQuery] = useState("");
   const [selectedLeader, setSelectedLeader] = useState<LeaderOption | null>(
@@ -69,9 +80,17 @@ export function useCarga({
   }
 
   function handleCreated(message: string) {
+    if (keepOpen === false && onDone) {
+      onDone(message);
+      return;
+    }
+    onSaved?.();
+    if (keepOpen) focusFirstField();
     setJustCreated(message);
     setFormKey((key) => key + 1);
-    if (operation === "person") {
+    // Con el panel anclado se conserva el puntero: cargar varias personas
+    // del mismo puntero es el caso tipico.
+    if (operation === "person" && !keepOpen) {
       setSelectedPointer(null);
       setPointerQuery("");
     }
