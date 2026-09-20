@@ -13,6 +13,7 @@ export default async function SuperadminAuditoriaPage() {
     <AuditLogClient
       initialRows={rows}
       initialRange="today"
+      shell
       leaders={leaders.map((leader) => ({ id: leader.id, fullName: leader.fullName }))}
       backHref="/superadmin/mas"
     />

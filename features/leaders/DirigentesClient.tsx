@@ -9,9 +9,11 @@ import { EntityRow } from "@/components/ui/EntityRow";
 import { AdminBottomNav } from "@/components/ui/RoleNav";
 import { Screen } from "@/components/ui/Screen";
 import { SearchField } from "@/components/ui/SearchField";
+import { TopbarActions } from "@/components/desktop/ShellContext";
 import { normalizeDni } from "@/utils/dni";
 
 import { CreateLeaderForm } from "./CreateLeaderForm";
+import { LeadersDesktop } from "./LeadersDesktop";
 import type { LeaderListItem } from "./queries";
 import { formatPhoneDisplay } from "@/utils/phone";
 
@@ -23,9 +25,11 @@ const ACCESS_CHIP: Partial<Record<LeaderListItem["accessStatus"], string>> = {
 export function DirigentesClient({
   leaders,
   exportSlot,
+  exportDesktopSlot,
 }: {
   leaders: LeaderListItem[];
   exportSlot: React.ReactNode;
+  exportDesktopSlot: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
 
@@ -43,6 +47,8 @@ export function DirigentesClient({
 
   return (
     <Screen
+      shell
+      desktopContent
       title="Dirigentes"
       headerRight={
         <div className="flex items-center gap-2">
@@ -69,6 +75,22 @@ export function DirigentesClient({
       }
       bar={<AdminBottomNav />}
     >
+      <TopbarActions>
+        {exportDesktopSlot}
+        <CreateSheet
+          variant="topbar"
+          triggerLabel="Agregar dirigente"
+          title="Agregar dirigente"
+          successMessage="Dirigente creado. Para darle acceso, abrí su ficha y usá el botón de invitar."
+          renderForm={(onCreated) => <CreateLeaderForm onCreated={onCreated} />}
+        />
+      </TopbarActions>
+
+      <div className="hidden lg:block">
+        <LeadersDesktop leaders={leaders} />
+      </div>
+
+      <div className="flex flex-col gap-4 lg:hidden">
       {filteredLeaders.length === 0 ? (
         normalizedQuery ? (
           <EmptyState variant="search" title={`Sin resultados para “${query.trim()}”`}>
@@ -102,6 +124,7 @@ export function DirigentesClient({
           ))}
         </div>
       )}
+      </div>
     </Screen>
   );
 }

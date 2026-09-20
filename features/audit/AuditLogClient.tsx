@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/styles";
 
 import { fetchAuditLogsAction, type AuditLogRowView } from "./actions";
+import { AuditDesktop } from "./AuditDesktop";
 import { AUDIT_TIME_ZONE, formatDayMonth, rangeDates, type AuditRange } from "./dates";
 import { ACTION_FILTER_LABEL, AUDIT_ACTIONS } from "./labels";
 import type { AuditLogFilters } from "./queries";
@@ -104,6 +105,7 @@ export function AuditLogClient({
   organizations,
   backHref,
   bar,
+  shell = false,
   initialRange = "today",
 }: {
   initialRows: AuditLogRowView[];
@@ -112,6 +114,8 @@ export function AuditLogClient({
   // Sin backHref la pantalla es una pestaña de la barra de navegacion (`bar`).
   backHref?: string;
   bar?: React.ReactNode;
+  // Pantalla del Administrador de Organizacion (escritorio con barra lateral).
+  shell?: boolean;
   // Rango con el que el servidor ya trajo `initialRows`.
   initialRange?: AuditRange;
 }) {
@@ -168,6 +172,8 @@ export function AuditLogClient({
 
   return (
     <Screen
+      shell={shell}
+      desktopContent={shell}
       title="Auditoría"
       backHref={backHref}
       bar={bar}
@@ -198,6 +204,13 @@ export function AuditLogClient({
         </div>
       }
     >
+      {shell ? (
+        <div className="hidden lg:block">
+          <AuditDesktop rows={rows} range={range} onRangeChange={changeRange} pending={isPending} />
+        </div>
+      ) : null}
+
+      <div className={`flex flex-col gap-4 ${shell ? "lg:hidden" : ""}`}>
       {filtersOpen ? (
         <section className={`${cardClass} flex flex-col gap-3.5 p-4`}>
           {organizations ? (
@@ -311,6 +324,7 @@ export function AuditLogClient({
             </div>
           ))
         )}
+      </div>
       </div>
     </Screen>
   );

@@ -16,9 +16,11 @@ export default async function ReportePersonalizadoPage() {
   );
 
   return (
-    <Screen title="Reporte personalizado" backHref="/superadmin/mas">
+    <Screen shell title="Reporte personalizado" backHref="/superadmin/mas">
+      <div className="flex w-full max-w-[720px] flex-col gap-4">
       <div className={`${cardClass} p-4`}>
         <CustomReportForm leaders={leaders.map((leader) => ({ id: leader.id, fullName: leader.fullName }))} pointers={pointers} />
+      </div>
       </div>
     </Screen>
   );

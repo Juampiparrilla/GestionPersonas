@@ -40,6 +40,12 @@
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
   --shadow-fab: 0 8px 18px -8px rgba(30, 50, 140, 0.6);
+  /* Escritorio (>= 1024px) */
+  --color-row-selected: #f4f6fd;
+  --color-table-head: #fbfbf9;
+  --color-line-row: #f4f4f0;
+  --color-scrim: rgba(23, 23, 26, 0.32);
+  --shadow-panel: -24px 0 48px -32px rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -76,6 +82,18 @@ body {
   }
   to {
     transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Panel lateral de escritorio (carga, detalle): entra desde la derecha. */
+@keyframes panel-in {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
     opacity: 1;
   }
 }

@@ -9,7 +9,14 @@ import { setGlobalLoadingAction } from "./actions";
 
 // Banner de estado de la carga (verde = habilitada, rojo = suspendida). Al
 // tocarlo se abre la hoja con la explicacion y el boton para cambiarla.
-export function GlobalLoadingToggle({ loadingEnabled }: { loadingEnabled: boolean }) {
+export function GlobalLoadingToggle({
+  loadingEnabled,
+  variant = "banner",
+}: {
+  loadingEnabled: boolean;
+  // "chip": version compacta para la barra superior de escritorio.
+  variant?: "banner" | "chip";
+}) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const toggle = setGlobalLoadingAction.bind(null, !loadingEnabled);
@@ -21,7 +28,10 @@ export function GlobalLoadingToggle({ loadingEnabled }: { loadingEnabled: boolea
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-[11px] text-left ${
+        title="Cambiar"
+        className={`flex items-center gap-3 rounded-xl border text-left ${
+          variant === "chip" ? "h-9 gap-2 px-3" : "w-full px-3.5 py-[11px]"
+        } ${
           loadingEnabled
             ? "border-ok-border bg-ok-bg text-ok-ink"
             : "border-err-border bg-err-bg text-err-ink"
@@ -32,7 +42,9 @@ export function GlobalLoadingToggle({ loadingEnabled }: { loadingEnabled: boolea
           aria-hidden="true"
         />
         <span className="flex-1 text-sm font-semibold">{statusLabel}</span>
-        <span className="text-[13px] font-medium underline underline-offset-2">Cambiar</span>
+        {variant === "chip" ? null : (
+          <span className="text-[13px] font-medium underline underline-offset-2">Cambiar</span>
+        )}
       </button>
 
       <Sheet open={open} onClose={close} title={statusLabel}>

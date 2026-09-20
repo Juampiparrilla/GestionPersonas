@@ -50,7 +50,8 @@ export function CreateOrganizationForm({ onCreated }: { onCreated: (again: boole
     <form action={formAction} className="flex flex-1 flex-col gap-[14px]">
       <FormError message={state.error} />
 
-      <Field id="orgName" label="Nombre de la organización" required error={f.error("orgName")}>
+      <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-2 lg:gap-x-4">
+      <Field id="orgName" label="Nombre de la organización" required wide error={f.error("orgName")}>
         <input
           id="orgName"
           name="orgName"
@@ -62,9 +63,11 @@ export function CreateOrganizationForm({ onCreated }: { onCreated: (again: boole
         />
       </Field>
 
-      <Eyebrow>Administrador de la organización</Eyebrow>
+      <div className="lg:col-span-2">
+        <Eyebrow>Administrador de la organización</Eyebrow>
+      </div>
 
-      <Field id="adminFullName" label="Nombre completo" required error={f.error("adminFullName")}>
+      <Field id="adminFullName" label="Nombre completo" required wide error={f.error("adminFullName")}>
         <NameField
           id="adminFullName"
           name="adminFullName"
@@ -90,7 +93,7 @@ export function CreateOrganizationForm({ onCreated }: { onCreated: (again: boole
         />
       </Field>
 
-      <Field id="adminEmail" label="Correo electrónico" error={f.error("adminEmail")}>
+      <Field id="adminEmail" label="Correo electrónico" wide error={f.error("adminEmail")}>
         <input
           id="adminEmail"
           name="adminEmail"
@@ -113,6 +116,7 @@ export function CreateOrganizationForm({ onCreated }: { onCreated: (again: boole
           invalid={Boolean(f.error("adminPhone"))}
         />
       </Field>
+      </div>
 
       <FormFooter
         pending={pending}

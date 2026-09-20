@@ -16,7 +16,16 @@ export type AuditLogItem = {
   organizationId: string;
   ipAddress: string | null;
   userAgent: string | null;
+  beforeData: Record<string, unknown> | null;
+  afterData: Record<string, unknown> | null;
 };
+
+// before_data / after_data son jsonb: solo interesan cuando son un objeto.
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
 
 export type AuditLogFilters = {
   organizationId?: string;
@@ -76,6 +85,8 @@ export async function listAuditLogs(filters: AuditLogFilters, limit = 200): Prom
     organizationId: row.organization_id,
     ipAddress: row.ip_address,
     userAgent: row.user_agent,
+    beforeData: asRecord(row.before_data),
+    afterData: asRecord(row.after_data),
   }));
 }
 

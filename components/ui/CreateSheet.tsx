@@ -27,7 +27,7 @@ export function CreateSheet({
   icon?: LucideIcon;
   // "bar": boton primario ancho para una <ActionBar>; "header": boton de icono
   // (+) para la cabecera de las pantallas que muestran la barra de navegacion.
-  variant?: "bar" | "header";
+  variant?: "bar" | "header" | "topbar";
   triggerLabel: string;
   title: string;
   canWrite?: boolean;
@@ -58,7 +58,7 @@ export function CreateSheet({
   const close = useCallback(() => setOpen(false), []);
 
   if (!canWrite) {
-    if (variant === "header") return null;
+    if (variant === "header" || variant === "topbar") return null;
     return (
       <p className="flex flex-1 items-start gap-2 rounded-[14px] border border-line bg-muted p-3 text-[13px] text-ink-2">
         <Lock className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
@@ -82,7 +82,16 @@ export function CreateSheet({
         </div>
       ) : null}
 
-      {variant === "header" ? (
+      {variant === "topbar" ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-9 items-center gap-1.5 rounded-[10px] bg-accent px-3.5 text-sm font-semibold text-white transition-colors duration-150 ease-out hover:bg-accent-press"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          {triggerLabel}
+        </button>
+      ) : variant === "header" ? (
         <button
           type="button"
           onClick={() => setOpen(true)}

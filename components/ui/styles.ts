@@ -2,7 +2,7 @@
 // y los radios (14 input, 15 boton) salen de la guia de diseño.
 
 export const inputClass =
-  "h-[54px] w-full rounded-[14px] border border-line-input bg-surface px-4 text-base text-ink placeholder:text-ink-ph focus:border-[1.5px] focus:border-ink focus:outline-none";
+  "h-[54px] w-full rounded-[14px] border border-line-input bg-surface px-4 text-base lg:h-[46px] text-ink placeholder:text-ink-ph focus:border-[1.5px] focus:border-ink focus:outline-none";
 
 export const inputMonoClass = `${inputClass} font-mono font-medium`;
 

@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { Spinner } from "@/components/Spinner";
 
 import { Avatar } from "./Avatar";
+import { useSheetClose } from "./Sheet";
 import { btnPrimary, hintClass, labelClass } from "./styles";
 
 export type SubmitIntent = "close" | "again";
@@ -41,6 +42,7 @@ export function Field({
   hint,
   error,
   tag,
+  wide = false,
   children,
 }: {
   id: string;
@@ -49,10 +51,12 @@ export function Field({
   hint?: string;
   error?: string | null;
   tag?: string;
+  // Escritorio: el campo ocupa las dos columnas del formulario.
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5 ${wide ? "lg:col-span-2" : ""}`}>
       <div className="flex items-baseline justify-between">
         <label htmlFor={id} className={labelClass}>
           {label}
@@ -109,7 +113,7 @@ export function ExistingRecordCard({
   href: string | null;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3">
+    <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3 lg:col-span-2">
       <Avatar name={name} size="sm" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-ink">Ya existe: {name}</p>
@@ -126,9 +130,11 @@ export function ExistingRecordCard({
   );
 }
 
-// Pie del formulario, pegado abajo del area scrolleable (hoja o pantalla):
-// boton primario de 54px + link "Guardar y cargar otro". Deshabilitado
-// mientras haya errores pendientes o falten campos obligatorios.
+// Pie del formulario, pegado abajo del area scrolleable (hoja o pantalla).
+// Movil: boton primario de 54px + link "Guardar y cargar otro". Escritorio:
+// "Cancelar" a la izquierda; a la derecha "Guardar y cargar otro" (secundario)
+// y el primario con el atajo ⌘↵ / Ctrl+Enter. Deshabilitado mientras haya
+// errores pendientes o falten campos obligatorios.
 export function FormFooter({
   pending,
   label,
@@ -145,21 +151,38 @@ export function FormFooter({
   onIntent?: (intent: SubmitIntent) => void;
 }) {
   const blocked = pending || disabled;
+  const closeSheet = useSheetClose();
+  const primaryRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (!primaryRef.current?.disabled) primaryRef.current?.click();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
-    <div className="sticky bottom-0 z-10 -mx-5 mt-auto flex flex-col gap-2 border-t border-line-head bg-bar px-5 pb-[max(26px,env(safe-area-inset-bottom))] pt-3">
+    <div className="sticky bottom-0 z-10 -mx-5 mt-auto flex flex-col gap-2 border-t border-line-head bg-bar px-5 pb-[max(26px,env(safe-area-inset-bottom))] pt-3 lg:-mx-[26px] lg:flex-row-reverse lg:items-center lg:gap-3 lg:px-[26px] lg:pb-5 lg:pt-4">
       <button
+        ref={primaryRef}
         type="submit"
         disabled={blocked}
         onClick={() => onIntent?.("close")}
-        className={btnPrimary}
+        className={`${btnPrimary} lg:h-[46px] lg:w-auto lg:px-5 lg:text-[15px]`}
       >
         {pending ? (
           <>
             <Spinner className="h-4 w-4" /> {pendingLabel}
           </>
         ) : (
-          label
+          <>
+            {label}
+            <kbd className="hidden font-mono text-[11px] font-medium opacity-70 lg:inline">⌘↵</kbd>
+          </>
         )}
       </button>
       {showAgain ? (
@@ -167,9 +190,18 @@ export function FormFooter({
           type="submit"
           disabled={blocked}
           onClick={() => onIntent?.("again")}
-          className="min-h-[44px] text-[13px] font-medium text-ink-2 disabled:text-disabled-ink"
+          className="min-h-[44px] text-[13px] font-medium text-ink-2 disabled:text-disabled-ink lg:h-[46px] lg:rounded-[15px] lg:border lg:border-ink lg:bg-surface lg:px-4 lg:text-sm lg:font-semibold lg:text-ink lg:disabled:border-line-input"
         >
           Guardar y cargar otro
+        </button>
+      ) : null}
+      {closeSheet ? (
+        <button
+          type="button"
+          onClick={closeSheet}
+          className="hidden text-sm font-medium text-ink-2 hover:text-ink lg:mr-auto lg:block"
+        >
+          Cancelar
         </button>
       ) : null}
     </div>

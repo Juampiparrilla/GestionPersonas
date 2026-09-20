@@ -41,7 +41,7 @@ export function ReportDownloadButtons({
   // primaria propia).
   // "header": boton de icono de 40px para la cabecera de las pantallas que
   // muestran la barra de navegacion.
-  variant?: "icon" | "wide" | "header";
+  variant?: "icon" | "wide" | "header" | "topbar";
   pdfHref: string;
   excelHref?: string;
   showPdfModes?: boolean;
@@ -67,11 +67,17 @@ export function ReportDownloadButtons({
         onClick={() => setOpen(true)}
         aria-label="Generar reporte"
         className={
-          variant === "wide" ? btnSecondaryStrong : variant === "header" ? btnIcon : btnIconLarge
+          variant === "wide"
+            ? btnSecondaryStrong
+            : variant === "header"
+              ? btnIcon
+              : variant === "topbar"
+                ? "flex h-9 items-center gap-1.5 rounded-[10px] border border-line-input bg-surface px-3.5 text-sm font-semibold text-ink-label transition-colors duration-150 ease-out hover:bg-muted"
+                : btnIconLarge
         }
       >
         <Download className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-        {variant === "wide" ? "Generar reporte" : null}
+        {variant === "wide" ? "Generar reporte" : variant === "topbar" ? "Exportar" : null}
       </button>
 
       <Sheet open={open} onClose={close} title="Generar reporte">

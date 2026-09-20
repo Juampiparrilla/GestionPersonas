@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getSessionContext } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { LeaderAccessStatus } from "@/types/domain";
@@ -8,6 +10,9 @@ export type LeaderListItem = {
   dni: string;
   phone: string | null;
   address: string | null;
+  // Alta (individuals.created_at). Opcional: los reportes automaticos por
+  // correo arman la lista por su cuenta y no lo necesitan.
+  createdAt?: string;
   accessStatus: LeaderAccessStatus;
   pointerCount: number;
   personCount: number;
@@ -41,7 +46,7 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
     supabase.from("leaders").select("id, access_status, profile_id").eq("is_removed", false),
     supabase
       .from("individuals")
-      .select("id, full_name, dni_display, phone, address")
+      .select("id, full_name, dni_display, phone, address, created_at")
       .eq("position", "leader")
       .eq("status", "active"),
     supabase.from("pointers").select("id, leader_id").eq("is_removed", false),
@@ -100,6 +105,7 @@ export async function listActiveLeaders(): Promise<LeaderListItem[]> {
       dni: individual.dni_display,
       phone: individual.phone,
       address: individual.address,
+      createdAt: individual.created_at,
       accessStatus: leader.access_status,
       pointerCount: pointerCountByLeader.get(leader.id) ?? 0,
       personCount: personCountByLeader.get(leader.id) ?? 0,
@@ -129,7 +135,9 @@ export async function getLeaderBasics(leaderId: string): Promise<LeaderBasics | 
   return { id: data.id, fullName: data.full_name };
 }
 
-export async function getSuperadminStats() {
+// Con cache(): el armazon de escritorio (barra lateral) y el Inicio piden los
+// mismos numeros en un mismo request.
+export const getSuperadminStats = cache(async () => {
   const supabase = await createClient();
 
   const [leaders, pointers, people, vehicles] = await Promise.all([
@@ -148,4 +156,4 @@ export async function getSuperadminStats() {
     people: people.count ?? 0,
     vehicles: vehicles.count ?? 0,
   };
-}
+});

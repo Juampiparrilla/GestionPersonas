@@ -8,6 +8,14 @@ export default async function DirigentesPage() {
   return (
     <DirigentesClient
       leaders={leaders}
+      exportDesktopSlot={
+        <ReportDownloadButtons
+          variant="topbar"
+          pdfHref="/api/reportes/dirigentes/pdf"
+          excelHref="/api/reportes/dirigentes/excel"
+          showPdfModes
+        />
+      }
       exportSlot={
         <ReportDownloadButtons
           variant="header"

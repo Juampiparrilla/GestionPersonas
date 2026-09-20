@@ -57,7 +57,8 @@ export function CreateVehicleForm({
       <FormError message={state.error ?? fieldErrorsSummary(state.fieldErrors)} />
       {leaderId ? <input type="hidden" name="leaderId" value={leaderId} /> : null}
 
-      <Field id="type" label="Tipo de vehículo" required error={f.error("type")}>
+      <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-2 lg:gap-x-4">
+      <Field id="type" label="Tipo de vehículo" required wide error={f.error("type")}>
         <select
           id="type"
           name="type"
@@ -96,6 +97,7 @@ export function CreateVehicleForm({
         id="driverFullName"
         label="Nombre del conductor"
         required
+        wide
         hint="Apellido primero, después el nombre."
         error={f.error("driverFullName")}
       >
@@ -138,6 +140,7 @@ export function CreateVehicleForm({
           describedBy={f.error("driverPhone") ? "driverPhone-error" : undefined}
         />
       </Field>
+      </div>
 
       <FormFooter
         pending={pending}

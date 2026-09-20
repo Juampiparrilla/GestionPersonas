@@ -161,3 +161,102 @@ export function describeAuditEntry(entry: AuditLogItem, names: AuditDisplayNames
   const leaderName = names.individualNames.get(entry.leaderId);
   return leaderName ? `${base} para el dirigente ${leaderName}.` : `${base}.`;
 }
+
+// ---------------------------------------------------------------------------
+// Columnas de la tabla de escritorio de Auditoria: tipo de evento (chip),
+// registro afectado, contexto (el cambio concreto), usuario y origen.
+// ---------------------------------------------------------------------------
+
+export type AuditCategory = "create" | "edit" | "remove" | "restore" | "access" | "system";
+
+export const CATEGORY_LABEL: Record<AuditCategory, string> = {
+  create: "Alta",
+  edit: "Edición",
+  remove: "Baja",
+  restore: "Restauración",
+  access: "Acceso",
+  system: "Sistema",
+};
+
+export function auditCategory(action: string): AuditCategory {
+  if (action.startsWith("CREATE_")) return "create";
+  if (action.startsWith("UPDATE_") || action.startsWith("REASSIGN_") || action === "SET_LEADER_ACCESS_STATUS") {
+    return "edit";
+  }
+  if (action.startsWith("REMOVE_")) return "remove";
+  if (action.startsWith("RESTORE_")) return "restore";
+  if (action === "LOGIN" || action === "LOGOUT" || action === "LINK_LEADER_PROFILE") return "access";
+  return "system";
+}
+
+const ENTITY_LABEL: Record<string, string> = {
+  leader: "Dirigente",
+  pointer: "Puntero",
+  person: "Persona",
+  vehicle: "Vehículo",
+};
+
+const CHANGED_FIELD_LABEL: Record<string, string> = {
+  full_name: "Nombre",
+  phone: "Teléfono",
+  plate: "Patente",
+};
+
+function fieldText(value: unknown): string {
+  return typeof value === "string" && value.trim() ? value : "—";
+}
+
+// Registro afectado: nombre de la persona / patente / etc.
+export function auditSubject(entry: AuditLogItem, names: AuditDisplayNames): string {
+  if (entry.action === "LOGIN" || entry.action === "LOGOUT") return "Sesión";
+  if (entry.entityType === "vehicle") {
+    return (entry.entityId && names.vehiclePlates.get(entry.entityId)) || "Vehículo";
+  }
+  if (entry.entityType === "person" && entry.personId) {
+    return names.individualNames.get(entry.personId) ?? "Persona";
+  }
+  if (entry.entityType === "pointer" && entry.pointerId) {
+    return names.individualNames.get(entry.pointerId) ?? "Puntero";
+  }
+  if (entry.entityType === "leader" && entry.leaderId) {
+    return names.individualNames.get(entry.leaderId) ?? "Dirigente";
+  }
+  if (entry.entityType === "organization") {
+    return names.organizationNames.get(entry.entityId ?? entry.organizationId) ?? "Organización";
+  }
+  return ACTION_FILTER_LABEL[entry.action] ?? entry.action;
+}
+
+// Contexto: el cambio concreto ("Teléfono: — → 381 476-3833") o donde quedo
+// el registro ("Puntero · bajo Bordón, Facundo").
+export function auditContext(entry: AuditLogItem, names: AuditDisplayNames): string {
+  if (entry.action === "LOGIN") return "Inicio de sesión";
+  if (entry.action === "LOGOUT") return "Cierre de sesión";
+
+  if (entry.action.startsWith("UPDATE_") && entry.beforeData && entry.afterData) {
+    const changes = Object.keys(CHANGED_FIELD_LABEL)
+      .filter((key) => key in entry.afterData! && fieldText(entry.beforeData![key]) !== fieldText(entry.afterData![key]))
+      .map((key) => `${CHANGED_FIELD_LABEL[key]}: ${fieldText(entry.beforeData![key])} → ${fieldText(entry.afterData![key])}`);
+    if (changes.length > 0) return changes.join(" · ");
+  }
+
+  const entity = ENTITY_LABEL[entry.entityType];
+  if (entity) {
+    const leaderName = entry.leaderId ? names.individualNames.get(entry.leaderId) : null;
+    // Un dirigente no cuelga de nadie: solo se aclara "bajo X" para el resto.
+    return leaderName && entry.entityType !== "leader" ? `${entity} · bajo ${leaderName}` : entity;
+  }
+
+  return ACTION_FILTER_LABEL[entry.action] ?? entry.action;
+}
+
+// Desde donde se hizo: el celular (carga en calle) o la compu (oficina).
+export function auditOrigin(userAgent: string | null): "Móvil" | "Escritorio" | null {
+  if (!userAgent) return null;
+  return /Mobi|Android|iPhone|iPad/i.test(userAgent) ? "Móvil" : "Escritorio";
+}
+
+// Tipo de registro afectado ("Puntero", "Vehículo"...) para el filtro "Entidad".
+export function auditEntity(entry: AuditLogItem): string {
+  return ENTITY_LABEL[entry.entityType] ?? "Sistema";
+}

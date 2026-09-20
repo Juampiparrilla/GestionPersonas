@@ -7,12 +7,14 @@ export default async function EnvioCorreoPage() {
   const schedule = await getReportEmailSchedule();
 
   return (
-    <Screen title="Envío por correo de Reportes" backHref="/superadmin/mas">
+    <Screen shell title="Envío por correo de Reportes" backHref="/superadmin/mas">
+      <div className="flex w-full max-w-[720px] flex-col gap-4">
       <div className={`${cardClass} p-4`}>
         <p className="mb-4 text-sm text-ink-2">
           Recibí los reportes de tu organización por email de forma automática, o mandate uno de prueba ahora mismo.
         </p>
         <ReportEmailScheduleForm initialSchedule={schedule} />
+      </div>
       </div>
     </Screen>
   );

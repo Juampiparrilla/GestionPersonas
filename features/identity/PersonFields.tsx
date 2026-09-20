@@ -70,11 +70,12 @@ export type PersonFieldsState = ReturnType<typeof usePersonFields>;
 
 export function PersonFields({ f }: { f: PersonFieldsState }) {
   return (
-    <>
+    <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-2 lg:gap-x-4">
       <Field
         id="fullName"
         label="Nombre completo"
         required
+        wide
         hint="Apellido primero, después el nombre."
         error={f.error("fullName")}
       >
@@ -132,7 +133,7 @@ export function PersonFields({ f }: { f: PersonFieldsState }) {
         />
       </Field>
 
-      <Field id="address" label="Dirección">
+      <Field id="address" label="Dirección" wide>
         <AddressField
           id="address"
           name="address"
@@ -142,6 +143,6 @@ export function PersonFields({ f }: { f: PersonFieldsState }) {
           onBlur={() => f.blur("address")}
         />
       </Field>
-    </>
+    </div>
   );
 }

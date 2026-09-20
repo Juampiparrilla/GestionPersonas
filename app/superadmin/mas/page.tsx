@@ -15,7 +15,7 @@ import { Screen } from "@/components/ui/Screen";
 // Personas · Vehículos · Más).
 export default function SuperadminMasPage() {
   return (
-    <Screen title="Más" bar={<AdminBottomNav />}>
+    <Screen shell title="Más" bar={<AdminBottomNav />}>
       <MenuList
         items={[
           {

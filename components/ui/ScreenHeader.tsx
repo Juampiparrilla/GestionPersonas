@@ -22,16 +22,20 @@ export function ScreenHeader({
   subtitle,
   backHref,
   right,
+  className = "",
   children,
 }: {
   title?: string;
   subtitle?: string;
   backHref?: string;
   right?: React.ReactNode;
+  className?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line-head bg-app px-5 pb-3 pt-[max(16px,env(safe-area-inset-top))]">
+    <header
+      className={`sticky top-0 z-30 border-b border-line-head bg-app px-5 pb-3 pt-[max(16px,env(safe-area-inset-top))] ${className}`}
+    >
       <div className="flex items-center gap-3">
         {backHref ? <BackButton href={backHref} /> : null}
         {title ? (
