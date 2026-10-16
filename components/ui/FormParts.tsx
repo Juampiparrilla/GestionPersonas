@@ -2,9 +2,11 @@
 
 import { Pin } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef } from "react";
 
 import { Spinner } from "@/components/Spinner";
+import { WRITE_BLOCKED_MESSAGE } from "@/utils/rpc-errors";
 
 import { Avatar } from "./Avatar";
 import { useSheetClose } from "./Sheet";
@@ -125,6 +127,15 @@ export function Field({
 
 // Banner de resumen: aparece solo tras un envio fallido.
 export function FormError({ message }: { message: string | null }) {
+  const router = useRouter();
+  const writeBlocked = message === WRITE_BLOCKED_MESSAGE;
+
+  // Si te bloquearon mientras tenias la pantalla abierta, se actualiza el
+  // resto de la pagina (estado de carga, botones) en vez de dejarla desfasada.
+  useEffect(() => {
+    if (writeBlocked) router.refresh();
+  }, [writeBlocked, router]);
+
   if (!message) return null;
   return (
     <div

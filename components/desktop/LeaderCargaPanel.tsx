@@ -19,6 +19,7 @@ import { CreatePersonForm } from "@/features/people/CreatePersonForm";
 import { CreatePointerForm } from "@/features/pointers/CreatePointerForm";
 import { loadLeaderCargaOptionsAction } from "@/features/pointers/deskActions";
 import { CreateVehicleForm } from "@/features/vehicles/CreateVehicleForm";
+import { WRITE_BLOCKED_MESSAGE } from "@/utils/rpc-errors";
 
 import { useShellUrl } from "./ShellContext";
 import { useDeskToast } from "./useDeskToast";
@@ -229,7 +230,7 @@ export function LeaderCargaPanelHost({ canWrite }: { canWrite: boolean }) {
           ) : (
             <p className="flex items-start gap-2 rounded-[14px] border border-line bg-muted p-3 text-[13px] text-ink-2">
               <Lock className="h-4 w-4 shrink-0 translate-y-0.5" aria-hidden="true" />
-              La carga está cerrada en este momento. Podés consultar, pero no agregar ni modificar nada.
+              {WRITE_BLOCKED_MESSAGE}
             </p>
           )}
         </Sheet>

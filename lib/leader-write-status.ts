@@ -21,10 +21,12 @@ export async function getLeaderWriteStatus(
       .select("loading_enabled")
       .eq("organization_id", organizationId)
       .maybeSingle(),
-    supabase.from("leaders").select("access_status").eq("id", leaderId).maybeSingle(),
+    supabase.from("leaders").select("access_status, is_removed").eq("id", leaderId).maybeSingle(),
   ]);
 
-  if (leader?.access_status !== "active") {
+  // Un dirigente quitado cuenta como bloqueo individual: la base ya le impide
+  // escribir (fn_can_leader_write), asi la pantalla no dice "Carga habilitada".
+  if (leader?.access_status !== "active" || leader.is_removed) {
     return { canWrite: false, reason: "individual_block" };
   }
   if (settings?.loading_enabled === false) {
