@@ -181,6 +181,13 @@ type RestoreResult = {
   conflicts?: Json;
 };
 
+export type LoginAttemptRow = {
+  id: number;
+  ip: string | null;
+  identifier: string;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -206,6 +213,13 @@ export type Database = {
       // escribe el cron/GitHub Action con service_role -- por eso el Insert
       // deja `id`/`created_at` opcionales (tienen default en la base) en vez
       // de heredar ReadOnlyTable, que los exige todos.
+      // Intentos de login fallidos (migracion 0021). Solo la service_role la usa.
+      login_attempts: {
+        Row: LoginAttemptRow;
+        Insert: Pick<LoginAttemptRow, "identifier"> & Partial<LoginAttemptRow>;
+        Update: Partial<LoginAttemptRow>;
+        Relationships: [];
+      };
       scheduled_job_runs: {
         Row: ScheduledJobRunRow;
         Insert: Omit<ScheduledJobRunRow, "id" | "created_at"> & Partial<Pick<ScheduledJobRunRow, "id" | "created_at">>;

@@ -8,6 +8,7 @@ import { PasswordField } from "@/components/fields/PasswordField";
 import { btnPrimary, inputClass, labelClass } from "@/components/ui/styles";
 
 import { login, type LoginState } from "./actions";
+import { TurnstileWidget } from "./TurnstileWidget";
 
 const initialState: LoginState = { error: null };
 
@@ -35,6 +36,8 @@ export function LoginForm() {
           className={inputClass}
         />
       </div>
+
+      <TurnstileWidget resetKey={state} />
 
       {state.error ? (
         <p

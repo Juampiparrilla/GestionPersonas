@@ -153,6 +153,20 @@ vía `pg_dump`, corrido por **GitHub Actions** — no es lo mismo que
 workflow a demanda. El archivo en sí queda en un bucket privado de
 Supabase Storage, nunca se ofrece para descargar desde la app.
 
+### Seguridad
+
+- **Aislamiento por RLS** en todas las tablas; las escrituras pasan solo por
+  funciones `SECURITY DEFINER` (ver "Arquitectura multitenant").
+- **Límite de intentos de login**: 5 fallos por cuenta o 20 por IP en 15
+  minutos bloquean el login un rato (tabla `login_attempts`, migración
+  `0021`; la limpia el cron diario).
+- **CAPTCHA opcional** con Cloudflare Turnstile en el login: se activa
+  cargando `NEXT_PUBLIC_TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY`.
+- **Headers de seguridad** en todas las rutas (`next.config.ts`): CSP,
+  HSTS, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`.
+- Las claves sensibles (`service_role`, Resend, GitHub) solo viven en el
+  servidor (`import "server-only"`) y nunca en el repositorio.
+
 ### Mi cuenta
 
 Cualquier usuario logueado puede cambiar su propia contraseña desde

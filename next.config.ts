@@ -1,6 +1,41 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === "production";
+
+// Politica de contenido: sin nonces (las paginas estaticas como /login no
+// pueden llevarlos), asi que los scripts inline de Next se permiten con
+// 'unsafe-inline'. Igual cierra lo importante: nada de plugins, nadie puede
+// meter la app en un iframe, los formularios solo se envian a la propia app
+// y el navegador solo habla con la propia app y con Supabase.
+// En desarrollo hace falta 'unsafe-eval' (React lo usa para el overlay).
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${isProd ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "frame-src https://challenges.cloudflare.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(isProd ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
+const securityHeaders = [
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   // pdfmake/pdfkit resuelven sus archivos de fuentes estandar (.afm) con
   // rutas basadas en __dirname en tiempo de ejecucion; si el bundler los
   // empaqueta, __dirname deja de apuntar al node_modules real y esas rutas

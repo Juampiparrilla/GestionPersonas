@@ -2,10 +2,17 @@
 
 import { redirect } from "next/navigation";
 
+import {
+  clearLoginFailures,
+  isLoginRateLimited,
+  RATE_LIMIT_MESSAGE,
+  recordLoginFailure,
+} from "@/lib/login-rate-limit";
 import { getRequestMeta } from "@/lib/request-meta";
 import { roleHomePath } from "@/lib/routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { isTurnstileEnabled, verifyTurnstile } from "@/lib/turnstile";
 import { normalizeDni } from "@/utils/dni";
 
 export type LoginState = { error: string | null };
@@ -87,11 +94,31 @@ export async function login(
     return { error: "Completá el correo (o DNI) y la contraseña." };
   }
 
+  const { ip, userAgent } = await getRequestMeta();
+
+  // Clave del limite de intentos: el DNI normalizado o el correo en minuscula,
+  // asi "30.111.222" y "30111222" cuentan como el mismo.
+  const attemptKey = identifier.includes("@")
+    ? identifier.toLowerCase()
+    : normalizeDni(identifier) || identifier.toLowerCase();
+
+  if (await isLoginRateLimited(attemptKey, ip)) {
+    return { error: RATE_LIMIT_MESSAGE };
+  }
+
+  if (isTurnstileEnabled()) {
+    const token = String(formData.get("cf-turnstile-response") ?? "");
+    if (!(await verifyTurnstile(token, ip))) {
+      return { error: "No pudimos verificar que sos una persona. Probá de nuevo." };
+    }
+  }
+
   const email = await resolveLoginEmail(createAdminClient(), identifier);
 
   // Mismo mensaje generico tanto si el DNI/correo no existe como si la
   // contraseña esta mal: no se revela cual de los dos fallo.
   if (!email) {
+    await recordLoginFailure(attemptKey, ip);
     return { error: "El correo, DNI o la contraseña no son correctos." };
   }
 
@@ -99,8 +126,11 @@ export async function login(
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
+    await recordLoginFailure(attemptKey, ip);
     return { error: "El correo, DNI o la contraseña no son correctos." };
   }
+
+  await clearLoginFailures(attemptKey);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -133,7 +163,6 @@ export async function login(
     }
   }
 
-  const { ip, userAgent } = await getRequestMeta();
   await supabase.rpc("fn_log_auth_event", { p_action: "LOGIN", p_ip: ip, p_user_agent: userAgent });
 
   redirect(roleHomePath(profile.role));

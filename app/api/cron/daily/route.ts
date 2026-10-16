@@ -6,6 +6,7 @@ import {
   getPointerGroupsForOrgCron,
   getVehicleGroupsForOrgCron,
 } from "@/lib/email/orgDataForCron";
+import { purgeOldLoginAttempts } from "@/lib/login-rate-limit";
 import { parseReportTypes, sendOrganizationReportEmail } from "@/lib/email/sendReportEmail";
 import { REPORT_TIME_ZONE } from "@/lib/reports/filename";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -23,6 +24,9 @@ export async function GET(request: NextRequest) {
   }
 
   const admin = createAdminClient();
+
+  // Limpieza de los intentos de login viejos (limite de intentos).
+  await purgeOldLoginAttempts();
 
   const now = new Date();
   const parts = new Intl.DateTimeFormat("en-US", {
