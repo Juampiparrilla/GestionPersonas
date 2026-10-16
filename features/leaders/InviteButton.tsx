@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Copy, RefreshCw, Send } from "lucide-react";
+import { Copy, KeyRound, RefreshCw, Send } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Spinner } from "@/components/Spinner";
@@ -44,15 +44,6 @@ export function InviteButton({
     }, 1500);
   }
 
-  if (accepted) {
-    return (
-      <span className="flex h-11 items-center gap-1.5 rounded-xl border border-line px-3.5 text-sm text-ink-ph">
-        <CircleCheck className="h-4 w-4" aria-hidden="true" />
-        Ya inició sesión
-      </span>
-    );
-  }
-
   if (pending?.whatsappLink) {
     return (
       <a
@@ -77,7 +68,7 @@ export function InviteButton({
           className="flex h-11 items-center gap-1.5 rounded-xl bg-accent px-3.5 text-sm font-semibold text-white active:bg-accent-press"
         >
           <Copy className="h-4 w-4" aria-hidden="true" />
-          {copied ? "¡Copiado!" : "Copiar mensaje de invitación"}
+          {copied ? "¡Copiado!" : accepted ? "Copiar mensaje" : "Copiar mensaje de invitación"}
         </button>
         <p className="text-xs text-ink-2">
           No hay teléfono cargado, así que no se puede abrir WhatsApp directo. Copiá el mensaje y
@@ -98,6 +89,10 @@ export function InviteButton({
         {isPending ? (
           <>
             <Spinner className="h-4 w-4" /> Generando…
+          </>
+        ) : accepted ? (
+          <>
+            <KeyRound className="h-4 w-4" aria-hidden="true" /> Resetear contraseña
           </>
         ) : hasAccess ? (
           <>

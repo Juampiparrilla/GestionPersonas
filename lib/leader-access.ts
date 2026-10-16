@@ -2,6 +2,7 @@ import "server-only";
 
 import { headers } from "next/headers";
 
+import { clearLoginFailures } from "@/lib/login-rate-limit";
 import { buildSyntheticEmail } from "@/lib/synthetic-email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { createClient } from "@/lib/supabase/server";
@@ -47,12 +48,19 @@ export async function grantLeaderAccess({
   const origin = headersList.get("origin") ?? "";
 
   let email: string;
+  // true cuando la persona ya habia elegido su contraseña: no es una
+  // invitacion, es un "olvide mi contraseña" asistido por el Superadmin.
+  let isReset = false;
   if (existingProfileId) {
-    const { data: userResult } = await admin.auth.admin.getUserById(existingProfileId);
+    const [{ data: userResult }, { data: existingProfile }] = await Promise.all([
+      admin.auth.admin.getUserById(existingProfileId),
+      admin.from("profiles").select("password_set_at").eq("id", existingProfileId).maybeSingle(),
+    ]);
     if (!userResult.user?.email) {
       return { ok: false, error: "No pudimos generar el link. Probá de nuevo." };
     }
     email = userResult.user.email;
+    isReset = Boolean(existingProfile?.password_set_at);
   } else {
     email = buildSyntheticEmail(dniNormalized, organizationId);
   }
@@ -112,10 +120,19 @@ export async function grantLeaderAccess({
     `${origin}/auth/verify?token_hash=${generated.properties.hashed_token}&type=${type}` +
     `&next=/actualizar-contrasena`;
 
-  const message =
-    `Hola ${fullName}! Te sumamos a Gestión de Personas. Entrá a este link para crear tu ` +
-    `contraseña: ${ownLink}\n\nDespués, para ingresar usá tu DNI ` +
-    `(${dniForMessage}) y esa contraseña.`;
+  if (isReset) {
+    // Si se equivoco varias veces antes de pedir ayuda, el limite de intentos
+    // lo tendria bloqueado aun con la contraseña nueva.
+    await clearLoginFailures(dniNormalized);
+  }
+
+  const message = isReset
+    ? `Hola ${fullName}! Entrá a este link para elegir una contraseña nueva en Gestión de ` +
+      `Personas: ${ownLink}\n\nDespués, para ingresar usá tu DNI (${dniForMessage}) y la ` +
+      `contraseña nueva. Si no pediste este cambio, avisale a tu administrador.`
+    : `Hola ${fullName}! Te sumamos a Gestión de Personas. Entrá a este link para crear tu ` +
+      `contraseña: ${ownLink}\n\nDespués, para ingresar usá tu DNI ` +
+      `(${dniForMessage}) y esa contraseña.`;
 
   return {
     ok: true,
